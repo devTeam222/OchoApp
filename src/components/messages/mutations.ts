@@ -1,0 +1,448 @@
+import { useToast } from "@/components/ui/use-toast";
+import { InfiniteData, useMutation, useQueryClient } from "@tanstack/react-query";
+import { addMembers, createChatChannel, saveMessage, submitMessage } from "./actions";
+import { ChannelsSection, MessageData, MessagesSection } from "@/lib/types";
+
+
+
+export function useSubmitMessageMutation() {
+    const { toast } = useToast();
+    const queryClient = useQueryClient();
+
+    const mutation = useMutation({
+        mutationFn: submitMessage,
+        onSuccess: async ({ newMessage, channelId, newChannel, userId }) => {
+            const isSavedMessage = channelId === `saved-${userId}`;
+            newMessage.type = "CONTENT"
+            const messageQueryKey = isSavedMessage ? ["messages", `saved-${userId}`] : ["messages", channelId];
+            const channelQueryKey = ["chat-channels", userId];
+
+            // 1. Update the message cache
+            const cachedMessages = queryClient.getQueryData<InfiniteData<MessagesSection, string | null>>(messageQueryKey);
+
+            const messageExists = cachedMessages?.pages.some((page) =>
+                page.messages.some((message) => message.id === newMessage.id)
+            );
+            if (!messageExists) {
+                queryClient.setQueryData<InfiniteData<MessagesSection, string | null>>(
+                    messageQueryKey,
+                    (oldData) => {
+                        if (!oldData) return;
+                        return {
+                            ...oldData,
+                            pages: oldData.pages.map((page) => ({
+                                ...page,
+                                messages: [
+                                    newMessage,
+                                    ...page.messages,
+                                ],
+                            })),
+                            pageParams: oldData.pageParams,
+                        };
+                    }
+                );
+            }
+
+            // 2. Update the channel cache if not a saved message
+            if (!isSavedMessage) {
+                const cachedChannels = queryClient.getQueryData<InfiniteData<ChannelsSection, string | null>>(channelQueryKey);
+
+                const channelIndex = cachedChannels?.pages.flatMap((page, pageIndex) =>
+                    page.channels.map((channel, index) => ({
+                        channel,
+                        pageIndex,
+                        index,
+                    }))
+                ).find(({ channel }) => channel.id === channelId);
+
+                if (channelIndex) {
+                    // Move the existing channel to the beginning
+                    queryClient.setQueryData<InfiniteData<ChannelsSection, string | null>>(
+                        channelQueryKey,
+                        (oldData) => {
+                            if (!oldData) return;
+
+                            const { pageIndex, index } = channelIndex;
+                            const channel = oldData.pages[pageIndex].channels[index];
+
+                            return {
+                                ...oldData,
+                                pages: oldData.pages.map((page, idx) => {
+                                    if (idx === 0) {
+                                        return {
+                                            ...page,
+                                            channels: [
+                                                {
+                                                    ...channel,
+                                                    messages: [newMessage],
+                                                },
+                                                ...page.channels.filter((ch) => ch.id !== channel.id),
+                                            ],
+                                        };
+                                    }
+                                    if (idx === pageIndex) {
+                                        return {
+                                            ...page,
+                                            channels: page.channels.filter((ch) => ch.id !== channel.id),
+                                        };
+                                    }
+                                    return page;
+                                }),
+                                pageParams: oldData.pageParams,
+                            };
+                        }
+                    );
+                } else if (newChannel) {
+                    // Add the new channel
+                    queryClient.setQueryData<InfiniteData<ChannelsSection, string | null>>(
+                        channelQueryKey,
+                        (oldData) => {
+                            if (!oldData) return;
+                            return {
+                                ...oldData,
+                                pages: oldData.pages.map((page, idx) => {
+                                    if (idx === 0) {
+                                        return {
+                                            ...page,
+                                            channels: [
+                                                newChannel,
+                                                ...page.channels,
+                                            ],
+                                        };
+                                    }
+                                    return page;
+                                }),
+                                pageParams: oldData.pageParams,
+                            };
+                        }
+                    );
+                }
+            }
+
+            toast({
+                description: "Message envoyé.",
+            });
+        },
+        onError(error) {
+            console.error(error);
+            toast({
+                variant: "destructive",
+                description: "Impossible d'envoyer ce message. Veuillez réessayer.",
+            });
+        },
+    });
+
+    return mutation;
+}
+
+
+export function useCreateChatChannelMutation() {
+    const { toast } = useToast();
+
+
+    const queryClient = useQueryClient();
+    const mutation = useMutation({
+        mutationFn: createChatChannel,
+        onSuccess: async ({ newChannel, userId, createInfo }) => {
+            const channelId = newChannel.id
+            const queryKey = ["chat-channels", userId];
+            // Vérifier si createInfo est défini avant de l'assigner à newMessage
+            if (!createInfo) {
+                toast({
+                    variant: "destructive",
+                    description: "Le dernier message de la discussion n'a pas pu être récupéré.",
+                });
+                return;
+            }
+            const newMessage: MessageData = createInfo;
+
+            const cachedChannels = queryClient.getQueryData<InfiniteData<ChannelsSection, string | null>>(queryKey);
+
+            const channelIndex = cachedChannels?.pages.flatMap((page, pageIndex) =>
+                page.channels.map((channel, index) => ({
+                    channel,
+                    pageIndex,
+                    index,
+                }))
+            ).find(({ channel }) => channel.id === channelId);
+
+            if (channelIndex) {
+                // Move the existing channel to the beginning of the first page
+                queryClient.setQueryData<InfiniteData<ChannelsSection, string | null>>(
+                    queryKey,
+                    (oldData) => {
+                        if (!oldData) return;
+
+                        // Extract the channel
+                        const { pageIndex, index } = channelIndex;
+                        const channel = oldData.pages[pageIndex].channels[index];
+
+
+                        return {
+                            ...oldData,
+                            pages: oldData.pages.map((page, idx) => {
+                                if (idx === 0) {
+                                    return {
+                                        ...page,
+                                        channels: [
+                                            {
+                                                ...channel,
+                                                messages: [newMessage]
+                                            }, // Add the channel to the first position of the first page
+                                            ...page.channels.filter((ch) => ch.id !== channel.id), // Remove the channel from its old position
+                                        ],
+                                    };
+                                }
+                                if (idx === pageIndex) {
+                                    return {
+                                        ...page,
+                                        channels: page.channels.filter((ch) => ch.id !== channel.id),
+                                    };
+                                }
+                                return page;
+                            }),
+                            pageParams: oldData.pageParams,
+                        };
+                    }
+                );
+            } else if (newChannel) {
+                // If the channel doesn't exist, add it to the beginning of the first page
+                queryClient.setQueryData<InfiniteData<ChannelsSection, string | null>>(
+                    queryKey,
+                    (oldData) => {
+                        if (!oldData) return;
+                        return {
+                            ...oldData,
+                            pages: oldData.pages.map((page, idx) => {
+                                if (idx === 0) {
+                                    return {
+                                        ...page,
+                                        channels: [
+                                            newChannel,
+                                            ...page.channels,
+                                        ],
+                                    };
+                                }
+                                return page;
+                            }),
+                            pageParams: oldData.pageParams,
+                        };
+                    }
+                );
+            }
+            toast({
+                description: "Vous pouvez maintenent discuter"
+            });
+            return newChannel;
+        },
+        onError(error) {
+            console.error(error);
+            toast({
+                variant: "destructive",
+                description: "Quelque chose s'est mal passé. Veuillez réessayer"
+            })
+        }
+    });
+    return mutation;
+}
+export function useAddMemberMutation() {
+    const { toast } = useToast();
+
+
+    const queryClient = useQueryClient();
+    const mutation = useMutation({
+        mutationFn: addMembers,
+        onSuccess: async ({ newMembersList, userId, channelId, lastMessage }) => {
+
+            
+            const queryKey = ["chat-channels", userId];
+            // Vérifier si createInfo est défini avant de l'assigner à newMessage
+            if (!newMembersList.length) {
+                toast({
+                    variant: "destructive",
+                    description: "Vous ne pouvez pas ajouter de nouveaux membres à ce groupe"
+                });
+                return;
+            }
+            if (!lastMessage) {
+                toast({
+                    description: "Membres ajoutés"
+                })
+                return {newMembersList};
+            }
+            const newMessage: MessageData = lastMessage;
+
+            const cachedChannels = queryClient.getQueryData<InfiniteData<ChannelsSection, string | null>>(queryKey);
+
+            const channelIndex = cachedChannels?.pages.flatMap((page, pageIndex) =>
+                page.channels.map((channel, index) => ({
+                    channel,
+                    pageIndex,
+                    index,
+                }))
+            ).find(({ channel }) => channel.id === channelId);
+
+            if (channelIndex) {
+                // Move the existing channel to the beginning of the first page
+                queryClient.setQueryData<InfiniteData<ChannelsSection, string | null>>(
+                    queryKey,
+                    (oldData) => {
+                        if (!oldData) return;
+
+                        // Extract the channel
+                        const { pageIndex, index } = channelIndex;
+                        const channel = oldData.pages[pageIndex].channels[index];
+
+
+                        return {
+                            ...oldData,
+                            pages: oldData.pages.map((page, idx) => {
+                                if (idx === 0) {
+                                    return {
+                                        ...page,
+                                        channels: [
+                                            {
+                                                ...channel,
+                                                messages: [newMessage]
+                                            }, // Add the channel to the first position of the first page
+                                            ...page.channels.filter((ch) => ch.id !== channel.id), // Remove the channel from its old position
+                                        ],
+                                    };
+                                }
+                                if (idx === pageIndex) {
+                                    return {
+                                        ...page,
+                                        channels: page.channels.filter((ch) => ch.id !== channel.id),
+                                    };
+                                }
+                                return page;
+                            }),
+                            pageParams: oldData.pageParams,
+                        };
+                    }
+                );
+            }
+            toast({
+                description: "Les utilisateurs selectionnes ont bien été ajoutés"
+            })
+            return {newMembersList};
+        },
+        onError(error) {
+            console.error(error);
+            toast({
+                variant: "destructive",
+                description: "Quelque chose s'est mal passé. Veuillez réessayer"
+            })
+        }
+    });
+    return mutation;
+}
+export function useSaveMessageMutation() {
+    const { toast } = useToast();
+
+
+    const queryClient = useQueryClient();
+    const mutation = useMutation({
+        mutationFn: saveMessage,
+        onSuccess: async ({ newChannel, userId, createInfo }) => {
+            const channelId = newChannel.id
+            const queryKey = ["chat-channels", userId];
+            // Vérifier si createInfo est défini avant de l'assigner à newMessage
+            if (!createInfo) {
+                toast({
+                    variant: "destructive",
+                    description: "Le dernier message de la discussion n'a pas pu être récupéré.",
+                });
+                return;
+            }
+            const newMessage: MessageData = createInfo;
+
+            const cachedChannels = queryClient.getQueryData<InfiniteData<ChannelsSection, string | null>>(queryKey);
+
+            const channelIndex = cachedChannels?.pages.flatMap((page, pageIndex) =>
+                page.channels.map((channel, index) => ({
+                    channel,
+                    pageIndex,
+                    index,
+                }))
+            ).find(({ channel }) => channel.id === channelId);
+
+            if (channelIndex) {
+                // Move the existing channel to the beginning of the first page
+                queryClient.setQueryData<InfiniteData<ChannelsSection, string | null>>(
+                    queryKey,
+                    (oldData) => {
+                        if (!oldData) return;
+
+                        // Extract the channel
+                        const { pageIndex, index } = channelIndex;
+                        const channel = oldData.pages[pageIndex].channels[index];
+
+
+                        return {
+                            ...oldData,
+                            pages: oldData.pages.map((page, idx) => {
+                                if (idx === 0) {
+                                    return {
+                                        ...page,
+                                        channels: [
+                                            {
+                                                ...channel,
+                                                messages: [newMessage]
+                                            }, // Add the channel to the first position of the first page
+                                            ...page.channels.filter((ch) => ch.id !== channel.id), // Remove the channel from its old position
+                                        ],
+                                    };
+                                }
+                                if (idx === pageIndex) {
+                                    return {
+                                        ...page,
+                                        channels: page.channels.filter((ch) => ch.id !== channel.id),
+                                    };
+                                }
+                                return page;
+                            }),
+                            pageParams: oldData.pageParams,
+                        };
+                    }
+                );
+            } else if (newChannel) {
+                // If the channel doesn't exist, add it to the beginning of the first page
+                queryClient.setQueryData<InfiniteData<ChannelsSection, string | null>>(
+                    queryKey,
+                    (oldData) => {
+                        if (!oldData) return;
+                        return {
+                            ...oldData,
+                            pages: oldData.pages.map((page, idx) => {
+                                if (idx === 0) {
+                                    return {
+                                        ...page,
+                                        channels: [
+                                            newChannel,
+                                            ...page.channels,
+                                        ],
+                                    };
+                                }
+                                return page;
+                            }),
+                            pageParams: oldData.pageParams,
+                        };
+                    }
+                );
+            }
+            toast({
+                description: "Vous pouvez maintenent discuter"
+            });
+            return newChannel;
+        },
+        onError(error) {
+            console.error(error);
+            toast({
+                variant: "destructive",
+                description: "Quelque chose s'est n'a pas marché. Veuillez réessayer"
+            })
+        }
+    });
+    return mutation;
+}
