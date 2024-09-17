@@ -25,6 +25,7 @@ export default function ActiveChat({
   channel,
   onClose,
 }: ActiveChatProps) {
+  const isProduction = process.env.NODE_ENV === "production"
 
   const { isVisible, setIsVisible } = useMenuBar();
 
@@ -49,7 +50,7 @@ export default function ActiveChat({
           .json<MessagesSection>(),
       initialPageParam: null as string | null,
       getNextPageParam: (lastPage) => lastPage.nextCursor,
-      refetchInterval: 700,
+      refetchInterval: isProduction ? 5000 : 10000,
     });
   const { user: loggedUser } = useSession();
 
