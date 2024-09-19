@@ -6,7 +6,7 @@ export interface Attachment {
     file: File;
     mediaId?: string;
     isUploading: boolean;
-    progress?: number; // Ajoutez le champ progress
+    progress?: number;
 }
 
 async function uploadAttachment(file: File, onProgress: (progress: number) => void): Promise<{ mediaId: string }> {

@@ -37,16 +37,17 @@ export default function FollowingFeed() {
 
   if (status === "success" && !posts.length && !hasNextPage) {
     return (
-      <p className="my-8 w-full text-center text-muted-foreground">
-        Aucun post pour l&apos;instant. Suivez des personnes pour voir leurs
+      <p className="my-8 w-full text-center text-muted-foreground px-3">
+        Aucun post pour l&apos;instant. 
+        Suivez des personnes pour voir leurs
         post publics ici
       </p>
     );
   }
   if (status === "error") {
     return (
-      <p className="w-full text-center text-destructive">
-        Erreur lors de la récupération des données
+      <p className="my-8 w-full text-center text-muted-foreground italic px-3">
+        Quelque chose s&apos;est mal passé. 
       </p>
     );
   }

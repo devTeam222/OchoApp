@@ -38,14 +38,14 @@ export default function ForYouFeed() {
   if (status === "success" && !posts.length && !hasNextPage) {
     return (
       <p className="my-8 w-full text-center text-muted-foreground">
-        Personne n&apos;a encore publié ici on dirait
+        Nous n&apos;avons encore trouvé des bonnes recommendations.
       </p>
     );
   }
   if (status === "error") {
     return (
-      <p className="w-full text-center text-destructive">
-        Erreur lors de la récupération des données
+      <p className="my-8 w-full text-center text-muted-foreground italic">
+        Quelque chose s&apos;est mal passé. 
       </p>
     );
   }

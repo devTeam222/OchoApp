@@ -14,14 +14,7 @@ import Image from "next/image";
 import LikeButton from "./LikeButton";
 import BookmarkButton from "./BookmarkButton";
 import { useEffect, useRef, useState } from "react";
-import {
-  Maximize,
-  Maximize2,
-  MessageSquareMore,
-  Minimize2,
-  PlusIcon,
-  X,
-} from "lucide-react";
+import { Maximize2, MessageSquareMore, Minimize2, X } from "lucide-react";
 import Comments from "../comments/Comments";
 import { Button } from "../ui/button";
 import {
@@ -212,7 +205,7 @@ function MediaPreviews({ attachments }: MediaPreviewsProps) {
           >
             <MediaPreview
               media={attachments[maxVisibleAttachments]}
-              className="object-cover w-full h-full"
+              className="h-full w-full object-cover"
             />
             {attachments.length > 1 + maxVisibleAttachments && (
               <div className="absolute flex h-full w-full items-center justify-center bg-black/20 text-lg">
@@ -230,7 +223,7 @@ function MediaPreviews({ attachments }: MediaPreviewsProps) {
             !showCarousel && "hidden",
           )}
         >
-          <div className="relative flex h-full w-full items-center p-4">
+          <div className="relative flex h-full w-full items-center justify-center">
             <Carousel className="flex h-full items-center">
               <div
                 className="fixed h-full w-full"
@@ -259,36 +252,44 @@ function MediaPreviews({ attachments }: MediaPreviewsProps) {
                           media={m}
                           useDefault
                           className={cn(
-                            "object-contain max-sm:w-full sm:h-full sm:max-w-[800px]",
-                            isFullscreen[i] &&
-                              "absolute flex h-screen w-screen items-center justify-center rounded-none",
+                            "object-contain max-sm:w-full sm:h-full sm:min-w-[500px]",
+                            isFullscreen[i]
+                              ? "absolute flex h-screen w-screen max-w-full items-center justify-center rounded-none"
+                              : "sm:max-w-[800px]",
                           )}
                           hidden={showCarousel}
                         />
-                        {attachments.length > 1 && (
-                          <div className="absolute right-2 top-2 flex items-center gap-2">
-                            <div className={cn("rounded-2xl", isFullscreen[i] && "p-4")}>
-                              <FullscreenButton
-                                isFullscreen={isFullscreen[i]}
-                                onFullscreen={() => {
-                                  toggleFullscreen(i);
-                                }}
-                              />
-                            </div>
-                            {!isFullscreen[i] && (
-                              <div className="rounded-2xl bg-primary/70 px-3 text-primary-foreground">
-                                {i + 1}/{attachments.length}
-                              </div>
+                        <div className="absolute right-2 top-2 flex items-center gap-2">
+                          <div
+                            className={cn(
+                              "rounded-2xl",
+                              isFullscreen[i] && "p-4",
                             )}
+                          >
+                            <FullscreenButton
+                              isFullscreen={isFullscreen[i]}
+                              onFullscreen={() => {
+                                toggleFullscreen(i);
+                              }}
+                            />
                           </div>
-                        )}
+                          {!isFullscreen[i] && attachments.length > 1 && (
+                            <div className="rounded-2xl bg-primary/70 px-3 text-primary-foreground">
+                              {i + 1}/{attachments.length}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
+              {attachments.length > 1 && (
+                <>
+                  <CarouselPrevious />
+                  <CarouselNext />
+                </>
+              )}
             </Carousel>
           </div>
           <div
@@ -348,7 +349,10 @@ function MediaPreview({
         width={500}
         height={500}
         className={cn(
-          "mx-auto h-full w-full rounded-xl bg-muted max-sm:max-w-[500px] sm:max-h-[500px]",
+          "mx-auto h-full w-full rounded-xl bg-muted max-sm:max-w-[500px]",
+          isFullscreen
+            ? "max-h-screen max-w-[100vw]"
+            : "max-h-[90vh] max-w-[90vw]",
           className,
         )}
       />
@@ -359,22 +363,27 @@ function MediaPreview({
       <div
         className={cn(
           "relative mx-auto flex h-full w-full grid-cols-1 grid-rows-1 overflow-auto rounded-xl",
-          isFullscreen ? "max-h-screen" : "max-h-[90vh] max-w-[90vw]",
+          isFullscreen
+            ? "max-h-screen max-w-[100vw]"
+            : "max-h-[90vh] max-w-[90vw]",
           className,
         )}
       >
         <video
           ref={videoRef}
-          src={media.url}
           controls={useDefault}
           height={500}
           width={500}
           className={cn(
-            "relative h-full w-full",
-            isFullscreen ? "max-h-screen" : "max-h-[90vh] max-w-[90vw]",
+            "relative h-full w-full bg-muted",
+            isFullscreen
+              ? "max-h-screen max-w-[100vw]"
+              : "max-h-[90vh] max-w-[90vw]",
             hidden ? "object-cover" : "absolute bottom-0 top-0 object-contain",
           )}
-        />
+        >
+          <source src={media.url}/>
+        </video>
       </div>
     );
   }

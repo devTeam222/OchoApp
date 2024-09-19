@@ -168,7 +168,7 @@ function AttachmentPreviews({
     <div
       className={cn(
         "flex flex-col gap-3",
-        attachments.length > 1 && "sm:grid sm:grid-cols-2",
+        attachments.length > 1 && "grid grid-cols-2",
       )}
     >
       {attachments.map((attachment) => (
@@ -195,7 +195,7 @@ function AttachmentPreview({
 
   return (
     <div
-      className={cn("relative mx-auto size-fit", isUploading && "opacity-50")}
+      className={cn("relative mx-auto size-fit")}
     >
       {file.type.startsWith("image") ? (
         <Image
@@ -206,7 +206,7 @@ function AttachmentPreview({
           className="size-fit max-h-[30rem] rounded-2xl"
         />
       ) : (
-        <video controls className="size-fit max-h-[30rem] rounded-2xl">
+        <video muted autoPlay className="size-fit max-h-[30rem] rounded-2xl">
           <source src={src} type={file.type} />
         </video>
       )}
@@ -220,8 +220,13 @@ function AttachmentPreview({
         </button>
       )}
       {isUploading && progress && (
-        <div className="absolute bottom-3 left-3 rounded bg-background px-2 py-1 text-white">
-          {progress}%
+        <div className="absolute inset-0 w-full h-full select-none">
+          <div
+            className={`absolute left-0 top-0 h-full w-full flex items-center rounded bg-background/80 px-2 py-1 text-center text-xl`}
+          ></div>
+          <div className="absolute left-[50%] top-0 flex h-full w-full translate-x-[-50%] items-center justify-center rounded text-center text-[2rem] font-bold text-foreground z-10">
+            {progress}%
+          </div>
         </div>
       )}
     </div>

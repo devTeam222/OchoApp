@@ -17,7 +17,7 @@
 /build
 
 # uploads
-/public/uploads/
+/data/uploads/
 
 # misc
 .DS_Store

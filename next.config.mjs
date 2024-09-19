@@ -3,7 +3,7 @@ const nextConfig = {
     experimental: {
         staleTimes: {
             dynamic: 30
-        }
+        },
     },
     serverExternalPackages: ["@node-rs/argon2"],
     images:{
@@ -16,8 +16,7 @@ const nextConfig = {
             {
                 protocol: "https",
                 hostname: "platform-lookaside.fbsbx.com",
-                pathname: `/platform/profilepic/*`
-            }
+            },
         ],
         domains: ["utfs.io", "platform-lookaside.fbsbx.com"]
     },
@@ -28,7 +27,7 @@ const nextConfig = {
                 destination: "/search?q=%23:tag"
             }
         ]
-    }
+    },
 };
 
 export default nextConfig;

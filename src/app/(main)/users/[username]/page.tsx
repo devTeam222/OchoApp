@@ -59,7 +59,7 @@ export default async function page({ params: { username } }: PageProps) {
   const user = await getUser(username, loggedInUser.id);
 
   return (
-    <main className="flex w-full min-w-0 gap-5c max-sm:p-4">
+    <main className="flex w-full min-w-0 gap-5 max-sm:p-4">
       <div className="w-full min-w-0 space-y-5">
         <UserProfile user={user} loggedInUserId={loggedInUser.id} />
         <div className="rounded-2xl bg-card p-5 shadow-sm">

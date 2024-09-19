@@ -39,7 +39,7 @@ export default function UserAvatar({
   return (
     <Image
       src={avatarUrl || avatarPlaceholder}
-      alt="Group avatar"
+      alt="User avatar"
       width={size ?? 48}
       height={size ?? 48}
       className={cn(

@@ -2,7 +2,9 @@ import prisma from "@/lib/prisma";
 import fs from "fs";
 import path from "path";
 
-const uploadDir = path.resolve('public/uploads/attachments');
+// Base directories for different types of uploads
+const avatarDir = path.resolve("data/uploads/avatars");
+const attachmentDir = path.resolve("data/uploads/attachments");
 
 export async function GET(req: Request) {
     try {
@@ -18,7 +20,7 @@ export async function GET(req: Request) {
                 postId: null,
                 ...(process.env.NODE_ENV === "production" ? {
                     createdAt: {
-                        lte: new Date(Date.now() - 24 * 3600 * 1000) // 1 jour
+                        lte: new Date(Date.now() - 24 * 3600 * 1000), // 1 jour
                     }
                 } : {})
             },
@@ -28,9 +30,21 @@ export async function GET(req: Request) {
             }
         });
 
-        // Supprimer les fichiers locaux
+        // Supprimer les fichiers locaux pour les avatars et les pièces jointes
         unusedMedia.forEach(media => {
-            const filePath = path.join(uploadDir, media.url.split('/uploads/attachments/')[1]);
+            let filePath: string;
+
+            if (media.url.includes("/uploads/avatars/")) {
+                // If it's an avatar
+                filePath = path.join(avatarDir, media.url.split("/uploads/avatars/")[1]);
+            } else if (media.url.includes("/uploads/attachments/")) {
+                // If it's an attachment
+                filePath = path.join(attachmentDir, media.url.split("/uploads/attachments/")[1]);
+            } else {
+                return; // Skip if it's not recognized
+            }
+
+            // Supprimer le fichier s'il existe
             if (fs.existsSync(filePath)) {
                 fs.unlinkSync(filePath);
             }
