@@ -18,7 +18,6 @@ const nextConfig = {
                 hostname: "platform-lookaside.fbsbx.com",
             },
         ],
-        domains: ["utfs.io", "platform-lookaside.fbsbx.com"]
     },
     rewrites: ()=>{
         return [
