@@ -1,4 +1,4 @@
-import { ChannelData } from "@/lib/types";
+import { ChannelData, UserData } from "@/lib/types";
 import { useSession } from "../SessionProvider";
 import GroupAvatar from "@/components/GroupAvatar";
 import UserAvatar from "@/components/UserAvatar";
@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import Time from "@/components/Time";
 import Link from "next/link";
 import AddMemberDialog from "@/components/messages/AddMemberDialog";
+import GroupUserPopover from "@/components/messages/GroupUserPopover";
 
 interface ChatHeaderProps {
   channel: ChannelData;
@@ -206,52 +207,33 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
               <ul className="flex w-full flex-col py-3">
                 <li className="select-none px-4 text-xs font-bold text-muted-foreground">{`${allMembers.length} membres`}</li>
                 <AddMemberDialog channel={channel}>
-                <li className="cursor-pointer p-4 active:bg-muted/30">
-                  <div className="flex items-center space-x-2">
-                    <div
-                      className={`relative flex aspect-square h-fit min-h-[35px] w-fit min-w-fit items-center justify-center overflow-hidden rounded-full bg-primary`}
-                    >
-                      <UserRoundPlus
-                        className="absolute flex items-center justify-center text-primary-foreground"
-                        size={35 - 16}
-                      />
-                    </div>
-                    <p>Ajouter des membres</p>
-                  </div>
-                </li>
-
-                </AddMemberDialog>
-
-                {firstPage.map((member) => (
-                  <li
-                    key={member?.userId}
-                    className="cursor-pointer px-4 py-2 active:bg-muted/30"
-                  >
+                  <li className="cursor-pointer p-4 active:bg-muted/30">
                     <div className="flex items-center space-x-2">
-                      <UserAvatar
-                        avatarUrl={member?.user?.avatarUrl}
-                        size={35}
-                      />
-                      <div className="flex-1 select-none">
-                        <p className="">
-                          {member?.userId === loggedInUser?.userId
-                            ? "Vous"
-                            : member?.user?.displayName}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          @{member?.user?.username}
-                        </p>
+                      <div
+                        className={`relative flex aspect-square h-fit min-h-[35px] w-fit min-w-fit items-center justify-center overflow-hidden rounded-full bg-primary`}
+                      >
+                        <UserRoundPlus
+                          className="absolute flex items-center justify-center text-primary-foreground"
+                          size={35 - 16}
+                        />
                       </div>
-                      {member?.type !== "MEMBER" && (
-                        <span className="rounded bg-primary/30 p-[2px] text-xs">
-                          {member?.type === "ADMIN"
-                            ? "Admin du groupe"
-                            : "Proprietaire du groupe"}
-                        </span>
-                      )}
+                      <p>Ajouter des membres</p>
                     </div>
                   </li>
-                ))}
+                </AddMemberDialog>
+
+                {firstPage.map((member) => {
+                  if (!member?.user) return null;
+                  const user: UserData = member.user
+                  return (
+                    <GroupUserPopover
+                      key={user.id}
+                      user={user}
+                      type={member.type}
+                      channel={channel}
+                    />
+                  );
+                })}
 
                 {!!lastPage.length &&
                   expandMembers &&
@@ -308,7 +290,7 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
               </ul>
             )}
             {channel.isGroup && (
-              <ul className="flex w-full flex-col py-3 select-none">
+              <ul className="flex w-full select-none flex-col py-3">
                 <li className="cursor-pointer p-4 text-red-500 active:bg-muted/30">
                   <div className="flex items-center space-x-2">
                     <div

@@ -127,6 +127,7 @@ export default function SideBar({
                 channel={channel}
                 active={selectedChannelId === channel.id}
                 onSelect={() => {
+                  onCloseChat();
                   onChannelSelect(channel.id);
                   activeChannel(channel);
                 }}

@@ -48,6 +48,17 @@ export function getChatChannelDataInclude() {
             avatarUrl: true,
             bio: true,
             createdAt: true,
+            followers: {
+              select: {
+                followerId: true
+              }
+            },
+            _count: {
+              select: {
+                posts: true,
+                followers: true
+              }
+            }
           }
         },
         type: true,
