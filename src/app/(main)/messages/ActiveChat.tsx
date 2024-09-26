@@ -25,6 +25,7 @@ export default function ActiveChat({
   channel,
   onClose,
 }: ActiveChatProps) {
+  
   const isProduction = process.env.NODE_ENV === "production"
 
   const { isVisible, setIsVisible } = useMenuBar();

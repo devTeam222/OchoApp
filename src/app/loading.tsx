@@ -1,6 +1,15 @@
-import { Loader2 } from "lucide-react";
-
+import AppLogo from "@/components/AppLogo";
+import LoaderMain from "@/components/LoaderMain";
+import OchoKOMLogo from "@/components/OchoKOMLogo";
 
 export default function Loading() {
-    return <Loader2 className="mx-auto my-3 animate-spin"/>
-};
+  return (
+    <div className="flex h-screen max-h-dvh w-full flex-col gap-3 p-3">
+      <div className="flex h-full flex-1 flex-col items-center justify-center gap-2 text-center text-[#2463eb]">
+        <AppLogo size={150}/>
+        <LoaderMain />
+      </div>
+      <OchoKOMLogo/>
+    </div>
+  );
+}

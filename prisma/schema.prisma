@@ -71,6 +71,8 @@ model Channel {
   messages   Message[]
   privilege  Privilege       @default(MESSAGE)
   createdAt  DateTime        @default(now())
+
+  @@map("channels")
 }
 
 enum Privilege {
@@ -87,14 +89,18 @@ model ChannelMember {
   userId    String?
   type      MemberType @default(MEMBER)
   joinedAt  DateTime   @default(now())
+  leftAt    DateTime?
 
   @@unique([channelId, userId])
+  @@map("chat_members")
 }
 
 enum MemberType {
   OWNER
   ADMIN
   MEMBER
+  OLD
+  BANNED
 }
 
 model Message {
@@ -109,6 +115,8 @@ model Message {
   type        MessageType
 
   createdAt DateTime @default(now())
+
+  @@map("messages")
 }
 
 enum MessageType {

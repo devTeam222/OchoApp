@@ -68,6 +68,11 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
                 avatarUrl: member.user?.avatarUrl ?? null,
                 bio: member.user?.bio ?? null,
                 createdAt: member.user?.createdAt ?? new Date(), // Fournit une valeur par défaut
+                followers: member.user?.followers || [],
+                _count: {
+                  followers: member.user?._count?.followers ?? 0, // Valeur par défaut si undefined
+                  posts: member.user?._count?.posts ?? 0, // Valeur par défaut si undefined
+                },
               },
               userId: member.userId ?? "",
               type: "MEMBER" as MemberType, // Assurez-vous que "MEMBER" est bien une valeur valide pour MemberType

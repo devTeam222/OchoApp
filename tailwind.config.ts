@@ -1,14 +1,14 @@
-import type { Config } from "tailwindcss"
-import { withUt } from "uploadthing/tw"
+import type { Config } from "tailwindcss";
+import { withUt } from "uploadthing/tw";
 
 const config = {
   darkMode: ["class"],
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
-	],
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -25,6 +25,15 @@ const config = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        logo: {
+          foreground: "hsl(var(--logo-foreground))",
+          DEFAULT: "hsl(var(--logo))",
+          background: "hsl(var(--logo-background))",
+          text: "hsl(var(--logo-text))",
+          icon: {
+            DEFAULT: "hsl(var(--logo-icon))",
+          },
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -76,6 +85,6 @@ const config = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-} satisfies Config
+} satisfies Config;
 
-export default withUt(config)
+export default withUt(config);
