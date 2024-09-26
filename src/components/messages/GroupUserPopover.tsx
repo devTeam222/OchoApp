@@ -11,7 +11,7 @@ import { CircleX, LogOut, ShieldBan, ShieldPlus, UserCircle2 } from "lucide-reac
 
 interface GroupUserPopover {
   user: UserData;
-  type: "MEMBER" | "ADMIN" | "OWNER";
+  type: "MEMBER" | "ADMIN" | "OWNER" | "OLD" | "BANNED";
   channel: ChannelData;
 }
 
@@ -21,6 +21,7 @@ export default function GroupUserPopover({
   channel,
 }: GroupUserPopover) {
   const { user: loggedInUser } = useSession();
+  const isMember = (type !== "OLD" && type !== "BANNED");
 
   const followerState: FollowerInfo = {
     followers: user._count.followers,
@@ -48,7 +49,7 @@ export default function GroupUserPopover({
               </p>
               <p className="text-sm text-muted-foreground">@{user?.username}</p>
             </div>
-            {type && type !== "MEMBER" && (
+            {isMember && type !== "MEMBER" && (
               <span className="rounded bg-primary/30 p-[2px] text-xs">
                 {type === "ADMIN"
                   ? "Admin du groupe"
@@ -96,7 +97,7 @@ export default function GroupUserPopover({
               <UserCircle2 size={24} /> Afficher le profil
             </Button>
           </Link>
-          {user.id !== loggedInUser.id && loggedMember?.type != "MEMBER" &&  (
+          {user.id !== loggedInUser.id && loggedMember?.type != "MEMBER" && isMember &&  (
             <>
               {type !== "ADMIN" && type !== "OWNER" && (
               <>
