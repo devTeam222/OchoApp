@@ -9,7 +9,6 @@ import { generateIdFromEntropySize } from "lucia";
 import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 import fs from "fs/promises";
-import sharp from "sharp";
 import path from "path";
 
 export async function GET(req: NextRequest) {
@@ -20,10 +19,7 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        const {
-            accessToken,
-            accessTokenExpiresAt
-        } = await facebook.validateAuthorizationCode(code);
+        const { accessToken, accessTokenExpiresAt } = await facebook.validateAuthorizationCode(code);
 
         const facebookUser = await kyInstance
             .get(`https://graph.facebook.com/me?access_token=${accessToken}&fields=id,name,picture`)
@@ -93,21 +89,30 @@ export async function GET(req: NextRequest) {
 
         // Étape 1: Récupérer l'image de Facebook
         const avatarResponse = await kyInstance.get(facebookUser.picture.data.url);
-        const avatarBuffer = await avatarResponse.arrayBuffer();
+        const avatarBlob = await avatarResponse.blob();
 
-        // Étape 2: Convertir l'image en WebP avec sharp
-        const webpAvatar = await sharp(Buffer.from(avatarBuffer))
-            .resize(500, 500) // Redimensionner en 500x500 pixels
-            .webp({ quality: 90 })
-            .toBuffer();
+        // Étape 2: Convertir l'image en WebP avec Canvas
+        const imageBitmap = await createImageBitmap(avatarBlob);
+        const canvas = new OffscreenCanvas(500, 500); // Canvas de 500x500 pixels
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+            ctx.drawImage(imageBitmap, 0, 0, 500, 500);
+        }
 
-        // Étape 3: Définir le chemin pour enregistrer l'avatar (hors de /public)
+        // Étape 3: Convertir le canvas en Blob (format WebP)
+        const webpAvatarBlob = await canvas.convertToBlob({ type: "image/webp", quality: 0.9 });
+
+        // Étape 4: Enregistrer l'image dans un fichier local
         const avatarFilename = `avatar-${userId}.webp`;
         const avatarPath = path.join(process.cwd(), "data/uploads/avatars", avatarFilename);
 
-        // Étape 4: S'assurer que le dossier existe et enregistrer l'image
+        // Lire le contenu du Blob en ArrayBuffer
+        const arrayBuffer = await webpAvatarBlob.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        // S'assurer que le dossier existe et enregistrer l'image
         await fs.mkdir(path.dirname(avatarPath), { recursive: true });
-        await fs.writeFile(avatarPath, webpAvatar);
+        await fs.writeFile(avatarPath, buffer);
 
         await prisma.user.create({
             data: {
@@ -138,3 +143,4 @@ export async function GET(req: NextRequest) {
         return new Response(null, { status: 500 });
     }
 }
+
