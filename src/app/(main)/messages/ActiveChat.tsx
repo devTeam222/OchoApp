@@ -1,6 +1,6 @@
 "use client"
 
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import kyInstance from "@/lib/ky";
 import { ChannelData, MessagesSection } from "@/lib/types";
 import Message from "./Message";
@@ -16,17 +16,17 @@ import { useEffect } from "react";
 
 interface ActiveChatProps {
   channelId: string | null;
-  channel: ChannelData;
+  initialData: ChannelData;
   onClose: () => void;
 }
 
 export default function ActiveChat({
   channelId,
-  channel,
+  initialData,
   onClose,
 }: ActiveChatProps) {
   
-  const isProduction = process.env.NODE_ENV === "production"
+  const isProduction = process.env.NODE_ENV === "production";
 
   const { isVisible, setIsVisible } = useMenuBar();
 
@@ -38,6 +38,22 @@ export default function ActiveChat({
       setIsVisible(true)
     };
   }, [isVisible, setIsVisible]);
+
+  // Fetching ChannelData using useQuery with initialData for caching
+  const { data: channel, isError: isChannelError } = useQuery({
+    queryKey: ["chat", channelId],
+    queryFn: () => kyInstance.get(`/api/messages/${channelId}/chat-data`).json<ChannelData>(),
+    initialData,  // Using initialData as the first cache data
+    staleTime: 1000 * 60 * 5, // Cache data for 5 minutes
+  });
+
+  if (isChannelError) {
+    toast({
+      variant: "destructive",
+      description: `Impossible de charger les données du canal ${channelId}`,
+    });
+    onClose();
+  }
   
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
@@ -45,7 +61,7 @@ export default function ActiveChat({
       queryFn: ({ pageParam }) =>
         kyInstance
           .get(
-            `/api/messages/${channelId}`,
+            `/api/messages/${channelId}/msgs`,
             pageParam ? { searchParams: { cursor: pageParam } } : {},
           )
           .json<MessagesSection>(),

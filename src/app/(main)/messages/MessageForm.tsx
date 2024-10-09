@@ -6,6 +6,7 @@ import { Loader2, Send } from "lucide-react";
 import { useSubmitMessageMutation } from "@/components/messages/mutations";
 import "./style.css";
 import { useEffect, useState } from "react";
+import React from "react";
 
 interface MessageFormProps {
   channelId: string;

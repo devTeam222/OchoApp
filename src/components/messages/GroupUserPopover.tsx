@@ -8,6 +8,8 @@ import { useSession } from "@/app/(main)/SessionProvider";
 import FollowerCount from "../FollowerCount";
 import { Button } from "../ui/button";
 import { CircleX, LogOut, ShieldBan, ShieldPlus, UserCircle2 } from "lucide-react";
+import React from "react";
+import AdminButton from "./AdminButton";
 
 interface GroupUserPopover {
   user: UserData;
@@ -63,15 +65,12 @@ export default function GroupUserPopover({
         <div className="flex flex-col gap-3">
           <div>
             <div
-              className={`flex max-w-80 ${user.id !== loggedInUser.id ? "flex-col" : "items-center"} gap-3 break-words px-1 py-2.5 md:min-w-52`}
+              className={`flex max-w-80 items-center" gap-3 break-words px-1 py-2.5 md:min-w-52`}
             >
-              <div className={`flex items-center justify-between gap-2`}>
+              <div className={`flex items-center justify-center gap-2`}>
                 <Link href={`/users/${user.username}`}>
                   <UserAvatar avatarUrl={user.avatarUrl} size={70} />
                 </Link>
-                {user.id !== loggedInUser.id && (
-                  <FollowButton userId={user.id} initialState={followerState} />
-                )}
               </div>
               <Link href={`/users/${user.username}`}>
                 <div className="text-lg font-semibold hover:underline">
@@ -87,7 +86,6 @@ export default function GroupUserPopover({
                 <p className="line-clamp-4 whitespace-pre-line">{user.bio}</p>
               </Linkify>
             )}
-            <FollowerCount userId={user.id} initialState={followerState} />
           </div>
           <Link href={`/users/${user.username}`}>
             <Button
@@ -99,24 +97,9 @@ export default function GroupUserPopover({
           </Link>
           {user.id !== loggedInUser.id && loggedMember?.type != "MEMBER" && isMember &&  (
             <>
-              {type !== "ADMIN" && type !== "OWNER" && (
-              <>
-              <Button
-                variant="default"
-                className="flex w-full justify-center gap-3 text-primary-foreground"
-              >
-                <ShieldPlus size={24} /> Nommer admin
-              </Button>
-              </>
-              )}
               {(loggedMember?.type === "ADMIN" || loggedMember?.type === "OWNER") && type !== "OWNER" && (
                 <>
-              {type === "ADMIN" && (<Button
-                variant="outline"
-                className="flex w-full justify-center gap-3"
-              >
-                <ShieldBan size={24} className="fill-primary-foreground"/> Supprimer des admins
-              </Button>)}
+                <AdminButton type={type} channel={channel} member={user.id}/>
               <Button
                 variant="outline"
                 className="flex w-full justify-center gap-3"

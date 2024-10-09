@@ -175,7 +175,7 @@ function MediaPreviews({ attachments }: MediaPreviewsProps) {
       <div
         className={cn(
           "flex flex-col gap-3",
-          attachments.length > 1 && "grid grid-cols-2 grid-rows-2",
+          attachments.length > 1 && "grid grid-cols-2",
         )}
       >
         {attachments.slice(0, maxVisibleAttachments).map((m) => (
@@ -224,7 +224,7 @@ function MediaPreviews({ attachments }: MediaPreviewsProps) {
           )}
         >
           <div className="relative flex h-full w-full items-center justify-center">
-            <Carousel className="flex h-full items-center">
+            <Carousel className="flex h-full items-center w-full">
               <div
                 className="fixed h-full w-full"
                 onClick={() => setShowCarousel(false)}
@@ -285,10 +285,10 @@ function MediaPreviews({ attachments }: MediaPreviewsProps) {
                 ))}
               </CarouselContent>
               {attachments.length > 1 && (
-                <>
+                <div className="absolute max-w-[100vw] p-3 w-full">
                   <CarouselPrevious />
                   <CarouselNext />
-                </>
+                </div>
               )}
             </Carousel>
           </div>

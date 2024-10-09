@@ -40,6 +40,10 @@ export const addMemberSchema = z.object({
   channelId: z.string(),
   members: z.array(z.string()),
 });
+export const addAdminSchema = z.object({
+  channelId: z.string(),
+  member: z.string(),
+});
 export const saveMessageSchema = z.object({
   name: z.string().optional(),
   recipientId: z.string().optional(),
@@ -48,7 +52,7 @@ export const saveMessageSchema = z.object({
 
 
 export const createPostSchema = z.object({
-  content: requiredString,
+  content: z.string(),
   mediaIds: z.array(z.string()).max(5,
     "Vous pouvez ajouter jusqu'à 5 médias",
   )

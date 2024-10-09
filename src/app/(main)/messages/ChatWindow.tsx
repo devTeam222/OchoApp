@@ -40,7 +40,7 @@ export default function ChatWindow() {
       </div>
       <div className={`relative flex w-screen flex-col h-full max-sm:min-w-[100vw] sm:w-3/4 ${!(selectedChannelId && selectedChannel) && "max-sm:hidden"}`}>
         {selectedChannelId && selectedChannel ? (
-          <ActiveChat channelId={selectedChannelId} channel={selectedChannel} onClose={()=>{
+          <ActiveChat channelId={selectedChannelId} initialData={selectedChannel} onClose={()=>{
             setSelectedChannelId(null);
             setSelectedChannel(undefined);
             localStorage.removeItem("activeChannelId");

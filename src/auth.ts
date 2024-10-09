@@ -23,6 +23,12 @@ export const lucia = new Lucia(adapter, {
       googleId: databaseUserAttributes.googleId,
       facebookId: databaseUserAttributes.facebookId,
       bio: databaseUserAttributes.bio,
+      followers: databaseUserAttributes.followers,
+      _count: {
+        followers: databaseUserAttributes._count?.followers ?? 0,
+        posts: databaseUserAttributes._count?.posts ?? 0,
+      },
+      createdAt: databaseUserAttributes.createdAt,
     };
   },
 });
@@ -42,6 +48,14 @@ interface DatabaseUserAttributes {
   googleId: string | null;
   facebookId: string | null;
   bio: string | null;
+  followers: {
+    followerId: string;
+  }[];
+  _count: {
+    followers: number;
+    posts: number;
+  };
+  createdAt: Date;
 }
 
 export const google = new Google(
@@ -53,8 +67,8 @@ export const google = new Google(
 export const facebook = new Facebook(
   process.env.FACEBOOK_CLIENT_ID!,
   process.env.FACEBOOK_CLIENT_SECRET!,
-  `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback/facebook`
-)
+  `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback/facebook`,
+);
 
 export const validateRequest = cache(
   async (): Promise<

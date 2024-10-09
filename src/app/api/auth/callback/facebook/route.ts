@@ -108,11 +108,11 @@ export async function GET(req: NextRequest) {
 
         // Lire le contenu du Blob en ArrayBuffer
         const arrayBuffer = await webpAvatarBlob.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
+        const uint8Array = new Uint8Array(arrayBuffer);
 
         // S'assurer que le dossier existe et enregistrer l'image
         await fs.mkdir(path.dirname(avatarPath), { recursive: true });
-        await fs.writeFile(avatarPath, buffer);
+        await fs.writeFile(avatarPath, uint8Array);
 
         await prisma.user.create({
             data: {
