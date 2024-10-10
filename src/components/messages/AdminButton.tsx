@@ -7,10 +7,11 @@ import { useAddAdminMutation } from "./mutations";
 import LoadingButton from "../LoadingButton";
 import { cn } from "@/lib/utils";
 import React from "react";
+import { MemberType } from "@prisma/client";
 
 interface AdminButtonProps {
   member: string;
-  type: "MEMBER" | "ADMIN" | "OWNER" | "OLD" | "BANNED";
+  type: MemberType;
   channel: ChannelData;
 }
 

@@ -1,6 +1,6 @@
 import { useToast } from "@/components/ui/use-toast";
 import { InfiniteData, useMutation, useQueryClient } from "@tanstack/react-query";
-import { addAdmin, addMembers, createChatChannel, saveMessage, submitMessage } from "./actions";
+import { addAdmin, addMembers, createChatChannel, removeMember, saveMessage, submitMessage } from "./actions";
 import { ChannelsSection, MessageData, MessagesSection } from "@/lib/types";
 
 
@@ -344,10 +344,27 @@ export function useAddAdminMutation() {
     
     const mutation = useMutation({
         mutationFn: addAdmin,
-        onSuccess: async ({ newChannelMember }) => {
+        onSuccess: ({ newChannelMember }) => {
             
             return {newChannelMember}
         },
+        onError(error) {
+            console.error(error);
+            toast({
+                variant: "destructive",
+                description: "Quelque chose s'est mal passé. Veuillez réessayer"
+            })
+        }
+    });
+    return mutation;
+}
+export function useRemoveMemberMutation() {
+    const { toast } = useToast();
+    
+    
+    
+    const mutation = useMutation({
+        mutationFn: removeMember,
         onError(error) {
             console.error(error);
             toast({

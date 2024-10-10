@@ -70,6 +70,40 @@ export async function GET(
 
     const nextCursor =
       messages.length > pageSize ? messages[pageSize].id : null;
+    const channelData = await prisma.channel.findUnique({
+      where: { id: channelId },
+    });
+
+    const isGroup = channelData?.isGroup;
+
+    if (isGroup) {
+      const member = await prisma.channelMember.findUnique({
+        where: {
+          channelId_userId: {
+            channelId,
+            userId: user.id,
+          },
+        },
+      });
+      if (!member) {
+        return Response.json(
+          { error: "Vous n'êtes pas membre de ce groupe" },
+          { status: 403 },
+        );
+      }
+      if (member.type === "BANNED") {
+        return Response.json(
+          { error: "Vous avez été suspendu de ce groupe par un administrateur" },
+          { status: 403 },
+        );
+      }
+
+      const leftDate = member.leftAt;
+      if (leftDate) {
+        // Filters messages dates older than leftdate
+        messages = messages.filter((message) => message.createdAt < leftDate);
+      }
+    }
 
     const data: MessagesSection = {
       messages: messages.slice(0, pageSize),

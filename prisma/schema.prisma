@@ -124,6 +124,8 @@ enum MessageType {
   CREATE
   DELETE
   NEWMEMBER
+  LEAVE
+  BAN
   CLEAR
   SAVED
 }

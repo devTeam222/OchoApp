@@ -5,6 +5,7 @@ import { ChannelData, MessageData } from "@/lib/types";
 import { UsersRound } from "lucide-react";
 import { useSession } from "../SessionProvider";
 import GroupAvatar from "@/components/GroupAvatar";
+import { MessageType } from "@prisma/client";
 
 interface ChannelProps {
   channel: ChannelData;
@@ -32,8 +33,11 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
     createdAt: Date.now(),
   };
 
-  const messageType = messagePreview?.type;
+  let messageType: MessageType = messagePreview?.type;
   const isSender = messagePreview.sender?.id === loggedinUser.id;
+  const currentMember = channel.members.find(
+    (member) => member.userId === loggedinUser.id,
+  );
 
   const sender = isSender
     ? "Vous"
@@ -41,17 +45,33 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
       ? messagePreview.sender?.displayName.split(" ")[0]
       : otherUser?.displayName.split(" ")[0];
   const recipient = channel?.messages[0]?.recipient || null;
-  let newMemberMsg;
+  let newMemberMsg, oldMemberMsg;
 
   if (recipient && channel.isGroup) {
-    const newMemberName = recipient.displayName.split(" ")[0];
+    const memberName = recipient.displayName.split(" ")[0];
     // Check if message type is info of added member
     if (messageType === "NEWMEMBER") {
-      newMemberMsg = `Nouveau membre : ${newMemberName}`;
+      newMemberMsg = `Nouveau membre : ${memberName}`;
       if (channel?.messages[0].sender) {
         channel?.messages[0].sender.id === loggedinUser.id
-          ? (newMemberMsg = `Vous avez ajouté ${newMemberName} au groupe.`)
-          : (newMemberMsg = `${sender} ${recipient.id === loggedinUser.id ? "vous a ajouté" : `a ajouté ${newMemberName}`} au groupe.`);
+          ? (newMemberMsg = `Vous avez ajouté ${memberName} au groupe.`)
+          : (newMemberMsg = `${sender} ${recipient.id === loggedinUser.id ? "vous a ajouté" : `a ajouté ${memberName}`} au groupe.`);
+      }
+    }
+    if (messageType === "LEAVE") {
+      oldMemberMsg = `${memberName} a quitté le groupe`;
+      if (channel?.messages[0].sender) {
+        channel?.messages[0].sender.id === loggedinUser.id
+          ? (oldMemberMsg = `Vous avez retiré ${memberName} du groupe.`)
+          : (oldMemberMsg = `${sender} ${recipient.id === loggedinUser.id ? "vous a retiré" : `a retiré ${memberName}`} au groupe.`);
+      }
+    }
+    if (messageType === "BAN") {
+      oldMemberMsg = `${memberName} a été suspendu`;
+      if (channel?.messages[0].sender) {
+        channel?.messages[0].sender.id === loggedinUser.id
+          ? (oldMemberMsg = `Vous avez suspendu ${memberName} du groupe.`)
+          : (oldMemberMsg = `${sender} ${recipient.id === loggedinUser.id ? "vous a suspendu" : `a suspendu ${memberName}`} du groupe.`);
       }
     }
   }
@@ -66,9 +86,16 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
     DELETE: "Discussion supprimée",
     SAVED: "Envoyez-vous un message",
     NEWMEMBER: newMemberMsg,
+    LEAVE: oldMemberMsg,
+    BAN: oldMemberMsg,
   };
 
-  const messagePreviewContent = contentsTypes[messageType];
+  let messagePreviewContent = contentsTypes[messageType];
+
+  if (currentMember?.type === "OLD" || currentMember?.type === "BANNED") {
+    messagePreviewContent = "Vous ne faites plus parti de cette discussion";
+    messageType = "CLEAR";
+  }
 
   return (
     <li

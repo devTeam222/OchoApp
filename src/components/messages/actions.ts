@@ -3,7 +3,7 @@
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
 import { ChannelData, getChatChannelDataInclude, getMessageDataInclude, getUserDataSelect, MessageData, UserData } from "@/lib/types";
-import { addAdminSchema, addMemberSchema, createChannelSchema, createMessageSchema } from "@/lib/validation";
+import { addAdminSchema, addMemberSchema, createChannelSchema, createMessageSchema, removeMemberSchema } from "@/lib/validation";
 
 export async function submitMessage(input: {
   content: string;
@@ -368,6 +368,82 @@ export async function addAdmin(input: {
     },
     data: {
       type: channelMember.type === "ADMIN" ? "MEMBER" : "ADMIN"
+    }
+  })
+
+  return { newChannelMember };
+
+}
+export async function removeMember(input: {
+  channelId: string;
+  memberId: string;
+}) {
+  const { user } = await validateRequest();
+
+  if (!user) {
+    throw new Error("Action non autorisée");
+  }
+
+  
+  const { channelId, memberId } = removeMemberSchema.parse(input);
+  
+  const userId = memberId;
+
+  // Check if the user exist
+  const userExist = await prisma.user.findUnique({
+    where: {
+      id: memberId
+    }
+  });
+
+  // throw error if user is not found
+  if (!userExist) {
+    throw new Error("Utilisateur non trouvé");
+  }
+
+  const channel = await prisma.channel.findUnique({
+    where: {
+      id: channelId
+    }
+  })
+
+  if (!channel) {
+    throw new Error("La discussion n'existe pas");
+  }
+
+  if (!channel.isGroup) {
+    throw new Error("Cette discussion n'est pas un groupe");
+  }
+  
+  // check if the user is member of the channel
+  const channelMember = await prisma.channelMember.findUnique({
+    where: {
+      channelId_userId: {
+        channelId,
+        userId
+      }
+    }
+  });
+  // throw an error if user is not a member
+  if (!channelMember) {
+    throw new Error("L'utilisateur n'est plus membre de cette discussion");
+  }
+
+  // check if member type is not OLD or BANNED
+  if (channelMember.type === "OLD" || channelMember.type === "BANNED") {
+    throw new Error("Cet utilisateur ne fais plus parti de cette discussion ou e été banni");
+  };
+  // name admin by changing the type between ADMIN & MEMBER
+  const newChannelMember = await prisma.channelMember.update({
+    where: {
+      channelId_userId: {
+        channelId,
+        userId
+      }
+    },
+    data: {
+      type: "OLD",
+      leftAt: new Date(),
     }
   })
 

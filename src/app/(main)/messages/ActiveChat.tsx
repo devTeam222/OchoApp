@@ -44,7 +44,7 @@ export default function ActiveChat({
     queryKey: ["chat", channelId],
     queryFn: () => kyInstance.get(`/api/messages/${channelId}/chat-data`).json<ChannelData>(),
     initialData,  // Using initialData as the first cache data
-    staleTime: 1000 * 60 * 5, // Cache data for 5 minutes
+    staleTime: 1000 * 60 * 10, // Cache data for 10 minutes
   });
 
   if (isChannelError) {
@@ -71,19 +71,20 @@ export default function ActiveChat({
     });
   const { user: loggedUser } = useSession();
 
-  if (!loggedUser) {
-    return <p>Veuillez vous connecter pour accéder à vos discussions.</p>;
-  }
-
-  const messages = data?.pages.flatMap((page) => page?.messages) || [];
-
-  if (status === "error") {
+  if (status === "error" || !loggedUser) {
     toast({
       variant: "destructive",
       description: "Impossible de charger la conversation " + channelId,
     });
     onClose();
   }
+
+  const loggedMember = channel.members.find(member=> member.userId === loggedUser.id);
+  const isMember = !(loggedMember?.type === "OLD" || loggedMember?.type === "BANNED");
+  let message = "Vous ne pouvez pas envoyer de message";
+
+  const messages = data?.pages.flatMap((page) => page?.messages) || [];
+
 
   return (
     <div className="absolute flex h-full w-full flex-1 flex-col max-sm:bg-card/30">
@@ -136,7 +137,10 @@ export default function ActiveChat({
         </InfiniteScrollContainer>
       )}
       <div className="max-sm:bg-primary/10">
-        {!!channelId && <MessageForm channelId={channelId} />}
+      {!isMember ? (<p className="py-1.5 px-5 text-center text-sm select-none">
+        Vous ne pouvez plus envoyer de message. 
+        Car vous n'êtes plus membre de cette discussion
+      </p>) : (!!channelId && <MessageForm channelId={channelId} />)}
       </div>
     </div>
   );

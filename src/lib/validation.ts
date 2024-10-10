@@ -44,6 +44,10 @@ export const addAdminSchema = z.object({
   channelId: z.string(),
   member: z.string(),
 });
+export const removeMemberSchema = z.object({
+  channelId: z.string(),
+  memberId: z.string(),
+});
 export const saveMessageSchema = z.object({
   name: z.string().optional(),
   recipientId: z.string().optional(),

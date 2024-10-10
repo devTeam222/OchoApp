@@ -10,10 +10,12 @@ import { Button } from "../ui/button";
 import { CircleX, LogOut, ShieldBan, ShieldPlus, UserCircle2 } from "lucide-react";
 import React from "react";
 import AdminButton from "./AdminButton";
+import { MemberType } from "@prisma/client";
+import RemoveMemberDialog from "./RemoveMemberDialog";
 
 interface GroupUserPopover {
   user: UserData;
-  type: "MEMBER" | "ADMIN" | "OWNER" | "OLD" | "BANNED";
+  type: MemberType;
   channel: ChannelData;
 }
 
@@ -100,12 +102,7 @@ export default function GroupUserPopover({
               {(loggedMember?.type === "ADMIN" || loggedMember?.type === "OWNER") && type !== "OWNER" && (
                 <>
                 <AdminButton type={type} channel={channel} member={user.id}/>
-              <Button
-                variant="outline"
-                className="flex w-full justify-center gap-3"
-              >
-                <LogOut size={24} /> Ejecter le membre
-              </Button>
+              <RemoveMemberDialog memberId={user.id} channel={channel}/>
               <Button
                 variant="destructive"
                 className="flex w-full justify-center gap-3"

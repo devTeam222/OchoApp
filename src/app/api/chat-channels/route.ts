@@ -1,6 +1,12 @@
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
-import { ChannelsSection, getChatChannelDataInclude, ChannelData, getMessageDataInclude, MessageData } from "@/lib/types";
+import {
+  ChannelsSection,
+  getChatChannelDataInclude,
+  ChannelData,
+  getMessageDataInclude,
+  MessageData,
+} from "@/lib/types";
 import { createChannelSchema } from "@/lib/validation";
 import { NextRequest } from "next/server";
 import { getUserDataSelect } from "@/lib/types";
@@ -15,12 +21,12 @@ export async function GET(req: NextRequest) {
     if (!loggedInUser) {
       return Response.json({ error: "Action non autorisée" }, { status: 401 });
     }
-    
+
     const user = await prisma.user.findFirst({
       where: {
         id: loggedInUser.id,
       },
-      select: getUserDataSelect(loggedInUser.id)
+      select: getUserDataSelect(loggedInUser.id),
     });
 
     if (!user) {
@@ -28,33 +34,35 @@ export async function GET(req: NextRequest) {
     }
 
     // Condition pour paginer sur la date du dernier message (ou date de création si pas de message)
-    const lastMessageDateCondition = cursor ? {
-      OR: [
-        {
-          messages: {
-            some: {
-              createdAt: {
-                lt: new Date(cursor),
-              },
-            },
-          },
-        },
-        {
-          AND: [
+    const lastMessageDateCondition = cursor
+      ? {
+          OR: [
             {
               messages: {
-                none: {},
+                some: {
+                  createdAt: {
+                    lt: new Date(cursor),
+                  },
+                },
               },
             },
             {
-              createdAt: {
-                lt: new Date(cursor),
-              },
+              AND: [
+                {
+                  messages: {
+                    none: {},
+                  },
+                },
+                {
+                  createdAt: {
+                    lt: new Date(cursor),
+                  },
+                },
+              ],
             },
           ],
-        },
-      ],
-    } : undefined;
+        }
+      : undefined;
 
     // Récupérer les canaux dans lesquels l'utilisateur est membre avec leur dernier message
     const channels = await prisma.channel.findMany({
@@ -70,27 +78,54 @@ export async function GET(req: NextRequest) {
       take: pageSize + 1, // Récupérer une page supplémentaire pour déterminer s'il y a une page suivante
     });
 
+    // Récupérer le membre actuel dans la base de données
+    const updatedChannels = await Promise.all(
+      channels.map(async (channel) => {
+        const loggedMember = await prisma.channelMember.findUnique({
+          where: {
+            channelId_userId: {
+              channelId: channel.id,
+              userId: user.id,
+            },
+          },
+        });
+
+        const leftDate = loggedMember?.leftAt;
+
+        if (leftDate) {
+          // Filtrer les messages
+          channel.messages = channel.messages.filter(
+            (message) => message.createdAt < leftDate,
+          );
+        }
+
+        return channel;
+      }),
+    );
+
     // Trie les canaux par la date du dernier message (ou la date de création du canal s'il n'y a pas de message)
-    channels.sort((a, b) => {
+    updatedChannels.sort((a, b) => {
       const lastMessageA = a.messages[0]?.createdAt || a.createdAt;
       const lastMessageB = b.messages[0]?.createdAt || b.createdAt;
-      return new Date(lastMessageB).getTime() - new Date(lastMessageA).getTime();
+      return (
+        new Date(lastMessageB).getTime() - new Date(lastMessageA).getTime()
+      );
     });
 
     // Récupérer également les messages envoyés à soi-même sans canal
     const selfMessage: MessageData | null = await prisma.message.findFirst({
       where: {
         senderId: user.id,
-        type: "SAVED",  // Type de message sauvegardé
+        type: "SAVED", // Type de message sauvegardé
       },
       include: getMessageDataInclude(),
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     // Ajouter les messages envoyés à soi-même aux canaux
     if (selfMessage) {
       if (selfMessage.content !== `create-${user.id}`) {
-        selfMessage.type = "CONTENT"
+        selfMessage.type = "CONTENT";
       }
       const selfChannel: ChannelData | null = {
         id: `saved-${user.id}`,
@@ -100,7 +135,7 @@ export async function GET(req: NextRequest) {
           {
             user,
             userId: user.id,
-            type: "OWNER"
+            type: "OWNER",
           },
         ],
         maxMembers: 1,
@@ -109,24 +144,27 @@ export async function GET(req: NextRequest) {
         createdAt: selfMessage.createdAt,
       };
       if (selfChannel) {
-        channels.unshift(selfChannel);  // Ajouter ce canal fictif au début de la liste
+        channels.unshift(selfChannel); // Ajouter ce canal fictif au début de la liste
       }
     }
 
-    const nextCursor = channels.length > pageSize ? channels[pageSize].id : null;
+    const nextCursor =
+      channels.length > pageSize ? channels[pageSize].id : null;
 
     const data: ChannelsSection = {
-      channels: channels.slice(0, pageSize),
+      channels: updatedChannels.slice(0, pageSize),
       nextCursor,
     };
 
     return Response.json(data);
   } catch (error) {
     console.error(error);
-    return Response.json({ error: "Erreur interne du serveur" }, { status: 500 });
+    return Response.json(
+      { error: "Erreur interne du serveur" },
+      { status: 500 },
+    );
   }
 }
-
 
 export async function POST(req: Request) {
   try {
@@ -150,7 +188,7 @@ export async function POST(req: Request) {
     if (parsed.isGroup && members.length < 2) {
       return Response.json(
         { error: "Un groupe doit avoir au moins deux membres" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -161,7 +199,7 @@ export async function POST(req: Request) {
           isGroup: false,
           AND: [
             { members: { some: { userId: members[0] } } },
-            { members: { some: { userId: members[1] } } }
+            { members: { some: { userId: members[1] } } },
           ],
         },
         include: getChatChannelDataInclude(),
@@ -191,8 +229,8 @@ export async function POST(req: Request) {
       data: {
         content: "created",
         channelId: channel.id,
-        senderId: (channel.isGroup ? user.id : null),
-        type: "CREATE"
+        senderId: channel.isGroup ? user.id : null,
+        type: "CREATE",
       },
     });
 
@@ -201,8 +239,7 @@ export async function POST(req: Request) {
     console.error("Erreur lors de la création de la discussion:", error);
     return Response.json(
       { error: "Impossible de créer cette discussion" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 }
-
