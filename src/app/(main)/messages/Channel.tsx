@@ -33,13 +33,13 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
   };
 
   const messageType = messagePreview?.type;
+  const isSender = messagePreview.sender?.id === loggedinUser.id;
 
-  const sender =
-    messagePreview.sender?.id === loggedinUser.id
-      ? "Vous"
-      : channel.isGroup
-        ? messagePreview.sender?.displayName.split(" ")[0]
-        : otherUser?.displayName.split(" ")[0];
+  const sender = isSender
+    ? "Vous"
+    : channel.isGroup
+      ? messagePreview.sender?.displayName.split(" ")[0]
+      : otherUser?.displayName.split(" ")[0];
   const recipient = channel?.messages[0]?.recipient || null;
   let newMemberMsg;
 
@@ -55,12 +55,13 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
       }
     }
   }
+  const showUserPreview = channel.isGroup || isSender;
 
   const contentsTypes = {
     CREATE: channel.isGroup
       ? `${sender} ${messagePreview.sender?.id === loggedinUser.id ? "avez" : "a"} créé ce groupe`
       : `${otherUser?.displayName.split(" ")[0] || ""} peut maintenant discuter avec vous`,
-    CONTENT: `${sender || ""}: ${messagePreview.content.length > 50 ? messagePreview.content.slice(0, 50) : messagePreview.content}`,
+    CONTENT: `${showUserPreview ? sender || "" : ""}${showUserPreview ? ": " : ""}${messagePreview.content.length > 50 ? messagePreview.content.slice(0, 50) : messagePreview.content}`,
     CLEAR: "Historique non disponible",
     DELETE: "Discussion supprimée",
     SAVED: "Envoyez-vous un message",

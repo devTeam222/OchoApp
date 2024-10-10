@@ -55,7 +55,10 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
     (member) => member.userId === loggedUser.id,
   );
   // Get admins
-  const admins = channel.members.filter((member) => member.type === "ADMIN");
+  const admins = channel.members.filter(
+    (member) =>
+      member.type === "ADMIN" && member.userId !== loggedInUser?.userId,
+  );
   // Get owner
   const owner = [
     channel.members.find((member) => member.type === "OWNER"),
@@ -224,7 +227,7 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
 
                 {firstPage.map((member) => {
                   if (!member?.user) return null;
-                  const user: UserData = member.user
+                  const user: UserData = member.user;
                   return (
                     <GroupUserPopover
                       key={user.id}

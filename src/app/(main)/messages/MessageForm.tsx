@@ -7,6 +7,7 @@ import { useSubmitMessageMutation } from "@/components/messages/mutations";
 import "./style.css";
 import { useEffect, useState } from "react";
 import React from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface MessageFormProps {
   channelId: string;
@@ -14,6 +15,7 @@ interface MessageFormProps {
 
 export default function MessageForm({ channelId }: MessageFormProps) {
   const [isEditorReady, setEditorReady] = useState(false);
+  const queryClient = useQueryClient();
   const mutation = useSubmitMessageMutation();
 
   const editor = useEditor({
@@ -46,13 +48,16 @@ export default function MessageForm({ channelId }: MessageFormProps) {
       {
         onSuccess: () => {
           editor?.commands.clearContent();
+          const queryKey = ["chat-channels"];
+
+          queryClient.invalidateQueries({ queryKey });
         },
       },
     );
   }
 
   return (
-    <div className="flex p-3 gap-1">
+    <div className="flex gap-1 p-3">
       {isEditorReady ? (
         <>
           <EditorContent
@@ -66,11 +71,15 @@ export default function MessageForm({ channelId }: MessageFormProps) {
             onClick={onSubmit}
             className="p-2"
           >
-            {mutation.isPending ? <Loader2 className="animate-spin" /> : <Send />}
+            {mutation.isPending ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <Send />
+            )}
           </Button>
         </>
       ) : (
-        <div className="flex items-center justify-center w-full h-full">
+        <div className="flex h-full w-full items-center justify-center">
           <Loader2 className="animate-spin" />
         </div>
       )}
