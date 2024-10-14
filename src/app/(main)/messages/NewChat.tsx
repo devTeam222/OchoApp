@@ -370,7 +370,7 @@ export default function NewChat({ onClose, className }: NewChatProps) {
               onClick={() => handleChatStart()}
               disabled={isPending}
             >
-              {isPending ? <Check /> : <Loader2 className="animate-spin" />}
+              {!isPending ? <Check /> : <Loader2 className="animate-spin" />}
             </button>
           </ul>
         </div>

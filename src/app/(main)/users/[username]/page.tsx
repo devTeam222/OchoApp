@@ -13,7 +13,6 @@ import { cache } from "react";
 import UserPosts from "./UserPosts";
 import Linkify from "@/components/Linkify";
 import EditProfileButton from "./EditProfileButton";
-import { useSession } from "../../SessionProvider";
 
 interface PageProps {
   params: { username: string };
@@ -35,6 +34,22 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
   return user;
 });
 
+const getLoggedUser = cache(async (userId: string, loggedInUserId: string) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      id: {
+        equals: loggedInUserId,
+        mode: "insensitive",
+      },
+    },
+    select: getUserDataSelect(userId),
+  });
+
+  if (!user) notFound();
+
+  return user;
+});
+
 export async function generateMetadata({
   params: { username },
 }: PageProps): Promise<Metadata> {
@@ -49,7 +64,6 @@ export async function generateMetadata({
 
 export default async function page({ params: { username } }: PageProps) {
   const { user: loggedInUser } = await validateRequest();
-  console.log(loggedInUser);
 
   if (!loggedInUser)
     return (
@@ -60,6 +74,7 @@ export default async function page({ params: { username } }: PageProps) {
     );
 
   const user = await getUser(username, loggedInUser.id);
+  const loggedUserData = await getLoggedUser(user.id, loggedInUser.id);
 
   return (
     <main className="flex w-full min-w-0 gap-5 max-sm:p-4">
@@ -67,7 +82,7 @@ export default async function page({ params: { username } }: PageProps) {
         <UserProfile
           user={user}
           loggedInUserId={loggedInUser.id}
-          loggedInUser={loggedInUser}
+          loggedInUser={loggedUserData}
         />
         <div className="rounded-2xl bg-card p-5 shadow-sm">
           <h2 className="text-center text-2xl font-bold">Publications</h2>
@@ -95,12 +110,12 @@ async function UserProfile({
     isFollowedByUser: user.followers.some(
       ({ followerId }) => followerId === loggedInUserId,
     ),
+    isFolowing: loggedInUser.followers.some(
+      ({ followerId }) => followerId === user.id,
+    ),
     isFriend:
       user.followers.some(({ followerId }) => followerId === loggedInUserId) &&
-      loggedInUser?.followers &&
-      loggedInUser.followers.some(
-        ({ followerId }) => followerId === loggedInUserId,
-      ),
+      loggedInUser.followers.some(({ followerId }) => followerId === user.id),
   };
 
   return (

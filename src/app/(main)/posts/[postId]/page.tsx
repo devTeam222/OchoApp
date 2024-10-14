@@ -5,7 +5,7 @@ import Post from "@/components/posts/Post";
 import UserAvatar from "@/components/UserAvatar";
 import UserTooltip from "@/components/UserTooltip";
 import prisma from "@/lib/prisma";
-import { getPostDataIncludes, UserData } from "@/lib/types";
+import { getPostDataIncludes, getUserDataSelect, UserData } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -75,6 +75,18 @@ async function UserInfoSidebar({ user }: UserInfoSidebarProps) {
 
   if (!loggedInUser) return null;
 
+  const loggedInUserData = await prisma.user.findFirst({
+    where: {
+      id: {
+        equals: loggedInUser.id,
+        mode: "insensitive",
+      },
+    },
+    select: getUserDataSelect(user.id),
+  });
+
+  if (!loggedInUserData) return null;
+
   return (
     <div className="space-y-5 rounded-2xl bg-card p-5 shadow-sm">
       <h2 className="text-xl font-bold">A propos de {user.displayName}</h2>
@@ -107,6 +119,11 @@ async function UserInfoSidebar({ user }: UserInfoSidebarProps) {
             isFollowedByUser: user.followers.some(
               ({ followerId }) => followerId === loggedInUser.id,
             ),
+            isFolowing: loggedInUserData.followers.some(
+              ({ followerId }) => followerId === user.id,
+            ),
+            isFriend: user.followers.some(({ followerId }) => followerId === loggedInUser.id) &&
+            loggedInUserData.followers.some(({ followerId }) => followerId === user.id)
           }}
         />
       )}

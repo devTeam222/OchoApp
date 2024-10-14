@@ -33,18 +33,6 @@ export default function GroupUserPopover({
   const joinedAt: Date | null = member?.joinedAt ?? null;
   const leftAt: Date | null = member?.leftAt ?? null;
 
-  const followerState: FollowerInfo = {
-    followers: user._count.followers,
-    isFollowedByUser: !!user.followers.some(
-      ({ followerId }) => followerId === loggedInUser.id,
-    ),
-    isFriend:user.followers.some(
-      ({ followerId }) => followerId === loggedInUser.id,
-    ) && loggedInUser.followers.some(
-      ({ followerId }) => followerId === loggedInUser.id,
-    )
-  };
-
   const members = channel.members;
 
   //  get the loggedin user values in members
@@ -114,6 +102,7 @@ export default function GroupUserPopover({
               </p>
             )}
           </div>
+          <div className="flex gap-2">
           <MessageButton userId={user.id} />
           {user.id !== loggedInUser.id &&
             loggedMember?.type != "MEMBER" &&
@@ -132,6 +121,7 @@ export default function GroupUserPopover({
                 )}
               </>
             )}
+          </div>
           {!isMember && isLoggedAdmin && (
             <>
               {isBanned && (

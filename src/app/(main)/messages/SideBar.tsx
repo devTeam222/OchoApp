@@ -71,6 +71,7 @@ export default function SideBar({
         }
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channels, status, activeChannelId]);
 
   function handleChannelSelect(channel: ChannelData) {

@@ -39,6 +39,7 @@ export default function FollowButton({
           (previousState?.followers || 0) +
           (previousState?.isFollowedByUser ? -1 : 1),
         isFollowedByUser: !previousState?.isFollowedByUser,
+        isFolowing: !previousState?.isFolowing,
         isFriend: !previousState?.isFriend
       }));
 
@@ -54,9 +55,10 @@ export default function FollowButton({
     },
   });
 
-  const { isFriend } = data;
+  const { isFriend, isFolowing } = data;
 
-  const followingText = isFriend ? "Ami(e)" :"Suivi(e)"
+  const followingText = isFriend ? "Ami(e)" :"Suivi(e)";
+  const notFollowingText = isFolowing ? "Suivre en retour" : "Suivre"
 
   return (
     <Button
@@ -64,7 +66,7 @@ export default function FollowButton({
       title={data.isFollowedByUser ? "Ne plus suivre" : "Suivre"}
       onClick={() => mutate()}
     >
-      {data.isFollowedByUser ? followingText : "Suivre"}
+      {data.isFollowedByUser ? followingText : notFollowingText}
     </Button>
   );
 }

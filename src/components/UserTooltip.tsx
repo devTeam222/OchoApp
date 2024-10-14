@@ -30,6 +30,9 @@ export default function UserTooltip({ children, user }: UserTooltipProps) {
     isFollowedByUser: !!user.followers.some(
       ({ followerId }) => followerId === loggedInUser.id,
     ),
+    isFolowing: loggedInUser.followers.some(
+      ({ followerId }) => followerId === user.id,
+    ),
     isFriend:
       user.followers.some(({ followerId }) => followerId === loggedInUser.id) &&
       loggedInUser?.followers &&

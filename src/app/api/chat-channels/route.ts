@@ -136,7 +136,8 @@ export async function GET(req: NextRequest) {
             user,
             userId: user.id,
             type: "OWNER",
-            joinedAt: user.createdAt
+            joinedAt: user.createdAt,
+            leftAt: null,
           },
         ],
         maxMembers: 1,

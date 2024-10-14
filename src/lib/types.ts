@@ -235,6 +235,7 @@ export interface NotificationsPage {
 export interface FollowerInfo {
   followers: number;
   isFollowedByUser: boolean;
+  isFolowing: boolean;
   isFriend?: boolean;
 }
 

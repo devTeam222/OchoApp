@@ -25,6 +25,18 @@ async function WhoToFollow() {
   const { user } = await validateRequest();
   if (!user) return null;
 
+  const loggedInUserData = await prisma.user.findFirst({
+    where: {
+      id: {
+        equals: user.id,
+        mode: "insensitive",
+      },
+    },
+    select: getUserDataSelect(user.id),
+  });
+
+  if (!loggedInUserData) return null;
+
   const usersToFollow = await prisma.user.findMany({
     where: {
       NOT: {
@@ -72,6 +84,11 @@ async function WhoToFollow() {
                 isFollowedByUser: user.followers.some(
                   ({ followerId }) => followerId === user.id,
                 ),
+                isFolowing: loggedInUserData.followers.some(
+                  ({ followerId }) => followerId === user.id,
+                ),
+                isFriend: user.followers.some(({ followerId }) => followerId === loggedInUserData.id) &&
+                loggedInUserData.followers.some(({ followerId }) => followerId === user.id)
               }}
             />
           </div>
