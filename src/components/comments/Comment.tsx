@@ -46,7 +46,7 @@ export default function Comment({ comment }: CommentProps) {
                 </div>
               </UserTooltip>
               <span className="text-muted-foreground">
-                <Time time={comment.createdAt} />
+                <Time time={comment.createdAt} long/>
               </span>
             </div>
             {comment.user.id === user.id && (

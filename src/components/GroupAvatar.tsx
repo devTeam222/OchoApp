@@ -18,7 +18,7 @@ export default function GroupAvatar({
     const sizePx = size ?? 48;
     return (
       <div
-        className={`relative flex aspect-square h-fit min-h-fit w-fit min-w-fit items-center justify-center overflow-hidden rounded-full bg-muted`}
+        className={`relative flex aspect-square h-fit min-h-fit w-fit min-w-fit items-center justify-center overflow-hidden rounded-full bg-muted transition-all`}
       >
         <Image
           src={avatarPlaceholder}
@@ -41,7 +41,7 @@ export default function GroupAvatar({
       width={size ?? 48}
       height={size ?? 48}
       className={cn(
-        "aspect-square h-fit flex-none rounded-full bg-secondary object-cover",
+        "aspect-square h-fit flex-none rounded-full bg-secondary object-cover transition-all",
         className,
       )}
     />

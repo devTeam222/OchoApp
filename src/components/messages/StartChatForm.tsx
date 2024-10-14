@@ -59,12 +59,18 @@ export default function StartChatForm({ onChatStart }: StartChatFormProps) {
 
   const handleSubmit = () => {
     if(isSaved){
-      savedMsgsMutation.mutate();
+      savedMsgsMutation.mutate({}, { onSuccess: (data) => {
+        // Réinitialiser le formulaire
+        setSelectedUsers([]);
+        setQuery("");
+        setGroupName("");
+        onChatStart(data.newChannel);
+      },});
       return;
     }
     mutation.mutate(
       {
-        name: isGroup ? groupName : "",
+        name: isGroup ? groupName : null,
         isGroup,
         members: selectedUsers.map((user) => user.id),
       },

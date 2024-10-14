@@ -1,5 +1,7 @@
 import { ChannelData } from "@/lib/types";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useToast } from "../ui/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -8,31 +10,25 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import { Button } from "../ui/button";
-import { LogOut } from "lucide-react";
-import { useRemoveMemberMutation } from "./mutations";
-import { useQueryClient } from "@tanstack/react-query";
-import { useToast } from "../ui/use-toast";
+import { CircleX } from "lucide-react";
 import LoadingButton from "../LoadingButton";
+import { useBanMemberMutation } from "./mutations";
 
-interface RemoveMemberDialogProps {
+interface BanDialogProps {
   memberId: string;
   channel: ChannelData;
 }
 
-export default function RemoveMemberDialog({
-  memberId,
-  channel,
-}: RemoveMemberDialogProps) {
+export default function BanDialog({ memberId, channel }: BanDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
-
   const { toast } = useToast();
 
   function onClose() {
     setIsOpen(false);
   }
 
-  const mutation = useRemoveMemberMutation();
+  const mutation = useBanMemberMutation();
   const channelId = channel.id;
 
   const member = channel.members.find((member) => member.userId === memberId);
@@ -50,7 +46,7 @@ export default function RemoveMemberDialog({
           queryClient.invalidateQueries({ queryKey });
 
           toast({
-            description: `Vous avez retiré ${member?.user?.displayName || "un utilisateur"} de ${channel.name || "ce groupe"}`,
+            description: `Vous avez suspendu ${member?.user?.displayName || "un utilisateur"} de ${channel.name || "ce groupe"}`,
           });
           onClose();
         },
@@ -64,17 +60,21 @@ export default function RemoveMemberDialog({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="flex w-full justify-center gap-3">
-          <LogOut size={24} /> Retirer du groupe
+        <Button
+          variant="destructive"
+          className="flex w-full justify-center gap-3"
+        >
+          <CircleX size={24} /> Suspendre
         </Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogTitle>Supprimer un membre</DialogTitle>
+        <DialogTitle>Suspendre du groupe</DialogTitle>
         <p>
-          Vous êtes sur le point de supprimer{" "}
+          Vous êtes sur le point de suspendre{" "}
           {member?.user?.displayName || "un utilisateur"} de{" "}
           {channel.name || "ce groupe"}
         </p>
+        <p>Les autres administrateurs peuvent reintegrer le membre</p>
         <DialogFooter>
           <Button variant="secondary" onClick={onClose}>
             Annuler
@@ -84,7 +84,7 @@ export default function RemoveMemberDialog({
             variant="destructive"
             onClick={handleSubmit}
           >
-            Supprimer
+            Suspendre
           </LoadingButton>
         </DialogFooter>
       </DialogContent>

@@ -67,7 +67,7 @@ export default function MessageForm({ channelId }: MessageFormProps) {
           <Button
             variant="ghost"
             size="icon"
-            disabled={mutation.isPending}
+            disabled={mutation.isPending || !input.trim()}
             onClick={onSubmit}
             className="p-2"
           >

@@ -5,18 +5,36 @@ import { ChannelData, MessageData } from "@/lib/types";
 import { useSession } from "../SessionProvider";
 import Linkify from "@/components/Linkify";
 import { MessageType } from "@prisma/client";
+import { useQueryClient } from "@tanstack/react-query";
+import Time from "@/components/Time";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 type MessageProps = {
   message: MessageData;
   channel: ChannelData;
+  showTime?: boolean;
 };
 
-export default function Message({ message, channel }: MessageProps) {
+export default function Message({
+  message,
+  channel,
+  showTime = false,
+}: MessageProps) {
   const { user: loggedUser } = useSession();
+  const queryClient = useQueryClient();
+  const channelId = channel.id;
+  const [isChecked, setIsChecked] = useState(showTime);
+
+  const showDetail = isChecked || showTime;
+
+  function toggleCheck() {
+    setIsChecked(!isChecked);
+  }
 
   if (!loggedUser) {
     // Redirection ou message d'erreur si l'utilisateur n'est pas authentifié
-    return <p>Veuillez vous connecter pour accéder à vos discussions.</p>;
+    return null;
   }
   const otherUser =
     channel.id === `saved-${loggedUser.id}`
@@ -45,17 +63,17 @@ export default function Message({ message, channel }: MessageProps) {
       }
     }
     if (messageType === "LEAVE") {
-      oldMemberMsg = `${memberName} a quitté le groupe`;
-      if (channel?.messages[0].sender) {
-        channel?.messages[0].sender.id === loggedUser.id
+      oldMemberMsg = `${memberName} est parti`;
+      if (message?.sender) {
+        message.sender.id === loggedUser.id
           ? (oldMemberMsg = `Vous avez retiré ${memberName} du groupe.`)
-          : (oldMemberMsg = `${sender} ${recipient.id === loggedUser.id ? "vous a retiré" : `a retiré ${memberName}`} au groupe.`);
+          : (oldMemberMsg = `${sender} ${recipient.id === loggedUser.id ? "vous a retiré" : `a retiré ${memberName}`} du groupe.`);
       }
     }
     if (messageType === "BAN") {
       oldMemberMsg = `${memberName} a été suspendu`;
-      if (channel?.messages[0].sender) {
-        channel?.messages[0].sender.id === loggedUser.id
+      if (message?.sender) {
+        message.sender.id === loggedUser.id
           ? (oldMemberMsg = `Vous avez suspendu ${memberName} du groupe.`)
           : (oldMemberMsg = `${sender} ${recipient.id === loggedUser.id ? "vous a suspendu" : `a suspendu ${memberName}`} du groupe.`);
       }
@@ -77,40 +95,84 @@ export default function Message({ message, channel }: MessageProps) {
     BAN: oldMemberMsg,
   };
 
+  if (
+    (message.recipientId === loggedUser.id && message.type === "BAN") ||
+    message.type === "LEAVE"
+  ) {
+    const queryKey = ["chat", channelId];
+
+    queryClient.invalidateQueries({ queryKey });
+  }
+
+  const messageDate = new Date(message.createdAt);
+  const currentDate = new Date();
+  const timeDifferenceInDays = Math.floor(
+    (currentDate.getTime() - messageDate.getTime()) / (24 * 60 * 60 * 1000),
+  );
+
   const messageContent = contentsTypes[messageType];
   const content =
     messageType !== "CONTENT" ? (
-      <div
-        className={`sticky top-0 flex justify-center text-center text-sm text-primary ${messageType === "CREATE" ? "flex-1" : ""}`}
-      >
-        {messageContent}
+      <div className="relative flex w-full flex-col gap-2">
+        <div
+          className={cn(
+            "w-full select-none overflow-hidden rounded-sm text-center text-sm transition-all flex justify-center",
+            !showTime ? "h-0 opacity-0" : "h-6 opacity-100",
+          )}
+        >
+          <div className="p-0.5 px-2 rounded-sm bg-primary/30">
+            <Time time={message.createdAt} full />
+          </div>
+        </div>
+        <div
+          className={`top-0 flex select-none justify-center text-center text-sm text-primary ${messageType === "CREATE" ? "flex-1" : ""}`}
+        >
+          {messageContent}
+        </div>
       </div>
     ) : (
-      <div
-        className={`flex w-full gap-2 ${message.senderId === loggedUser.id ? "flex-row-reverse" : ""}`}
-      >
-        {message.senderId !== loggedUser.id && (
-          <span className="py-2">
-            <UserAvatar
-              avatarUrl={message.sender?.avatarUrl}
-              size={18}
-              className="flex-none"
-            />
-          </span>
-        )}
-        <div className={"relative w-fit max-w-[75%]"}>
-          {message.senderId !== loggedUser.id && (
-            <div className="ps-2 text-sm font-thin text-muted-foreground">
-              {message.sender?.displayName || "Utilisateur OchoApp"}
-            </div>
+      <div className="relative flex w-full flex-col gap-2">
+        <div
+          className={cn(
+            "w-full select-none overflow-hidden text-center text-sm transition-all  flex justify-center",
+            !showDetail ? "h-0 opacity-0" : "h-5 opacity-100",
+            showTime && "h-6",
           )}
-          <Linkify>
-            <p
-              className={`w-fit rounded-3xl px-4 py-2 *:font-bold ${message.senderId === loggedUser.id ? "bg-primary text-primary-foreground *:text-primary-foreground" : "bg-muted"}`}
-            >
-              {message.content}
-            </p>
-          </Linkify>
+        >
+          <div className={cn(showTime && "p-0.5 px-2 rounded-sm bg-primary/30")}>
+            <Time
+              time={message.createdAt}
+              full
+              relative={showTime && timeDifferenceInDays < 2}
+            />
+          </div>
+        </div>
+        <div
+          className={`flex w-full gap-2 ${message.senderId === loggedUser.id ? "flex-row-reverse" : ""}`}
+        >
+          {message.senderId !== loggedUser.id && (
+            <span className="py-2">
+              <UserAvatar
+                avatarUrl={message.sender?.avatarUrl}
+                size={18}
+                className="flex-none"
+              />
+            </span>
+          )}
+          <div className={"relative w-fit max-w-[75%]"} onClick={toggleCheck}>
+            {message.senderId !== loggedUser.id && (
+              <div className="ps-2 text-sm text-muted-foreground">
+                {message.sender?.displayName || "Utilisateur OchoApp"}
+              </div>
+            )}
+            <Linkify>
+              <p
+                className={`w-fit rounded-3xl px-4 py-2 *:font-bold ${message.senderId === loggedUser.id ? "bg-primary text-primary-foreground *:text-primary-foreground" : "bg-primary/10"}`}
+              >
+                {message.content}
+              </p>
+            </Linkify>
+          </div>
         </div>
       </div>
     );

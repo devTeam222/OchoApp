@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import kyInstance from "@/lib/ky";
-import { Loader2, SearchIcon } from "lucide-react";
+import { Loader2, SearchIcon, XIcon } from "lucide-react";
 import { ChannelData, UserData, UsersPage } from "@/lib/types";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { Input } from "../ui/input";
 import UserAvatar from "../UserAvatar";
 import { useAddMemberMutation } from "./mutations";
 import LoadingButton from "../LoadingButton";
 import { MemberType } from "@prisma/client";
+import UsersList from "./UsersList";
 
 interface AddMemberFormProps {
   onAdd: () => void;
@@ -20,26 +21,57 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
   const [query, setQuery] = useState<string>("");
   const [inputValue, setInputValue] = useState<string>("");
   const [selectedUsers, setSelectedUsers] = useState<UserData[]>([]);
+  const queryClient = useQueryClient();
 
   const mutation = useAddMemberMutation();
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
-    useInfiniteQuery({
-      queryKey: ["group", "users", "search", query],
-      queryFn: ({ pageParam }) =>
-        kyInstance
-          .get("/api/users/search", {
-            searchParams: {
-              q: query || "",
-              channelId: channel.id,
-              ...(pageParam ? { cursor: pageParam } : {}),
-            },
-          })
-          .json<UsersPage>(),
-      initialPageParam: null as string | null,
-      getNextPageParam: (lastPage) => lastPage.nextCursor,
-      gcTime: 0,
-    });
+  const addUser = (user: UserData) => {
+    if (!selectedUsers.find((selected) => selected.id === user.id)) {
+      setSelectedUsers([...selectedUsers, user]);
+    } else {
+      removeUser(user);
+    }
+  };
+
+  const removeUser = (user: UserData) => {
+    setSelectedUsers(
+      selectedUsers.filter((selected) => selected.id !== user.id),
+    );
+  };
+
+  const {
+    data,
+    fetchNextPage,
+    isFetching,
+    hasNextPage,
+    isFetchingNextPage,
+    status,
+  } = useInfiniteQuery({
+    queryKey: ["group", "users", "search", query],
+    queryFn: ({ pageParam }) =>
+      kyInstance
+        .get("/api/users/search", {
+          searchParams: {
+            q: query || "",
+            channelId: channel.id,
+            ...(pageParam ? { cursor: pageParam } : {}),
+          },
+        })
+        .json<UsersPage>(),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    gcTime: 0,
+    staleTime: Infinity,
+  });
+
+  const userQuery = {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    isFetchingNextPage,
+    status,
+  };
 
   const users = data?.pages?.flatMap((page) => page?.users) || [];
 
@@ -76,6 +108,7 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
               },
               userId: member.userId ?? "",
               type: "MEMBER" as MemberType, // Assurez-vous que "MEMBER" est bien une valeur valide pour MemberType
+              joinedAt: new Date(),
             }))
             .filter(
               (member) => !selectedUsers.some((u) => u.id === member.userId),
@@ -83,7 +116,9 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
 
           setSelectedUsers([]);
           setQuery("");
-          channel.members = [...channel.members, ...newMembers];
+          const queryKey = ["chat", channel.id];
+
+          queryClient.invalidateQueries({ queryKey });
           onAdd();
         },
       },
@@ -93,14 +128,37 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
   return (
     <div className="space-y-4">
       {!!selectedUsers.length && (
-        <LoadingButton
-          onClick={handleSubmit}
-          loading={mutation.isPending}
-          disabled={!selectedUsers.length}
-          className="w-full rounded-lg"
-        >
-          Ajouter {!!selectedUsers.length && ` (${selectedUsers.length})`}
-        </LoadingButton>
+        <>
+          <div className="animate-scale sticky top-0 flex w-full gap-2 overflow-y-auto p-3 px-4">
+            {selectedUsers.map((user, index) => (
+              <div
+                className="flex flex-col items-center gap-1"
+                key={index}
+                onClick={() => removeUser(user)}
+              >
+                <div className="animate-scale relative">
+                  <UserAvatar avatarUrl={user.avatarUrl} size={48} />
+                  <div className="absolute bottom-0 right-0 flex cursor-pointer items-center justify-center rounded-full bg-muted p-0.5 outline-2 outline-background">
+                    <XIcon size={15} />
+                  </div>
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  {user.displayName.split(" ")[0]}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="animate-scale sticky top-0 flex w-full gap-2 px-2">
+            <LoadingButton
+              onClick={handleSubmit}
+              loading={mutation.isPending}
+              disabled={!selectedUsers.length}
+              className="w-full rounded-lg"
+            >
+              Ajouter {!!selectedUsers.length && ` (${selectedUsers.length})`}
+            </LoadingButton>
+          </div>
+        </>
       )}
       <div>
         <form
@@ -148,41 +206,14 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
             </p>
           </div>
         )}
-        {status === "success" &&
-          users.map((user) => {
-            return (
-              <div
-                key={user.id}
-                className={`cursor-pointer rounded-2xl p-2 ${
-                  selectedUsers.some((u) => u.id === user.id)
-                    ? "bg-primary/10"
-                    : "bg-card shadow-sm hover:bg-primary/10"
-                }`}
-                onClick={() => handleUserSelect(user)}
-              >
-                <div className="flex items-center space-x-2">
-                  <UserAvatar avatarUrl={user.avatarUrl} size={32} />
-                  <div>
-                    <p>{user.displayName}</p>
-                    <p className="text-xs text-muted-foreground">
-                      @{user.username}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        {isFetchingNextPage && (
-          <Loader2 className="mx-auto my-3 animate-spin" />
-        )}
-        {!isFetchingNextPage && hasNextPage && (
-          <span
-            className="cursor-pointer text-primary hover:underline"
-            onClick={() => fetchNextPage()}
-          >
-            afficher plus
-          </span>
-        )}
+        <ul>
+        <UsersList
+          query={userQuery}
+          onSelect={addUser}
+          title="Utilisateurs disponibles"
+          selectedUsers={selectedUsers}
+        />
+        </ul>
       </div>
     </div>
   );

@@ -5,7 +5,6 @@ import {
   getMessageDataInclude,
   getUserDataSelect,
   MessageData,
-  MessagesSection,
 } from "@/lib/types";
 
 export async function GET(
@@ -47,6 +46,8 @@ export async function GET(
               user,
               userId,
               type: "OWNER",
+              joinedAt: user.createdAt,
+              leftAt: null,
             },
           ],
           maxMembers: 300,
@@ -66,6 +67,8 @@ export async function GET(
             user,
             userId,
             type: "OWNER",
+            joinedAt: user.createdAt,
+            leftAt: null,
           },
         ],
         maxMembers: 300,
@@ -110,14 +113,17 @@ export async function GET(
             user,
             userId: member.userId,
             type: member.type,
+            joinedAt: member.joinedAt,
+            leftAt: member.leftAt,
           };
         }),
       );
+      const messages: MessageData[] = []
       const members = membersToFilter.filter((member) => member !== null);
       const channel: ChannelData = {
         ...channelData,
         members,
-        messages: [] as MessageData[],
+        messages,
       };
       return Response.json(channel);
     }

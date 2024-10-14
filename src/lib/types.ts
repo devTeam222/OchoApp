@@ -62,6 +62,8 @@ export function getChatChannelDataInclude() {
           }
         },
         type: true,
+        joinedAt: true,
+        leftAt: true,
       },
     },
     messages: {
@@ -184,6 +186,10 @@ export interface PostsPage {
   posts: PostData[];
   nextCursor: string | null;
 }
+export interface UsersPage {
+  users: UserData[];
+  nextCursor: string | null;
+}
 
 export function getCommentDataIncludes(loggedInUserId: string) {
   return {
@@ -229,6 +235,7 @@ export interface NotificationsPage {
 export interface FollowerInfo {
   followers: number;
   isFollowedByUser: boolean;
+  isFriend?: boolean;
 }
 
 export interface LikeInfo {

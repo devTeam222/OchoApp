@@ -1,14 +1,24 @@
+import AppLogo from "@/components/AppLogo";
 import SearchField from "@/components/SearchField";
 import UserButton from "@/components/UserButton";
 import Link from "next/link";
 
-
 export default function Navbar() {
-    return <header className="sticky top-0 z-10  bg-card shadow-sm">
-        <nav className="max-w-7xl mx-auto flex items-center justify-center flex-wrap gap-5 px-5 py-3">
-            <Link href="/" className="text-2xl font-bold text-primary">OchoApp</Link>
-            <SearchField/>
-            <UserButton className="sm:ms-auto"/>
-        </nav>
+  return (
+    <header className="sticky top-0 z-10 bg-card shadow-sm">
+      <nav className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-3 px-5 py-3 max-sm:justify-between">
+        <Link
+          href="/"
+          className="text-2xl font-bold text-primary max-sm:hidden"
+        >
+          <AppLogo logo="TEXT" />
+        </Link>
+        <Link href="/" className="text-2xl font-bold text-primary sm:hidden">
+          <AppLogo logo="LOGO" size={70} />
+        </Link>
+        <SearchField />
+        <UserButton className="sm:ms-auto" />
+      </nav>
     </header>
-};
+  );
+}

@@ -13,6 +13,7 @@ import { cache } from "react";
 import UserPosts from "./UserPosts";
 import Linkify from "@/components/Linkify";
 import EditProfileButton from "./EditProfileButton";
+import { useSession } from "../../SessionProvider";
 
 interface PageProps {
   params: { username: string };
@@ -48,6 +49,8 @@ export async function generateMetadata({
 
 export default async function page({ params: { username } }: PageProps) {
   const { user: loggedInUser } = await validateRequest();
+  console.log(loggedInUser);
+
   if (!loggedInUser)
     return (
       <p className="text-destructive">
@@ -61,7 +64,11 @@ export default async function page({ params: { username } }: PageProps) {
   return (
     <main className="flex w-full min-w-0 gap-5 max-sm:p-4">
       <div className="w-full min-w-0 space-y-5">
-        <UserProfile user={user} loggedInUserId={loggedInUser.id} />
+        <UserProfile
+          user={user}
+          loggedInUserId={loggedInUser.id}
+          loggedInUser={loggedInUser}
+        />
         <div className="rounded-2xl bg-card p-5 shadow-sm">
           <h2 className="text-center text-2xl font-bold">Publications</h2>
         </div>
@@ -75,31 +82,42 @@ export default async function page({ params: { username } }: PageProps) {
 interface UserProfileProps {
   user: UserData;
   loggedInUserId: string;
+  loggedInUser: UserData;
 }
 
-async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
+async function UserProfile({
+  user,
+  loggedInUserId,
+  loggedInUser,
+}: UserProfileProps) {
   const followerInfo: FollowerInfo = {
     followers: user._count.followers,
     isFollowedByUser: user.followers.some(
       ({ followerId }) => followerId === loggedInUserId,
     ),
+    isFriend:
+      user.followers.some(({ followerId }) => followerId === loggedInUserId) &&
+      loggedInUser?.followers &&
+      loggedInUser.followers.some(
+        ({ followerId }) => followerId === loggedInUserId,
+      ),
   };
 
   return (
-    <div className="h-fit w-full rounded-2xl bg-card p-5 shadow-sm flex flex-col items-center gap-5">
+    <div className="flex h-fit w-full flex-col items-center gap-5 rounded-2xl bg-card p-5 shadow-sm">
       <UserAvatar
         avatarUrl={user.avatarUrl}
         size={250}
         className="mx-auto size-full max-h-60 max-w-60 rounded-full"
       />
-      <div className="flex flex-wrap gap-3 sm:flex-nowrap w-full">
+      <div className="flex w-full flex-wrap gap-3 sm:flex-nowrap">
         <div className="me-auto space-y-3">
           <div>
             <h1 className="text-3xl font-bold">{user.displayName}</h1>
             <div className="text-muted-foreground">@{user.username}</div>
           </div>
           <div>
-            Membre depuis <Time time={user.createdAt} />
+            Membre depuis <Time time={user.createdAt} long />
           </div>
           <div className="flex items-center gap-3">
             <span>
@@ -113,7 +131,7 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
           </div>
         </div>
         {user.id === loggedInUserId ? (
-          <EditProfileButton user={user}/>
+          <EditProfileButton user={user} />
         ) : (
           <FollowButton userId={user.id} initialState={followerInfo} />
         )}

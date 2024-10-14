@@ -3,7 +3,7 @@
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
 import { ChannelData, getChatChannelDataInclude, getMessageDataInclude, getUserDataSelect, MessageData, UserData } from "@/lib/types";
-import { addAdminSchema, addMemberSchema, createChannelSchema, createMessageSchema, removeMemberSchema } from "@/lib/validation";
+import { addAdminSchema, addMemberSchema, createChannelSchema, createMessageSchema, memberActionSchema } from "@/lib/validation";
 
 export async function submitMessage(input: {
   content: string;
@@ -385,9 +385,9 @@ export async function removeMember(input: {
   }
 
   
-  const { channelId, memberId } = removeMemberSchema.parse(input);
+  const { channelId, memberId } = memberActionSchema.parse(input);
   
-  const userId = memberId;
+  const userId = memberId || "";
 
   // Check if the user exist
   const userExist = await prisma.user.findUnique({
@@ -434,7 +434,7 @@ export async function removeMember(input: {
     throw new Error("Cet utilisateur ne fais plus parti de cette discussion ou e été banni");
   };
   // name admin by changing the type between ADMIN & MEMBER
-  const newChannelMember = await prisma.channelMember.update({
+  const oldMember = await prisma.channelMember.update({
     where: {
       channelId_userId: {
         channelId,
@@ -445,12 +445,316 @@ export async function removeMember(input: {
       type: "OLD",
       leftAt: new Date(),
     }
+  });
+  if(!oldMember){
+    throw new Error("Erreur lors de la suppression du membre");
+  }
+   // Send a message 
+   const removeMsg = await prisma.message.create({
+    data: {
+      content: "leave",
+      channelId,
+      type: "LEAVE",
+      senderId: user.id,
+      recipientId: memberId,
+    }
+  });
+  if(!removeMsg){
+    throw new Error("Erreur lors de la suppression du membre");
+  }
+}
+export async function banMember(input: {
+  channelId: string;
+  memberId: string;
+}) {
+  const { user } = await validateRequest();
+
+  if (!user) {
+    throw new Error("Action non autorisée");
+  }
+
+  
+  const { channelId, memberId } = memberActionSchema.parse(input);
+  
+  const userId = memberId || "";
+
+  // Check if the user exist
+  const userExist = await prisma.user.findUnique({
+    where: {
+      id: memberId
+    }
+  });
+
+  // throw error if user is not found
+  if (!userExist) {
+    throw new Error("Utilisateur non trouvé");
+  }
+
+  const channel = await prisma.channel.findUnique({
+    where: {
+      id: channelId
+    }
   })
 
-  return { newChannelMember };
+  if (!channel) {
+    throw new Error("La discussion n'existe pas");
+  }
 
+  if (!channel.isGroup) {
+    throw new Error("Cette discussion n'est pas un groupe");
+  }
+  
+  // check if the user is member of the channel
+  const channelMember = await prisma.channelMember.findUnique({
+    where: {
+      channelId_userId: {
+        channelId,
+        userId
+      }
+    }
+  });
+  // throw an error if user is not a member
+  if (!channelMember) {
+    throw new Error("L'utilisateur n'est plus membre de cette discussion");
+  }
+
+  // check if member type is not OLD or BANNED
+  if (channelMember.type === "OLD" || channelMember.type === "BANNED") {
+    throw new Error("Cet utilisateur ne fais plus parti de cette discussion ou e été banni");
+  };
+  // ban the member
+  const bannedMember = await prisma.channelMember.update({
+    where: {
+      channelId_userId: {
+        channelId,
+        userId
+      }
+    },
+    data: {
+      type: "BANNED",
+      leftAt: new Date(),
+    }
+  });
+  if(!bannedMember){
+    throw new Error("L'utilisateur n'a pas été banni");
+  }
+  // Send a message 
+  const banMsg = await prisma.message.create({
+    data: {
+      content: "ban",
+      channelId,
+      type: "BAN",
+      senderId: user.id,
+      recipientId: memberId,
+    }
+  });
+
+  if (!banMsg) {
+    throw new Error("Le message de bannissement n'a pas été envoyé");
+  }
 }
-export async function saveMessage() {
+
+export async function leaveGroup(input: { channelId: string, deleteGroup: boolean }) {
+  const { user } = await validateRequest();
+
+  if (!user) {
+    throw new Error("Action non autorisée");
+  }
+
+  const { channelId, deleteGroup } = memberActionSchema.parse(input);
+  const userId = user.id;
+
+  // Vérifier si le canal existe et que c'est bien un groupe
+  const channel = await prisma.channel.findUnique({
+    where: {
+      id: channelId,
+    },
+    include: {
+      members: true, // Inclure les membres du canal pour vérifier le statut
+    },
+  });
+
+  if (!channel) {
+    throw new Error("Le groupe n'existe pas");
+  }
+
+  if (!channel.isGroup) {
+    throw new Error("Cette discussion n'est pas un groupe");
+  }
+
+  // Vérifier si l'utilisateur est membre du groupe
+  const channelMember = await prisma.channelMember.findUnique({
+    where: {
+      channelId_userId: {
+        channelId,
+        userId,
+      },
+    },
+  });
+
+  if (!channelMember) {
+    throw new Error("Vous n'êtes plus membre de ce groupe");
+  }
+
+  // Si l'utilisateur est le propriétaire du groupe
+  if (channelMember.type === "OWNER") {
+    // Vérifier combien de membres sont encore dans le groupe
+    const remainingMembers = channel.members.filter(member => member.type !== "OLD" && member.type !== "BANNED");
+
+    // Si l'utilisateur est le seul membre restant
+    if (remainingMembers.length === 1) {
+      // Supprimer le groupe automatiquement
+      await prisma.channel.delete({
+        where: {
+          id: channelId,
+        },
+      });
+      return { message: "Le groupe a été supprimé car il n'y avait plus qu'un seul membre." };
+    }
+
+    if (deleteGroup) {
+      // Supprimer le groupe si l'utilisateur choisit cette option
+      await prisma.channel.delete({
+        where: {
+          id: channelId,
+        },
+      });
+      return { message: "Le groupe a été supprimé avec succès." };
+    } else {
+      // Nommer le membre le plus ancien comme propriétaire
+      const nextOwner = remainingMembers
+        .filter(member => member.userId !== userId)
+        .sort((a, b) => a.joinedAt.getTime() - b.joinedAt.getTime())[0];
+
+      if (!nextOwner) {
+        throw new Error("Aucun autre membre à nommer comme propriétaire.");
+      }
+
+      // Mettre à jour le type du nouveau propriétaire
+      await prisma.channelMember.update({
+        where: {
+          channelId_userId: {
+            channelId,
+            userId: nextOwner.userId as string,
+          },
+        },
+        data: {
+          type: "OWNER",
+        },
+      });
+    }
+  }
+
+  // Mettre à jour l'utilisateur pour indiquer qu'il a quitté le groupe
+  await prisma.channelMember.update({
+    where: {
+      channelId_userId: {
+        channelId,
+        userId,
+      },
+    },
+    data: {
+      type: "OLD",
+      leftAt: new Date(),
+    },
+  });
+
+  // Envoyer un message dans le groupe pour notifier le départ
+  await prisma.message.create({
+    data: {
+      content: "leave",
+      channelId,
+      type: "LEAVE",
+      recipientId: userId,
+    },
+  });
+
+  return { message: "Vous avez quitté le groupe avec succès." };
+}
+
+export async function restoreMember(input: {
+  channelId: string;
+  memberId: string;
+}) {
+  const { user } = await validateRequest();
+
+  if (!user) {
+    throw new Error("Action non autorisée");
+  }
+
+  
+  const { channelId, memberId } = memberActionSchema.parse(input);
+  
+  const userId = memberId || "";
+
+  // Check if the user exist
+  const userExist = await prisma.user.findUnique({
+    where: {
+      id: memberId
+    }
+  });
+
+  // throw error if user is not found
+  if (!userExist) {
+    throw new Error("Utilisateur non trouvé");
+  }
+
+  const channel = await prisma.channel.findUnique({
+    where: {
+      id: channelId
+    }
+  })
+
+  if (!channel) {
+    throw new Error("La discussion n'existe pas");
+  }
+
+  if (!channel.isGroup) {
+    throw new Error("Cette discussion n'est pas un groupe");
+  }
+  
+  // check if the user is member of the channel
+  const channelMember = await prisma.channelMember.findUnique({
+    where: {
+      channelId_userId: {
+        channelId,
+        userId
+      }
+    }
+  });
+  // throw an error if user is not a member
+  if (!channelMember) {
+    throw new Error("L'utilisateur n'est plus membre de cette discussion");
+  }
+
+  // Restore member
+  const newChannelMember = await prisma.channelMember.update({
+    where: {
+      channelId_userId: {
+        channelId,
+        userId
+      }
+    },
+    data: {
+      type: "MEMBER",
+      leftAt: null,
+    }
+  });
+  if (!newChannelMember) {
+    throw new Error("Erreur lors de la mise à jour du membre");
+  }
+  await prisma.message.create({
+    data: {
+      content: "add-" + userId,
+      senderId: user.id,
+      recipientId: userId,
+      type: "NEWMEMBER",
+      channelId,
+    },
+    include: getMessageDataInclude()
+  });
+}
+export async function saveMessage(input: {}) {
 
   const { user: loggedInUser } = await validateRequest();
 
@@ -510,7 +814,9 @@ export async function saveMessage() {
         {
           user,
           userId,
-          type: "OWNER"
+          type: "OWNER",
+          joinedAt: loggedInUser.createdAt,
+          leftAt: null
         },
       ],
       maxMembers: 300,
@@ -552,7 +858,9 @@ export async function saveMessage() {
       {
         user,
         userId,
-        type: "OWNER"
+        type: "OWNER",
+        joinedAt: loggedInUser.createdAt,
+        leftAt: null,
       },
     ],
     maxMembers: 300,

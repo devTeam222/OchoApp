@@ -136,6 +136,7 @@ export async function GET(req: NextRequest) {
             user,
             userId: user.id,
             type: "OWNER",
+            joinedAt: user.createdAt
           },
         ],
         maxMembers: 1,
@@ -144,7 +145,7 @@ export async function GET(req: NextRequest) {
         createdAt: selfMessage.createdAt,
       };
       if (selfChannel) {
-        channels.unshift(selfChannel); // Ajouter ce canal fictif au début de la liste
+        updatedChannels.unshift(selfChannel); // Ajouter ce canal fictif au début de la liste
       }
     }
 

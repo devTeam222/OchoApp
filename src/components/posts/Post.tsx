@@ -14,7 +14,7 @@ import Image from "next/image";
 import LikeButton from "./LikeButton";
 import BookmarkButton from "./BookmarkButton";
 import { useEffect, useRef, useState } from "react";
-import { Maximize2, MessageSquareMore, Minimize2, X } from "lucide-react";
+import { Maximize2, MessageSquare, Minimize2, X } from "lucide-react";
 import Comments from "../comments/Comments";
 import { Button } from "../ui/button";
 import {
@@ -63,7 +63,7 @@ export default function Post({ post }: PostProps) {
               className="block text-sm text-muted-foreground hover:underline"
               suppressHydrationWarning
             >
-              <Time time={post.createdAt} relative={relative} />
+              <Time time={post.createdAt} relative={relative} long/>
             </Link>
           </div>
         </div>
@@ -224,14 +224,14 @@ function MediaPreviews({ attachments }: MediaPreviewsProps) {
           )}
         >
           <div className="relative flex h-full w-full items-center justify-center">
-            <Carousel className="flex h-full items-center w-full">
+            <Carousel className="flex h-full items-center w-full *:w-full">
               <div
                 className="fixed h-full w-full"
                 onClick={() => setShowCarousel(false)}
               ></div>
               <CarouselContent className="h-full w-full">
                 {attachments.map((m, i) => (
-                  <CarouselItem key={m.id}>
+                  <CarouselItem key={m.id} className="w-full">
                     <div
                       className={cn(
                         "relative flex h-full w-full items-center justify-center",
@@ -419,7 +419,7 @@ function CommentButton({ comments, onClick }: CommentButtonProps) {
       onClick={onClick}
       className="flex items-center gap-2"
     >
-      <MessageSquareMore />
+      <MessageSquare />
       {!!comments && (
         <span className="text-sm font-medium tabular-nums">
           {comments}{" "}

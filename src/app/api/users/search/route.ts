@@ -1,6 +1,6 @@
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
-import { getUserDataSelect } from "@/lib/types";
+import { getUserDataSelect, UsersPage } from "@/lib/types";
 import { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
     }
 
     const nextCursor = users.length > pageSize ? users[pageSize]?.id : null;
-    const data = {
+    const data: UsersPage = {
       users: users.slice(0, pageSize),
       nextCursor,
     };

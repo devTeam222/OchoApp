@@ -30,7 +30,6 @@ export default function FollowButton({
         ? kyInstance.delete(`/api/users/${userId}/followers`)
         : kyInstance.post(`/api/users/${userId}/followers`),
     onMutate: async () => {
-
       await queryClient.cancelQueries({ queryKey });
 
       const previousState = queryClient.getQueryData<FollowerInfo>(queryKey);
@@ -40,19 +39,24 @@ export default function FollowButton({
           (previousState?.followers || 0) +
           (previousState?.isFollowedByUser ? -1 : 1),
         isFollowedByUser: !previousState?.isFollowedByUser,
+        isFriend: !previousState?.isFriend
       }));
 
       return { previousState };
     },
     onError(error, variable, context) {
-        queryClient.setQueryData(queryKey, context?.previousState)
-        console.error(error);
-        toast({
-            variant: "destructive",
-            description: "Quelque chose n'a pas marché. Veuillez réessayer."
-        })
+      queryClient.setQueryData(queryKey, context?.previousState);
+      console.error(error);
+      toast({
+        variant: "destructive",
+        description: "Quelque chose n'a pas marché. Veuillez réessayer.",
+      });
     },
   });
+
+  const { isFriend } = data;
+
+  const followingText = isFriend ? "Ami(e)" :"Suivi(e)"
 
   return (
     <Button
@@ -60,7 +64,7 @@ export default function FollowButton({
       title={data.isFollowedByUser ? "Ne plus suivre" : "Suivre"}
       onClick={() => mutate()}
     >
-      {data.isFollowedByUser ? "Suivi" : "Suivre"}
+      {data.isFollowedByUser ? followingText : "Suivre"}
     </Button>
   );
 }

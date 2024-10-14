@@ -1,17 +1,19 @@
 import Link from "next/link";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import UserAvatar from "../UserAvatar";
-import FollowButton from "../FollowButton";
 import { ChannelData, FollowerInfo, UserData } from "@/lib/types";
 import Linkify from "../Linkify";
 import { useSession } from "@/app/(main)/SessionProvider";
-import FollowerCount from "../FollowerCount";
-import { Button } from "../ui/button";
-import { CircleX, LogOut, ShieldBan, ShieldPlus, UserCircle2 } from "lucide-react";
+
+import { PlusCircle } from "lucide-react";
 import React from "react";
 import AdminButton from "./AdminButton";
 import { MemberType } from "@prisma/client";
 import RemoveMemberDialog from "./RemoveMemberDialog";
+import BanDialog from "./BanDialog";
+import RestoreMemberButton from "./RestoreMemberButton";
+import Time from "../Time";
+import MessageButton from "./MessageButton";
 
 interface GroupUserPopover {
   user: UserData;
@@ -25,13 +27,22 @@ export default function GroupUserPopover({
   channel,
 }: GroupUserPopover) {
   const { user: loggedInUser } = useSession();
-  const isMember = (type !== "OLD" && type !== "BANNED");
+  const isMember = type !== "OLD" && type !== "BANNED";
+  const member = channel.members.find((member) => member.userId === user.id);
+
+  const joinedAt: Date | null = member?.joinedAt ?? null;
+  const leftAt: Date | null = member?.leftAt ?? null;
 
   const followerState: FollowerInfo = {
     followers: user._count.followers,
     isFollowedByUser: !!user.followers.some(
       ({ followerId }) => followerId === loggedInUser.id,
     ),
+    isFriend:user.followers.some(
+      ({ followerId }) => followerId === loggedInUser.id,
+    ) && loggedInUser.followers.some(
+      ({ followerId }) => followerId === loggedInUser.id,
+    )
   };
 
   const members = channel.members;
@@ -40,6 +51,10 @@ export default function GroupUserPopover({
   const loggedMember = members.find(
     (member) => member.userId === loggedInUser.id,
   );
+  const isLoggedAdmin =
+    loggedMember?.type === "ADMIN" || loggedMember?.type === "OWNER";
+  const isBanned = type === "BANNED";
+  const isOld = type === "OLD";
 
   return (
     <Popover>
@@ -67,7 +82,7 @@ export default function GroupUserPopover({
         <div className="flex flex-col gap-3">
           <div>
             <div
-              className={`flex max-w-80 items-center" gap-3 break-words px-1 py-2.5 md:min-w-52`}
+              className={`flex max-w-80 items-center gap-3 break-words px-1 py-2.5 md:min-w-52`}
             >
               <div className={`flex items-center justify-center gap-2`}>
                 <Link href={`/users/${user.username}`}>
@@ -88,28 +103,46 @@ export default function GroupUserPopover({
                 <p className="line-clamp-4 whitespace-pre-line">{user.bio}</p>
               </Linkify>
             )}
+            {joinedAt && (
+              <p className="px-3 text-sm font-semibold text-muted-foreground">
+                Membre depuis <Time time={joinedAt} long />
+              </p>
+            )}
+            {joinedAt && leftAt && leftAt > joinedAt && (
+              <p className="px-3 text-sm font-semibold text-muted-foreground">
+                Est parti depuis <Time time={leftAt} long />
+              </p>
+            )}
           </div>
-          <Link href={`/users/${user.username}`}>
-            <Button
-              variant="outline"
-              className="flex w-full justify-center gap-3"
-            >
-              <UserCircle2 size={24} /> Afficher le profil
-            </Button>
-          </Link>
-          {user.id !== loggedInUser.id && loggedMember?.type != "MEMBER" && isMember &&  (
+          <MessageButton userId={user.id} />
+          {user.id !== loggedInUser.id &&
+            loggedMember?.type != "MEMBER" &&
+            isMember && (
+              <>
+                {isLoggedAdmin && type !== "OWNER" && (
+                  <>
+                    <AdminButton
+                      type={type}
+                      channel={channel}
+                      member={user.id}
+                    />
+                    <RemoveMemberDialog memberId={user.id} channel={channel} />
+                    <BanDialog memberId={user.id} channel={channel} />
+                  </>
+                )}
+              </>
+            )}
+          {!isMember && isLoggedAdmin && (
             <>
-              {(loggedMember?.type === "ADMIN" || loggedMember?.type === "OWNER") && type !== "OWNER" && (
-                <>
-                <AdminButton type={type} channel={channel} member={user.id}/>
-              <RemoveMemberDialog memberId={user.id} channel={channel}/>
-              <Button
-                variant="destructive"
-                className="flex w-full justify-center gap-3"
-              >
-                <CircleX size={24} /> Bannir le membre
-              </Button>
-                </>
+              {isBanned && (
+                <RestoreMemberButton memberId={user.id} channel={channel}>
+                  <PlusCircle size={24} /> Retirer la suspention
+                </RestoreMemberButton>
+              )}
+              {isOld && (
+                <RestoreMemberButton memberId={user.id} channel={channel}>
+                  <PlusCircle size={24} /> Reintegrer
+                </RestoreMemberButton>
               )}
             </>
           )}

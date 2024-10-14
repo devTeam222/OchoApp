@@ -2,10 +2,9 @@ import { ChannelData, UserData } from "@/lib/types";
 import { useSession } from "../SessionProvider";
 import GroupAvatar from "@/components/GroupAvatar";
 import UserAvatar from "@/components/UserAvatar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  LogOutIcon,
-  Trash2,
+  ArrowLeft,
   UserCircle2,
   UserRoundPlus,
   X,
@@ -16,6 +15,8 @@ import Time from "@/components/Time";
 import Link from "next/link";
 import AddMemberDialog from "@/components/messages/AddMemberDialog";
 import GroupUserPopover from "@/components/messages/GroupUserPopover";
+import { useActiveChannel } from "@/context/ActiveChatContext";
+import LeaveGroupDialog from "@/components/messages/LeaveGroupDialog";
 
 interface ChatHeaderProps {
   channel: ChannelData;
@@ -24,8 +25,13 @@ interface ChatHeaderProps {
 export default function ChatHeader({ channel }: ChatHeaderProps) {
   const [active, setActive] = useState(false);
   const [expandMembers, setExpandMembers] = useState(false);
+  const { activeChannelId } = useActiveChannel();
 
   const { user: loggedUser } = useSession();
+
+  useEffect(() => {
+    setActive(false);
+  }, [activeChannelId]);
 
   const otherUser =
     channel.members.length === 1 && channel.members[0].userId === loggedUser.id
@@ -50,19 +56,19 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
 
   const size = active ? 120 : 40;
 
-  // Get loggedInuser from members
-  const loggedInUser = channel.members.find(
+  // Get loggedinMember from members
+  const loggedinMember = channel.members.find(
     (member) => member.userId === loggedUser.id,
   );
   // Get admins
   const admins = channel.members.filter(
     (member) =>
-      member.type === "ADMIN" && member.userId !== loggedInUser?.userId,
+      member.type === "ADMIN" && member.userId !== loggedinMember?.userId,
   );
   // Get owner
   const owner = [
     channel.members.find((member) => member.type === "OWNER"),
-  ].filter((member) => member?.userId !== loggedInUser?.userId);
+  ].filter((member) => member?.userId !== loggedinMember?.userId);
   // Get members
   const members = channel.members.filter((member) => member.type !== "ADMIN");
 
@@ -80,7 +86,20 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
     (member) => member.type !== "OWNER",
   );
 
-  const allMembers = [loggedInUser, ...owner, ...admins, ...filteredMembers3];
+  const mergedMembers = [
+    loggedinMember,
+    ...owner,
+    ...admins,
+    ...filteredMembers3,
+  ];
+  const allMembers = mergedMembers
+    .filter((member) => member?.type !== "OLD")
+    .filter((member) => member?.type !== "BANNED");
+
+  const oldMembers = mergedMembers.filter((member) => member?.type === "OLD");
+  const bannedMembers = mergedMembers.filter(
+    (member) => member?.type === "BANNED",
+  );
 
   const firstPage = allMembers.slice(0, 10);
   const lastPage = allMembers.slice(10, allMembers.length);
@@ -91,12 +110,19 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
     >
       <div
         className={
-          "sticky inset-0 z-10 flex justify-end p-4 " +
+          "sticky inset-0 z-10 flex justify-between p-4 " +
           (!active ? "hidden" : "")
         }
       >
+        
         <div
-          className="cursor-pointer hover:text-red-500"
+          className="cursor-pointer sm:opacity-0 sm:pointer-events-none"
+          onClick={() => setActive(false)}
+        >
+          <ArrowLeft size={35} />
+        </div>
+        <div
+          className="cursor-pointer hover:text-red-500 max-sm:opacity-0 max-sm:pointer-events-none"
           onClick={() => setActive(false)}
         >
           <X size={35} />
@@ -110,7 +136,7 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
         )}
         <div
           className={`group/head flex flex-1 items-center gap-2 ${active ? "cursor-default flex-col p-3" : "cursor-pointer"}`}
-          onClick={() => setActive(true)}
+          onClick={() => !active && setActive(true)}
         >
           {channel.isGroup ? (
             <GroupAvatar
@@ -131,7 +157,7 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
             >
               {channel.isGroup ? (
                 <div>
-                  <span className="group-hover/head:hidden">{`${channel.members.length} membre${channel.members.length > 1 ? "s" : ""}`}</span>
+                  <span className="group-hover/head:hidden">{`${allMembers.length} membre${allMembers.length > 1 ? "s" : ""}`}</span>
                   <span className="hidden group-hover/head:inline">
                     {channel.members
                       .filter((member) => member.userId !== loggedUser.id)
@@ -147,7 +173,7 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
           {active && (
             <div className="text-muted-foreground">
               {channel.isGroup ? (
-                <span className="">{`Groupe • ${channel.members.length} membre${channel.members.length > 1 ? "s" : ""}`}</span>
+                <span className="">{`Groupe • ${allMembers.length} membre${allMembers.length > 1 ? "s" : ""}`}</span>
               ) : (
                 `@${otherUser?.username}`
               )}
@@ -157,17 +183,22 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
             <div className="flex w-full flex-col items-center gap-3">
               <div className="flex w-full justify-center">
                 {channel.isGroup ? (
-                  <AddMemberDialog channel={channel}>
-                    <Button
-                      variant="outline"
-                      className="flex h-fit flex-col gap-2"
-                    >
-                      <UserRoundPlus size={35} />
-                      <span>
-                        Ajouter <span className="max-sm:hidden">un membre</span>
-                      </span>
-                    </Button>
-                  </AddMemberDialog>
+                  <>
+                    {loggedinMember?.type !== "OLD" && (
+                      <AddMemberDialog channel={channel}>
+                        <Button
+                          variant="outline"
+                          className="flex h-fit flex-col gap-2"
+                        >
+                          <UserRoundPlus size={35} />
+                          <span>
+                            Ajouter{" "}
+                            <span className="max-sm:hidden">un membre</span>
+                          </span>
+                        </Button>
+                      </AddMemberDialog>
+                    )}
+                  </>
                 ) : (
                   <Link href={`/users/${otherUser?.username}`}>
                     <Button variant="outline" className="space-x-2">
@@ -190,13 +221,14 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
               <span className="text-muted-foreground">
                 {channel.isGroup ? (
                   <span>
-                    Créé <Time time={channel.createdAt} relative={!isWeekAgo} />
+                    Créé{" "}
+                    <Time time={channel.createdAt} relative={!isWeekAgo} long />
                   </span>
                 ) : (
                   <span>
                     Membre depuis{" "}
                     {!!otherUser?.createdAt && (
-                      <Time time={otherUser.createdAt} />
+                      <Time time={otherUser.createdAt} long />
                     )}
                   </span>
                 )}
@@ -206,31 +238,33 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
         </div>
         {active && (
           <div className="flex w-full flex-1 flex-col gap-3">
-            {channel.isGroup && (
+            {channel.isGroup && loggedinMember?.type !== "BANNED" && (
               <ul className="flex w-full flex-col py-3">
                 <li className="select-none px-4 text-xs font-bold text-muted-foreground">{`${allMembers.length} membres`}</li>
-                <AddMemberDialog channel={channel}>
-                  <li className="cursor-pointer p-4 active:bg-muted/30">
-                    <div className="flex items-center space-x-2">
-                      <div
-                        className={`relative flex aspect-square h-fit min-h-[35px] w-fit min-w-fit items-center justify-center overflow-hidden rounded-full bg-primary`}
-                      >
-                        <UserRoundPlus
-                          className="absolute flex items-center justify-center text-primary-foreground"
-                          size={35 - 16}
-                        />
+                {loggedinMember?.type !== "OLD" && (
+                  <AddMemberDialog channel={channel}>
+                    <li className="cursor-pointer p-4 active:bg-muted/30">
+                      <div className="flex items-center space-x-2">
+                        <div
+                          className={`relative flex aspect-square h-fit min-h-[35px] w-fit min-w-fit items-center justify-center overflow-hidden rounded-full bg-primary`}
+                        >
+                          <UserRoundPlus
+                            className="absolute flex items-center justify-center text-primary-foreground"
+                            size={35 - 16}
+                          />
+                        </div>
+                        <p>Ajouter des membres</p>
                       </div>
-                      <p>Ajouter des membres</p>
-                    </div>
-                  </li>
-                </AddMemberDialog>
+                    </li>
+                  </AddMemberDialog>
+                )}
 
-                {firstPage.map((member) => {
+                {firstPage.map((member, key) => {
                   if (!member?.user) return null;
                   const user: UserData = member.user;
                   return (
                     <GroupUserPopover
-                      key={user.id}
+                      key={key}
                       user={user}
                       type={member.type}
                       channel={channel}
@@ -238,38 +272,58 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                   );
                 })}
 
-                {!!lastPage.length &&
-                  expandMembers &&
-                  lastPage.map((member) => (
-                    <li
-                      key={member?.userId}
-                      className="cursor-pointer px-4 py-2 active:bg-muted/30"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <UserAvatar
-                          avatarUrl={member?.user?.avatarUrl}
-                          size={35}
+                <>
+                  {!!lastPage.length &&
+                    expandMembers &&
+                    lastPage.map((member, key) => {
+                      if (!member?.user) return null;
+                      const user: UserData = member.user;
+                      return (
+                        <GroupUserPopover
+                          key={key}
+                          user={user}
+                          type={member.type}
+                          channel={channel}
                         />
-                        <div className="flex-1 select-none">
-                          <p className="">
-                            {member?.userId === loggedInUser?.userId
-                              ? "Vous"
-                              : member?.user?.displayName}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            @{member?.user?.username}
-                          </p>
-                        </div>
-                        {member?.type !== "MEMBER" && (
-                          <span className="rounded bg-primary/30 p-[2px] text-xs">
-                            {member?.type === "ADMIN"
-                              ? "Admin du groupe"
-                              : "Proprietaire du groupe"}
-                          </span>
-                        )}
-                      </div>
-                    </li>
-                  ))}
+                      );
+                    })}
+                  {loggedinMember?.type !== "OLD" && !!oldMembers.length && (
+                    <>
+                      <li className="select-none px-4 text-xs font-bold text-muted-foreground">{`Anciens membres (${oldMembers.length})`}</li>
+                      {oldMembers.map((member, key) => {
+                        if (!member?.user) return null;
+                        const user: UserData = member.user;
+                        return (
+                          <GroupUserPopover
+                            key={key}
+                            user={user}
+                            type={member.type}
+                            channel={channel}
+                          />
+                        );
+                      })}
+                    </>
+                  )}
+                  {(loggedinMember?.type === "ADMIN" ||
+                    loggedinMember?.type === "OWNER") &&
+                    !!bannedMembers.length && (
+                      <>
+                        <li className="select-none px-4 text-xs font-bold text-destructive">{`Membres suspendus (${bannedMembers.length})`}</li>
+                        {bannedMembers.map((member, key) => {
+                          if (!member?.user) return null;
+                          const user: UserData = member.user;
+                          return (
+                            <GroupUserPopover
+                              key={key}
+                              user={user}
+                              type={member.type}
+                              channel={channel}
+                            />
+                          );
+                        })}
+                      </>
+                    )}
+                </>
 
                 {!!lastPage.length && !expandMembers && (
                   <li
@@ -292,36 +346,11 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                 )}
               </ul>
             )}
-            {channel.isGroup && (
+            {channel.isGroup && loggedinMember?.type !=="OLD" && loggedinMember?.type !=="BANNED" && (
               <ul className="flex w-full select-none flex-col py-3">
                 <li className="cursor-pointer p-4 text-red-500 active:bg-muted/30">
-                  <div className="flex items-center space-x-2">
-                    <div
-                      className={`relative flex aspect-square h-fit min-h-[35px] w-fit min-w-fit items-center justify-center overflow-hidden rounded-full bg-destructive`}
-                    >
-                      <LogOutIcon
-                        className="absolute flex items-center justify-center text-white"
-                        size={35 - 16}
-                      />
-                    </div>
-                    <p>Quitter le groupe</p>
-                  </div>
+                  <LeaveGroupDialog channel={channel}/>
                 </li>
-                {loggedInUser?.type === "OWNER" && (
-                  <li className="cursor-pointer p-4 text-red-500 active:bg-muted/30">
-                    <div className="flex items-center space-x-2">
-                      <div
-                        className={`relative flex aspect-square h-fit min-h-[35px] w-fit min-w-fit items-center justify-center overflow-hidden rounded-full bg-destructive`}
-                      >
-                        <Trash2
-                          className="absolute flex items-center justify-center text-white"
-                          size={35 - 16}
-                        />
-                      </div>
-                      <p>Supprimer le groupe</p>
-                    </div>
-                  </li>
-                )}
               </ul>
             )}
           </div>

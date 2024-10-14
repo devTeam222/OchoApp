@@ -1,8 +1,8 @@
 "use client"
 
-import { MenuBarContextType } from "@/lib/types";
+
 import { Session, User } from "lucia"
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext } from "react";
 
 
 interface SessionContext{

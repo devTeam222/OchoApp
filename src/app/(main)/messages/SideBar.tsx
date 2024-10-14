@@ -1,4 +1,3 @@
-
 import { ChannelData, ChannelsSection } from "@/lib/types";
 import Channel from "./Channel";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
@@ -9,11 +8,14 @@ import { useSession } from "../SessionProvider";
 import ChannelsLoadingSkeleton from "./ChannelsLoadingSkeleton";
 import { useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
+import { useActiveChannel } from "@/context/ActiveChatContext";
+import { SquarePen } from "lucide-react";
 
 interface SidebarProps {
   activeChannel: (channel: ChannelData) => void;
   selectedChannelId: string | null;
   onChannelSelect: (channelId: string) => void;
+  onNewChat: () => void;
   onCloseChat: () => void;
 }
 
@@ -21,9 +23,11 @@ export default function SideBar({
   activeChannel,
   selectedChannelId,
   onChannelSelect,
+  onNewChat,
   onCloseChat,
 }: SidebarProps) {
   const { user: loggedinUser } = useSession();
+  const { activeChannelId, setActiveChannelId } = useActiveChannel();
 
   const userId = loggedinUser.id;
 
@@ -39,56 +43,43 @@ export default function SideBar({
           .json<ChannelsSection>(),
       initialPageParam: null as string | null,
       getNextPageParam: (lastPage) => lastPage.nextCursor,
-      refetchInterval: !selectedChannelId ? 2000 : 45* 1000,
+      refetchInterval: !selectedChannelId ? 2000 : 45 * 1000,
+      staleTime: Infinity,
     });
   const channels = data?.pages.flatMap((page) => page.channels) || [];
 
-  const handleChatStart = async (newChannel: ChannelData) => {
-    // Vérifier si le canal existe déjà dans le cache
-    const existingChannel = channels.find(
-      (channel) => channel.id === newChannel.id,
-    );
-
-    if (existingChannel) {
-      // Si le canal existe, le sélectionner
-      onChannelSelect(existingChannel.id);
-      activeChannel(existingChannel);
-      return;
-    }
-
+  const handleChatStart = (newChannel: ChannelData) => {
     handleChannelSelect(newChannel);
   };
 
-  const saveActiveChannelId = (channelId: string | null) => {
-    if (channelId) {
-      localStorage.setItem("activeChannelId", channelId);
-    }
-  };
-
   useEffect(() => {
-    const savedChannelId = localStorage.getItem("activeChannelId");
-    if (savedChannelId && channels.length > 0) {
-      const activeChannel = channels.find(
-        (channel) => channel.id === savedChannelId,
-      );
-      if (activeChannel) {
-        handleChannelSelect(activeChannel);
-      } else {
-        toast({
-          variant: "destructive",
-          description:
-            "Impossible de charger la conversation " + savedChannelId,
-        });
+    if (status === "success") {
+      const savedChannelId = activeChannelId; // Récupérez l'ID du canal actif du contexte
+
+      if (savedChannelId && channels.length > 0) {
+        const activeChannel = channels.find(
+          (channel) => channel.id === savedChannelId,
+        );
+        if (activeChannel) {
+          handleChannelSelect(activeChannel);
+        } else {
+          toast({
+            variant: "destructive",
+            description:
+              "Impossible de charger la conversation " + savedChannelId,
+          });
+        }
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [channels]);
+  }, [channels, status, activeChannelId]);
 
   function handleChannelSelect(channel: ChannelData) {
+    onCloseChat();
     onChannelSelect(channel.id);
     activeChannel(channel);
-    saveActiveChannelId(channel.id);
+    setActiveChannelId(channel.id);
   }
+
   if (status === "success" && !channels.length) {
     onCloseChat();
   }
@@ -97,19 +88,18 @@ export default function SideBar({
     <div className="relative flex h-full flex-col">
       <div className="flex items-center justify-between p-4 text-lg font-bold max-sm:bg-primary/10">
         <span>Discussions</span>
-        <StartChatDialog
-          onChatStart={handleChatStart}
-          className="hover:text-primary"
-        />
+        <span className="cursor-pointer hover:text-primary" onClick={onNewChat}>
+          <SquarePen />
+        </span>
       </div>
       <InfiniteScrollContainer
-        className="relative flex flex-1 flex-col space-y-5 overflow-y-auto bg-card/30  sm:bg-background/50 max-w-full"
+        className="relative flex max-w-full flex-1 flex-col space-y-5 overflow-y-auto bg-card/30 sm:bg-background/50"
         onBottomReached={() =>
           hasNextPage && !isFetchingNextPage && fetchNextPage()
         }
       >
         {status === "success" && !channels.length && (
-          <p className="mx-auto flex w-full flex-1 select-none items-center px-3 text-center italic text-muted-foreground">
+          <p className="flex w-full flex-1 items-center px-3 py-8 text-center italic text-muted-foreground">
             Aucune discussion disponible
           </p>
         )}
@@ -127,19 +117,16 @@ export default function SideBar({
                 channel={channel}
                 active={selectedChannelId === channel.id}
                 onSelect={() => {
-                  onCloseChat();
-                  onChannelSelect(channel.id);
-                  activeChannel(channel);
+                  handleChannelSelect(channel);
                 }}
               />
             ))}
           </ul>
         )}
       </InfiniteScrollContainer>
-        <StartChatDialog
-          onChatStart={handleChatStart}
-          className="fixed bottom-16 right-7 aspect-square h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary max-sm:flex sm:hidden"
-        />
+      <div className="fixed bottom-16 right-7 aspect-square h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary max-sm:flex sm:hidden"  onClick={onNewChat}>
+        <SquarePen />
+      </div>
     </div>
   );
 }

@@ -41,7 +41,10 @@ export async function GET(
 
         const data: FollowerInfo = {
             followers: user._count.followers,
-            isFollowedByUser: !!user.followers.length
+            isFollowedByUser: !!user.followers.length,
+            isFriend: loggedInUser.followers.some(
+                ({followerId})=> followerId === userId
+            ) && user.followers.some(({followerId})=>followerId=== loggedInUser.id)
         }
         return Response.json(data)
         

@@ -3,13 +3,15 @@ export class TimeFormatter {
     private lang: string;
     private long: boolean;
     private time: Date;
+    private relative: boolean;
     private currentDate: Date;
 
     // Le constructeur accepte maintenant soit un nombre, soit une instance de Date
-    constructor(time: number | Date, lang: string = 'en-US', long: boolean = true, full: boolean = true) {
+    constructor(time: number | Date, lang: string = 'en-US', long: boolean = true, full: boolean = true, relative: boolean = false) {
         this.full = full;
         this.long = long;
         this.lang = lang;
+        this.relative = relative;
         this.currentDate = new Date();
 
         // Si 'time' est un nombre, on le traite comme un timestamp
@@ -28,6 +30,13 @@ export class TimeFormatter {
 
     private getDocumentLang(): string {
         return this.lang;
+    }
+
+    format(): string {
+        if(this.relative){
+            return this.formatRelativeTime();
+        }
+        return this.full ? this.formatFullTime() : this.formatTime();
     }
 
     formatTime(): string {
@@ -51,6 +60,10 @@ export class TimeFormatter {
                 : new Intl.DateTimeFormat(lang, yearOption).format(this.time);
 
         formattedTime = formattedTime[0].toUpperCase() + formattedTime.slice(1);
+
+        if (length === 'long' && lang.toLowerCase().startsWith("fr") && timeDifferenceInDays > 6) {
+            return `le ${formattedTime}`;
+        }
 
         return formattedTime;
     }
@@ -76,6 +89,10 @@ export class TimeFormatter {
                 : new Intl.DateTimeFormat(lang, yearOption).format(this.time);
 
         formattedTime = formattedTime[0].toUpperCase() + formattedTime.slice(1);
+
+        if (length === 'long' && lang.toLowerCase().startsWith("fr") && timeDifferenceInDays > 6) {
+            return `le ${formattedTime}`;
+        }
 
         return formattedTime;
     }

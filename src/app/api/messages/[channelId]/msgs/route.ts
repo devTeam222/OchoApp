@@ -104,6 +104,12 @@ export async function GET(
         messages = messages.filter((message) => message.createdAt < leftDate);
       }
     }
+    messages =  messages.map(message=>{
+      const formattedMsg: MessageData = {
+        ...message
+      } 
+      return formattedMsg
+    })
 
     const data: MessagesSection = {
       messages: messages.slice(0, pageSize),

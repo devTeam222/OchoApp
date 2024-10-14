@@ -7,28 +7,33 @@ interface TimeProps {
   time: Date;
   relative?: boolean;
   full?: boolean;
+  long?: boolean;
+  lowerCase?: boolean;
+  upperCase?: boolean;
 }
 
-export default function Time({ time, relative, full }: TimeProps) {
+export default function Time({
+  time,
+  relative,
+  full,
+  long = false,
+  lowerCase = false,
+  upperCase = false,
+}: TimeProps) {
   const [language, setLanguage] = useState<string>("fr-FR");
 
   useEffect(() => {
     setLanguage(navigator.language || "fr-FR");
   }, []);
 
-  const timeFormatter = new TimeFormatter(time, language, true, full);
+  const timeFormatter = new TimeFormatter(time, language, long, full, relative);
+  const formatTime = timeFormatter.format();
 
-  const formattedTime = relative
-    ? timeFormatter.formatRelativeTime()
-    : timeFormatter.formatTime();
+  const formattedTime = !(lowerCase || upperCase)
+    ? formatTime
+    : lowerCase
+      ? formatTime.toLowerCase()
+      : formatTime.toUpperCase();
 
-  const oneMonthAgo = new Date(time.getTime() - 30 * 24 * 60 * 60 * 1000);
-  const isOneMonthAgo = oneMonthAgo.getTime() >= new Date().getTime();
-
-  return (
-    <time>
-      {!relative && isOneMonthAgo && language.startsWith("fr") ? "le " : ""}
-      {formattedTime}
-    </time>
-  );
+  return <time>{formattedTime}</time>;
 }
