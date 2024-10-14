@@ -5,7 +5,7 @@ import { ChannelData, FollowerInfo, UserData } from "@/lib/types";
 import Linkify from "../Linkify";
 import { useSession } from "@/app/(main)/SessionProvider";
 
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, UserCircle2 } from "lucide-react";
 import React from "react";
 import AdminButton from "./AdminButton";
 import { MemberType } from "@prisma/client";
@@ -14,6 +14,7 @@ import BanDialog from "./BanDialog";
 import RestoreMemberButton from "./RestoreMemberButton";
 import Time from "../Time";
 import MessageButton from "./MessageButton";
+import { Button } from "../ui/button";
 
 interface GroupUserPopover {
   user: UserData;
@@ -102,8 +103,14 @@ export default function GroupUserPopover({
               </p>
             )}
           </div>
-          <div className="flex gap-2">
-          <MessageButton userId={user.id} />
+          <div className="grid grid-cols-2 gap-2">
+            <Link href={`/users/${user.username}`}>
+              <Button variant="secondary" className="w-full">
+                <UserCircle2 /> Profil
+              </Button>
+            </Link>
+            <MessageButton userId={user.id}/>
+          </div>
           {user.id !== loggedInUser.id &&
             loggedMember?.type != "MEMBER" &&
             isMember && (
@@ -121,7 +128,6 @@ export default function GroupUserPopover({
                 )}
               </>
             )}
-          </div>
           {!isMember && isLoggedAdmin && (
             <>
               {isBanned && (
