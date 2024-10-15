@@ -100,7 +100,6 @@ export default function GroupUserPopover({
             {joinedAt && leftAt && leftAt > joinedAt && (
               <p className="px-3 text-sm font-semibold text-muted-foreground">
                 Est parti depuis <Time time={leftAt} long />
-                
               </p>
             )}
           </div>
