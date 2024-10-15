@@ -4,8 +4,11 @@ import { InfiniteData, QueryFilters, useMutation, useQueryClient } from "@tansta
 import { useRouter } from "next/navigation";
 import { updateUserProfile } from "./actions";
 import { PostsPage } from "@/lib/types";
+import { useUploadThing } from "@/lib/uploadthing";
 
-async function uploadAvatar(file: File) {
+async function UploadAvatar(file: File) {
+    const {startUpload: startAvatarUpload} = useUploadThing("avatar");
+
     const formData = new FormData();
     formData.append('file', file);
 
@@ -15,7 +18,13 @@ async function uploadAvatar(file: File) {
     });
 
     if (!response.ok) {
-        throw new Error('Failed to upload avatar');
+        const avatarData = await startAvatarUpload([file]);
+        if (!avatarData || !avatarData[0]) {
+            throw new Error('Failed to upload avatar');
+        }
+
+        const avatarUrl = avatarData[0].url
+        return avatarUrl
     }
 
     const data = await response.json();
@@ -32,9 +41,9 @@ export function useUpdateProfileMutation() {
             const [updatedUser, avatarUrl] = await Promise.all([
                 updateUserProfile({
                     ...values,
-                    avatarUrl: avatar ? await uploadAvatar(avatar) : undefined
+                    avatarUrl: avatar ? await UploadAvatar(avatar) : undefined
                 }),
-                avatar ? uploadAvatar(avatar) : Promise.resolve(undefined),
+                avatar ? UploadAvatar(avatar) : Promise.resolve(undefined),
             ]);
 
             return { updatedUser, avatarUrl };
