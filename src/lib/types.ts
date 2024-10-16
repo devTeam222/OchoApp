@@ -257,3 +257,15 @@ export type SaveMessageResponse = {
   userId: string;
   createInfo?: MessageData;
 };
+
+export type LocalUpload = {
+  url: string; 
+  name: string | null; 
+  appUrl: string; 
+  type: string | null;
+  size: number;
+  serverData: {
+    avatarUrl?: string;
+    mediaId?: string;
+  }
+}

@@ -3,12 +3,10 @@ import { UpdateUserProfileValues } from "@/lib/validation";
 import { InfiniteData, QueryFilters, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { updateUserProfile } from "./actions";
-import { PostsPage } from "@/lib/types";
+import { LocalUpload, PostsPage } from "@/lib/types";
 import { useUploadThing } from "@/lib/uploadthing";
 
-async function UploadAvatar(file: File) {
-    const {startUpload: startAvatarUpload} = useUploadThing("avatar");
-
+async function uploadAvatar(file: File) {
     const formData = new FormData();
     formData.append('file', file);
 
@@ -16,44 +14,49 @@ async function UploadAvatar(file: File) {
         method: 'POST',
         body: formData,
     });
-
-    if (!response.ok) {
-        const avatarData = await startAvatarUpload([file]);
-        if (!avatarData || !avatarData[0]) {
-            throw new Error('Failed to upload avatar');
-        }
-
-        const avatarUrl = avatarData[0].url
-        return avatarUrl
+    if(!response.ok){
+        return null
     }
 
-    const data = await response.json();
-    return data.fileUrl;
+    const data: Promise<LocalUpload[]> = response.json();
+    return data;
 }
 
 export function useUpdateProfileMutation() {
+
     const { toast } = useToast();
+    const {startUpload: startAvatarUpload} = useUploadThing("avatar", {
+        onClientUploadComplete(res) {
+            console.log(res);
+        },
+    })
+
     const router = useRouter();
     const queryClient = useQueryClient();
 
+    async function upload(avatar: File) {
+        const uploadResult = await uploadAvatar(avatar);
+        if(!uploadResult){
+            const utUpload = startAvatarUpload([avatar]);
+            
+            return utUpload
+        }
+        return uploadResult;
+    }
+
     const mutation = useMutation({
         mutationFn: async ({ values, avatar }: { values: UpdateUserProfileValues, avatar?: File }) => {
-            const [updatedUser, avatarUrl] = await Promise.all([
-                updateUserProfile({
-                    ...values,
-                    avatarUrl: avatar ? await UploadAvatar(avatar) : undefined
-                }),
-                avatar ? UploadAvatar(avatar) : Promise.resolve(undefined),
+            return Promise.all([
+                updateUserProfile(values),
+                avatar ? upload(avatar) : Promise.resolve(undefined),
             ]);
-
-            return { updatedUser, avatarUrl };
         },
-        onSuccess: async ({ updatedUser, avatarUrl }) => {
-            const newAvatarUrl = avatarUrl ?? updatedUser.avatarUrl;
+        onSuccess: async ([updatedUser, uploadResult]) => {
+            const newAvatarUrl = uploadResult?.[0].serverData.avatarUrl
 
             const queryFilter: QueryFilters = {
                 queryKey: ["post-feed"]
-            };
+            }
 
             await queryClient.cancelQueries(queryFilter);
 
@@ -71,21 +74,21 @@ export function useUpdateProfileMutation() {
                                         ...post,
                                         user: {
                                             ...updatedUser,
-                                            avatarUrl: newAvatarUrl
+                                            avatarUrl: newAvatarUrl || updatedUser.avatarUrl
                                         }
-                                    };
+                                    }
                                 }
-                                return post;
+                                return post
                             })
                         }))
-                    };
+                    }
                 }
             );
             router.refresh();
 
             toast({
-                description: "Votre profil a été mis à jour avec succès"
-            });
+                description: "Votre profil a été mis à jour avec succèss"
+            })
         },
         onError: (error) => {
             console.error(error);

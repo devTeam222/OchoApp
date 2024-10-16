@@ -34,10 +34,7 @@ export async function GET(req: Request) {
         unusedMedia.forEach(media => {
             let filePath: string;
 
-            if (media.url.includes("/uploads/avatars/")) {
-                // If it's an avatar
-                filePath = path.join(avatarDir, media.url.split("/uploads/avatars/")[1]);
-            } else if (media.url.includes("/uploads/attachments/")) {
+            if (media.url.includes("/uploads/attachments/")) {
                 // If it's an attachment
                 filePath = path.join(attachmentDir, media.url.split("/uploads/attachments/")[1]);
             } else {
