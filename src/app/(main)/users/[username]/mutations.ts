@@ -5,21 +5,17 @@ import { useRouter } from "next/navigation";
 import { updateUserProfile } from "./actions";
 import { LocalUpload, PostsPage } from "@/lib/types";
 import { useUploadThing } from "@/lib/uploadthing";
+import kyInstance from "@/lib/ky";
 
-async function uploadAvatar(file: File) {
+async function uploadAvatar(file: File): Promise<LocalUpload[] | null> {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch('/api/upload/avatar', {
-        method: 'POST',
+    const response = await kyInstance.post('/api/upload/avatar', {
         body: formData,
-    });
+    }).json<LocalUpload[] | null>();
     
-    const data: Promise<LocalUpload[] | undefined> = response.json();
-    if(!data){
-        return null
-    }
-    return data;
+    return response;
 }
 
 export function useUpdateProfileMutation() {
@@ -36,7 +32,7 @@ export function useUpdateProfileMutation() {
 
     async function upload(avatar: File) {
         const uploadResult = await uploadAvatar(avatar);
-        if(!uploadResult && !uploadResult?.[0]){
+        if(!uploadResult?.[0]){
             const utUpload = startAvatarUpload([avatar]);
             
             return utUpload
