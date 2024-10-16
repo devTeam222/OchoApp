@@ -36,7 +36,7 @@ export function useUpdateProfileMutation() {
 
     async function upload(avatar: File) {
         const uploadResult = await uploadAvatar(avatar);
-        if(!uploadResult){
+        if(!uploadResult && !uploadResult?.[0]){
             const utUpload = startAvatarUpload([avatar]);
             
             return utUpload
