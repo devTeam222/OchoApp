@@ -14,11 +14,11 @@ async function uploadAvatar(file: File) {
         method: 'POST',
         body: formData,
     });
-    if(!response.ok){
+    
+    const data: Promise<LocalUpload[] | undefined> = response.json();
+    if(!data){
         return null
     }
-
-    const data: Promise<LocalUpload[]> = response.json();
     return data;
 }
 
