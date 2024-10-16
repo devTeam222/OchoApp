@@ -13,6 +13,10 @@ async function uploadAvatar(file: File): Promise<LocalUpload[] | null> {
 
     const response = await kyInstance.post('/api/upload/avatar', {
         body: formData,
+        onDownloadProgress(progress, chunk) {
+            console.log(progress, chunk);
+        },
+        throwHttpErrors: false,
     }).json<LocalUpload[] | null>();
 
     if (!response?.[0].serverData?.avatarUrl) {
