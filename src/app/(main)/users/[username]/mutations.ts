@@ -8,22 +8,22 @@ import { useUploadThing } from "@/lib/uploadthing";
 import kyInstance from "@/lib/ky";
 
 async function uploadAvatar(file: File): Promise<LocalUpload[] | null> {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const response = await kyInstance.post('/api/upload/avatar', {
-        body: formData,
-        onDownloadProgress(progress, chunk) {
-            console.log(progress, chunk);
-        },
-        throwHttpErrors: false,
-    }).json<LocalUpload[] | null>();
-
-    if (!response?.[0].serverData?.avatarUrl) {
-        return null
-    }
+    return new Promise<LocalUpload[] | null>(async (resolve, reject) => {
+        const formData = new FormData();
+        formData.append('file', file);
     
-    return response;
+        const response = await kyInstance.post('/api/upload/avatar', {
+            body: formData,
+            throwHttpErrors: false,
+        }).json<LocalUpload[] | null>();
+    
+        if (!response?.[0]?.serverData?.avatarUrl) {
+            resolve(null)
+        }
+        
+        return resolve(response);
+        
+    })
 }
 
 export function useUpdateProfileMutation() {
@@ -40,6 +40,8 @@ export function useUpdateProfileMutation() {
 
     async function upload(avatar: File) {
         const uploadResult = await uploadAvatar(avatar);
+        console.log(uploadResult);
+        
         if(!uploadResult?.[0]){
             const utUpload = startAvatarUpload([avatar]);
             
@@ -56,7 +58,7 @@ export function useUpdateProfileMutation() {
             ]);
         },
         onSuccess: async ([updatedUser, uploadResult]) => {
-            const newAvatarUrl = uploadResult?.[0].serverData.avatarUrl
+            const newAvatarUrl = uploadResult?.[0]?.serverData.avatarUrl
 
             const queryFilter: QueryFilters = {
                 queryKey: ["post-feed"]
