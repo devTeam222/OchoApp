@@ -14,6 +14,10 @@ async function uploadAvatar(file: File): Promise<LocalUpload[] | null> {
     const response = await kyInstance.post('/api/upload/avatar', {
         body: formData,
     }).json<LocalUpload[] | null>();
+
+    if (!response?.[0].serverData?.avatarUrl) {
+        return null
+    }
     
     return response;
 }
