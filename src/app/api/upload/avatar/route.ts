@@ -8,7 +8,6 @@ import { LocalUpload } from "@/lib/types";
 import prisma from "@/lib/prisma";
 import { validateRequest } from "@/auth";
 import { UTApi } from "uploadthing/server";
-import { error } from "console";
 
 const uploadDir = path.resolve("data/uploads/avatars");
 
