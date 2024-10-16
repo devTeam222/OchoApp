@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
       { status: 403 },
     );
   }
+
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
@@ -38,7 +39,10 @@ export async function POST(request: NextRequest) {
 
     // Enregistrer le fichier localement
     const buffer = Buffer.from(await file.arrayBuffer());
-    await fs.promises.writeFile(filepath, buffer);
+    await fs.promises.writeFile(filepath, buffer).catch((err) => {
+      console.error("Erreur lors de la création du fichier:", err);
+      throw new Error("Erreur lors de l'enregistrement du fichier");
+    });
 
     // Retourner l'URL relative pour accéder au fichier
     const url = `/api/uploads/avatars/${filename}`;
@@ -47,38 +51,40 @@ export async function POST(request: NextRequest) {
     const size = file.size;
     const type = "image/webp";
 
+    // Suppression de l'ancien avatar
     const oldAvatarUrl = user.avatarUrl;
     if (oldAvatarUrl) {
-      const isOnLocalServer = user.avatarUrl?.startsWith(
-        "/api/uploads/avatars/",
-      );
-
-      if (oldAvatarUrl && isOnLocalServer && user.avatarUrl) {
-        const filePath = path.join(
+      const isOnLocalServer = oldAvatarUrl.startsWith("/api/uploads/avatars/");
+      if (isOnLocalServer) {
+        const oldFilePath = path.join(
           uploadDir,
-          user.avatarUrl?.split("/uploads/avatars/")[1],
+          oldAvatarUrl.split("/uploads/avatars/")[1],
         );
-        try {
-          if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      }
 
-      if (oldAvatarUrl && !isOnLocalServer) {
+        if (fs.existsSync(oldFilePath)) {
+          try {
+            fs.unlinkSync(oldFilePath);
+          } catch (err) {
+            console.error("Erreur lors de la suppression de l'ancien avatar:", err);
+          }
+        }
+      } else {
         const key = oldAvatarUrl.split(
           `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
         )[1];
-
-        await new UTApi().deleteFiles(key);
+        await new UTApi().deleteFiles(key).catch((err) => {
+          console.error("Erreur lors de la suppression du fichier distant:", err);
+        });
       }
     }
 
+    // Mettre à jour l'URL de l'avatar dans la base de données
     await prisma.user.update({
       where: { id: user.id },
       data: { avatarUrl: url },
+    }).catch((err) => {
+      console.error("Erreur lors de la mise à jour de l'avatar dans la base de données:", err);
+      throw new Error("Erreur lors de la mise à jour de l'avatar");
     });
 
     return NextResponse.json<LocalUpload[]>([
@@ -94,7 +100,7 @@ export async function POST(request: NextRequest) {
       },
     ]);
   } catch (error) {
-    console.error("Error uploading file:", error);
+    console.error("Erreur générale:", error);
     return NextResponse.json({ error: "File upload failed" }, { status: 500 });
   }
 }
