@@ -9,6 +9,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import Time from "@/components/Time";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import GroupUserPopover from "@/components/messages/GroupUserPopover";
+import UserTooltip from "@/components/UserTooltip";
 
 type MessageProps = {
   message: MessageData;
@@ -50,6 +52,10 @@ export default function Message({
       : otherUser?.user?.displayName.split(" ")[0];
   const recipient = message.recipient;
   let newMemberMsg, oldMemberMsg;
+
+  const senderMember = channel.members.find(
+    (member) => member.userId === message.sender?.id,
+  );
 
   if (recipient && channel.isGroup) {
     const memberName = recipient.displayName.split(" ")[0];
@@ -116,11 +122,11 @@ export default function Message({
       <div className="relative flex w-full flex-col gap-2">
         <div
           className={cn(
-            "w-full select-none overflow-hidden rounded-sm text-center text-sm transition-all flex justify-center",
+            "flex w-full select-none justify-center overflow-hidden rounded-sm text-center text-sm transition-all",
             !showTime ? "h-0 opacity-0" : "h-6 opacity-100",
           )}
         >
-          <div className="p-0.5 px-2 rounded-sm bg-primary/30">
+          <div className="rounded-sm bg-primary/30 p-0.5 px-2">
             <Time time={message.createdAt} full />
           </div>
         </div>
@@ -134,12 +140,14 @@ export default function Message({
       <div className="relative flex w-full flex-col gap-2">
         <div
           className={cn(
-            "w-full select-none overflow-hidden text-center text-sm transition-all  flex justify-center",
+            "flex w-full select-none justify-center overflow-hidden text-center text-sm transition-all",
             !showDetail ? "h-0 opacity-0" : "h-5 opacity-100",
             showTime && "h-6",
           )}
         >
-          <div className={cn(showTime && "p-0.5 px-2 rounded-sm bg-primary/30")}>
+          <div
+            className={cn(showTime && "rounded-sm bg-primary/30 p-0.5 px-2")}
+          >
             <Time
               time={message.createdAt}
               full
@@ -152,11 +160,23 @@ export default function Message({
         >
           {message.senderId !== loggedUser.id && (
             <span className="py-2">
-              <UserAvatar
-                avatarUrl={message.sender?.avatarUrl}
-                size={18}
-                className="flex-none"
-              />
+              {senderMember?.user ? (
+                <UserTooltip
+                  user={senderMember.user}
+                >
+                  <UserAvatar
+                    avatarUrl={message.sender?.avatarUrl}
+                    size={20}
+                    className="flex-none"
+                  />
+                </UserTooltip>
+              ) : (
+                <UserAvatar
+                  avatarUrl={message.sender?.avatarUrl}
+                  size={20}
+                  className="flex-none"
+                />
+              )}
             </span>
           )}
           <div className={"relative w-fit max-w-[75%]"} onClick={toggleCheck}>

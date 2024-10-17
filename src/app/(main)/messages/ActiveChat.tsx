@@ -149,7 +149,9 @@ export default function ActiveChat({
             );
           })}
         {isFetchingNextPage && (
-          <Loader2 className="mx-auto my-3 animate-spin" />
+          <div className="w-full flex justify-center">
+            <Loader2 className="mx-auto my-3 animate-spin" />
+          </div>
         )}
       </InfiniteScrollContainer>
 

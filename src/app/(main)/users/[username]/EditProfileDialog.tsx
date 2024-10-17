@@ -31,6 +31,7 @@ import avatarPlaceholder from "@/assets/avatar-placeholder.png";
 import { Camera } from "lucide-react";
 import CropImageDialog from "@/components/CropImageDialog";
 import Resizer from "react-image-file-resizer";
+import UserAvatar from "@/components/UserAvatar";
 
 interface EditProfileDialogProps {
   user: UserData;
@@ -85,7 +86,7 @@ export default function EditProfileDialog({
             src={
               croppedAvatar
                 ? URL.createObjectURL(croppedAvatar)
-                : user.avatarUrl || avatarPlaceholder
+                : user.avatarUrl
             }
             onImageCropped={setCroppedAvatar}
           />
@@ -135,7 +136,7 @@ export default function EditProfileDialog({
 }
 
 interface AvatarInputProps {
-  src: string | StaticImageData;
+  src: string | StaticImageData | null;
   onImageCropped: (blob: Blob | null) => void;
 }
 
@@ -175,13 +176,7 @@ function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
         className="group relative block"
         title="Cliquez pour selectioner une image"
       >
-        <Image
-          src={src}
-          alt="Avatar preview"
-          width={150}
-          height={150}
-          className="size-32 flex-none rounded-full object-cover"
-        />
+        <UserAvatar avatarUrl={src} size={150} className="flex-none" />
         <span className="absolute inset-0 m-auto flex size-12 items-center justify-center rounded-full bg-black bg-opacity-30 text-white transition-colors duration-200 group-hover:bg-opacity-25">
           <Camera size={24} />
         </span>

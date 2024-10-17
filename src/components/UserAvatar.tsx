@@ -1,10 +1,10 @@
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 import avatarPlaceholder from "@/assets/avatar-placeholder.png";
 import { cn } from "@/lib/utils";
 import { UserRound } from "lucide-react";
 
 interface UserAvatarProps {
-  avatarUrl: string | null | undefined;
+  avatarUrl: string | StaticImageData | null | undefined;
   size?: number;
   className?: string;
 }

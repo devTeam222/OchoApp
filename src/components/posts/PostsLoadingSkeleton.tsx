@@ -20,7 +20,16 @@ function PostLoadingSkeleton() {
           <Skeleton className="h-4 w-20 rounded" />
         </div>
       </div>
-          <Skeleton className="h-16 rounded" />
+          <Skeleton className="h-6 w-72 rounded" />
+          <Skeleton className="h-6 w-52 rounded" />
+      <div className="grid grid-cols-2 gap-2">
+          <Skeleton className="aspect-square rounded-2xl" />
+          <Skeleton className="aspect-square rounded-2xl" />
+      </div>
+      <div className="flex justify-between">
+        <Skeleton className="h-6 w-12 rounded" />
+        <Skeleton className="h-6 w-6 rounded" />
+      </div>
     </div>
   );
 }

@@ -6,7 +6,7 @@ import Linkify from "../Linkify";
 import { useSession } from "@/app/(main)/SessionProvider";
 
 import { PlusCircle, UserCircle2 } from "lucide-react";
-import React from "react";
+import React, { PropsWithChildren } from "react";
 import AdminButton from "./AdminButton";
 import { MemberType } from "@prisma/client";
 import RemoveMemberDialog from "./RemoveMemberDialog";
@@ -16,7 +16,7 @@ import Time from "../Time";
 import MessageButton from "./MessageButton";
 import { Button } from "../ui/button";
 
-interface GroupUserPopover {
+interface GroupUserPopover extends PropsWithChildren {
   user: UserData;
   type: MemberType;
   channel: ChannelData;
@@ -26,6 +26,7 @@ export default function GroupUserPopover({
   user,
   type,
   channel,
+  children,
 }: GroupUserPopover) {
   const { user: loggedInUser } = useSession();
   const isMember = type !== "OLD" && type !== "BANNED";
@@ -48,6 +49,7 @@ export default function GroupUserPopover({
   return (
     <Popover>
       <PopoverTrigger asChild className="cursor-pointer">
+        {children ?? (
         <li className="cursor-pointer px-4 py-2 active:bg-muted/30">
           <div className="flex items-center space-x-2">
             <UserAvatar avatarUrl={user?.avatarUrl} size={35} />
@@ -66,6 +68,7 @@ export default function GroupUserPopover({
             )}
           </div>
         </li>
+        )}
       </PopoverTrigger>
       <PopoverContent>
         <div className="flex flex-col gap-3">
