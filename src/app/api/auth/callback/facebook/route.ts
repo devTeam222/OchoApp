@@ -1,40 +1,33 @@
-"use server"
+"use server";
 
 import { facebook, lucia } from "@/auth";
 import kyInstance from "@/lib/ky";
 import prisma from "@/lib/prisma";
+import { LocalUpload } from "@/lib/types";
 import { slugify } from "@/lib/utils";
 import { OAuth2RequestError } from "arctic";
 import { generateIdFromEntropySize } from "lucia";
 import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
-import fs from "fs/promises";
-import path from "path";
-import { useUploadThing } from "@/lib/uploadthing";
 
 export async function GET(req: NextRequest) {
     const code = req.nextUrl.searchParams.get("code");
-    const {startUpload} = useUploadThing("avatar")
 
     if (!code) {
         return new Response(null, { status: 400 });
     }
 
     try {
-        const { accessToken, accessTokenExpiresAt } = await facebook.validateAuthorizationCode(code);
+        const { accessToken } = await facebook.validateAuthorizationCode(code);
 
         const facebookUser = await kyInstance
             .get(`https://graph.facebook.com/me?access_token=${accessToken}&fields=id,name,picture`)
             .json<{
                 id: string;
                 name: string;
-                email: string;
                 picture: {
                     data: {
                         url: string;
-                        height: number;
-                        is_silhouette: boolean;
-                        width: number;
                     };
                 };
             }>();
@@ -92,50 +85,25 @@ export async function GET(req: NextRequest) {
         const avatarResponse = await kyInstance.get(facebookUser.picture.data.url);
         const avatarBlob = await avatarResponse.blob();
 
-        // Étape 2: Convertir l'image en WebP avec Canvas
-        const imageBitmap = await createImageBitmap(avatarBlob);
-        const canvas = new OffscreenCanvas(500, 500); // Canvas de 500x500 pixels
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-            ctx.drawImage(imageBitmap, 0, 0, 500, 500);
-        }
+        // Fonction pour uploader l'avatar via fetch
+        async function uploadAvatar(blob: Blob): Promise<string | null> {
+            const file = new File([blob], `avatar-${userId}.webp`, { type: "image/webp" });
+            const formData = new FormData();
+            formData.append("file", file);
 
-        // Convertir le canvas en Blob (format WebP)
-        const webpAvatarBlob = await canvas.convertToBlob({ type: "image/webp", quality: 0.9 });
+            const response = await kyInstance.post('/api/upload/avatar', {
+                body: formData,
+                throwHttpErrors: false,
+            }).json<LocalUpload[] | null>();
 
-        // Fonction d'upload local
-        async function uploadAvatarLocally(webpBlob: Blob): Promise<string | null> {
-            const avatarFilename = `avatar-${userId}.webp`;
-            const avatarPath = path.join(process.cwd(), "data/uploads/avatars", avatarFilename);
-            const arrayBuffer = await webpBlob.arrayBuffer();
-            const uint8Array = new Uint8Array(arrayBuffer);
-            
-            try {
-                await fs.mkdir(path.dirname(avatarPath), { recursive: true });
-                await fs.writeFile(avatarPath, uint8Array);
-                return `/api/uploads/avatars/${avatarFilename}`; // Chemin de l'avatar local
-            } catch (error) {
-                console.error("Local upload failed", error);
-                return null;
+            if (!response?.[0]?.serverData?.avatarUrl) {
+                return (null)
             }
+            const result = response[0].appUrl
+            return result;
         }
 
-        // Fonction d'upload avec Uploadthing
-        async function uploadAvatarWithUploadthing(webpBlob: File): Promise<string | null> {
-            const uploadResult = await startUpload([webpBlob]);
-            if (!uploadResult || !uploadResult[0]) {
-                return null;
-            }
-            return uploadResult[0].appUrl
-        }
-        const webpAvatarFile = new File([webpAvatarBlob], `avatar-${userId}.webp`, { type: "image/webp" });
-
-        // Tentative d'upload local, puis fallback avec Uploadthing
-        const avatarUrl = await uploadAvatarLocally(webpAvatarBlob) || await uploadAvatarWithUploadthing(webpAvatarFile);
-
-        if (!avatarUrl) {
-            return new Response("Upload failed", { status: 500 });
-        }
+        const avatarUrl = await uploadAvatar(avatarBlob);
 
         // Enregistrement de l'utilisateur dans la base de données
         await prisma.user.create({
@@ -167,5 +135,3 @@ export async function GET(req: NextRequest) {
         return new Response(null, { status: 500 });
     }
 }
-
-
