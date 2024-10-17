@@ -57,7 +57,7 @@ export default async function Page({ params: { postId } }: PageProps) {
       <div className="w-full min-w-0 space-y-5">
         <Post post={post} />
       </div>
-      <div className="sticky top-[5.25rem] hidden h-fit w-80 flex-none lg:block">
+      <div className="sticky top-0 hidden h-fit w-80 flex-none lg:block">
         <Suspense fallback={<Loader2 className="mx-auto my-3 animate-spin" />}>
           <UserInfoSidebar user={post.user} />
         </Suspense>
