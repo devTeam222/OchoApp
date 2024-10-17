@@ -10,7 +10,7 @@ import "./styles.css";
 import { useSubmitPostMutation } from "./mutations";
 import LoadingButton from "@/components/LoadingButton";
 import useMediaUpload, { Attachment } from "./useMediaUpload";
-import { ClipboardEvent, useRef } from "react";
+import { ClipboardEvent, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ImageIcon, Loader2, XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,7 @@ import Image from "next/image";
 import { useDropzone } from "@uploadthing/react";
 
 export default function PostEditor() {
+  const [clear, setClear] = useState(false);
   const { user } = useSession();
   const mutation = useSubmitPostMutation();
   const {
@@ -58,6 +59,8 @@ export default function PostEditor() {
         onSuccess: () => {
           editor?.commands.clearContent();
           resetMediaUpload();
+          setClear(true);
+          setTimeout(() => setClear(false), 100);
         },
       },
     );
@@ -99,6 +102,7 @@ export default function PostEditor() {
         <AddAttachmentButton
           onFilesSelected={startUpload}
           disabled={isUploading || attachments.length >= 5}
+          clear={clear}
         />
         <LoadingButton
           onClick={onSubmit}
@@ -116,13 +120,21 @@ export default function PostEditor() {
 interface AddAttachmentButtonProps {
   onFilesSelected: (files: File[]) => void;
   disabled: boolean;
+  clear: boolean;
 }
 
 function AddAttachmentButton({
   onFilesSelected,
   disabled,
+  clear,
 }: AddAttachmentButtonProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Clear the input on clear change
+  useEffect(() => {
+    if (clear) {
+      fileInputRef.current!.value = "";
+    }
+  }, [clear]);
 
   return (
     <>
@@ -194,9 +206,7 @@ function AttachmentPreview({
   const src = URL.createObjectURL(file);
 
   return (
-    <div
-      className={cn("relative mx-auto size-fit")}
-    >
+    <div className={cn("relative mx-auto size-fit overflow-hidden")}>
       {file.type.startsWith("image") ? (
         <Image
           src={src}
@@ -219,16 +229,21 @@ function AttachmentPreview({
           <XIcon size={20} />
         </button>
       )}
-      {isUploading && progress && (
-        <div className="absolute inset-0 w-full h-full select-none">
+      {!!(isUploading && progress) && (
+        <div className="absolute inset-0 h-full w-full select-none">
           <div
-            className={`absolute left-0 top-0 h-full w-full flex items-center rounded bg-background/80 px-2 py-1 text-center text-xl`}
+            className={`absolute left-0 top-0 flex h-full w-full items-center rounded bg-background/80 px-2 py-1 text-center text-xl`}
           ></div>
-          <div className="absolute left-[50%] top-0 flex h-full w-full translate-x-[-50%] items-center justify-center rounded text-center text-[2rem] font-bold text-foreground z-10">
+          <div className="absolute left-[50%] top-0 z-10 flex h-full w-full translate-x-[-50%] items-center justify-center rounded text-center text-[2rem] font-bold text-foreground">
             {progress}%
           </div>
         </div>
       )}
+      <div className="pointer-events-none absolute inset-0 p-1">
+        <p className="h-fit w-fit max-w-full select-none overflow-hidden text-ellipsis text-nowrap rounded-sm bg-muted/40 px-2 italic text-muted-foreground">
+          {file.name}
+        </p>
+      </div>
     </div>
   );
 }

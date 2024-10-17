@@ -1,109 +1,196 @@
 // components/posts/editors/useMediaUpload.ts
 import { useToast } from "@/components/ui/use-toast";
+import { useUploadThing } from "@/lib/uploadthing";
 import { useState } from "react";
 
 export interface Attachment {
-    file: File;
-    mediaId?: string;
-    isUploading: boolean;
-    progress?: number;
-}
-
-
-async function uploadAttachment(file: File, onProgress: (progress: number) => void): Promise<{ mediaId: string }> {
-    return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        const formData = new FormData();
-        formData.append('file', file);
-
-        xhr.open('POST', '/api/upload/attachment', true);
-
-        xhr.upload.onprogress = (event) => {
-            if (event.lengthComputable) {
-                const progress = Math.round((event.loaded / event.total) * 100);
-                onProgress(progress);
-            }
-        };
-
-        xhr.onload = () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-                const response = JSON.parse(xhr.responseText);
-                resolve({ mediaId: response.mediaId });
-            } else {
-                reject(new Error('Failed to upload attachment'));
-            }
-        };
-
-        xhr.onerror = () => reject(new Error('Failed to upload attachment'));
-
-        xhr.send(formData);
-    });
+  file: File;
+  mediaId?: string;
+  isUploading: boolean;
+  progress?: number;
 }
 
 export default function useMediaUpload() {
-    const MAX_FILE_SIZE_MB = 30; // Limite de taille de fichier en Mo
+  const MAX_FILE_SIZE_MB = 30; // Limite de taille de fichier en Mo
+  const MAX_IMAGE_SIZE_MB = 4; // Limite de taille de fichier en Mo
 
-    const { toast } = useToast();
-    const [attachments, setAttachment] = useState<Attachment[]>([]);
-    const [isUploading, setIsUploading] = useState<boolean>(false);
+  const { toast } = useToast();
+  const [attachments, setAttachment] = useState<Attachment[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [currentFile, setCurrentFile] = useState<Attachment | null>(null);
 
-    async function handleStartUpload(files: File[]) {
-        setIsUploading(true);
-        const newAttachments: Attachment[] = [];
+  const { startUpload: startAttachmentUpload } = useUploadThing("attachment", {
+    onUploadProgress: (progress) => {
+      if (currentFile) {
+        setAttachment((prev) =>
+          prev.map((a) =>
+            a.mediaId === currentFile.mediaId ? { ...a, progress } : a,
+          ),
+        );
+      }
+    },
+  });
 
-        for (const file of files) {
-            // Vérifier la taille du fichier
-            const fileSizeMB = file.size / (1024 ** 2);
-            if (fileSizeMB > MAX_FILE_SIZE_MB) {
-                toast({
-                    variant: "destructive",
-                    description: `Le fichier ${file.name} dépasse la taille maximale de ${MAX_FILE_SIZE_MB} Mo.`,
-                });
-                continue; // Passer au fichier suivant
-            }
+  async function uploadOnLocalServer(
+    file: File,
+    onProgress: (progress: number) => void,
+  ): Promise<{ mediaId: string } | null> {
+    return new Promise((resolve) => {
+      const xhr = new XMLHttpRequest();
+      const formData = new FormData();
+      formData.append("file", file);
 
-            try {
-                const attachment = { file, isUploading: true, progress: 0 };
-                newAttachments.push(attachment);
-                setAttachment(prev => [...prev, attachment]);
+      xhr.open("POST", "/api/upload/attachment", true);
 
-                const { mediaId } = await uploadAttachment(file, (progress) => {
-                    setAttachment(prev => prev.map(a =>
-                        a.file.name === file.name ? { ...a, progress } : a
-                    ));
-                });
-
-                setAttachment(prev => prev.map(a =>
-                    a.file.name === file.name ? { ...a, mediaId, isUploading: false, progress: 100 } : a
-                ));
-            } catch (error) {
-                toast({
-                    variant: "destructive",
-                    description: (error as Error).message
-                });
-                setAttachment(prev => prev.map(a =>
-                    a.file.name === file.name ? { ...a, isUploading: false, progress: 0 } : a
-                ));
-            }
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const progress = Math.round((event.loaded / event.total) * 100);
+          onProgress(progress);
         }
+      };
 
-        setIsUploading(false);
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const response = JSON.parse(xhr.responseText);
+          resolve({ mediaId: response.mediaId });
+        } else {
+          resolve(null);
+        }
+      };
+
+      xhr.onerror = () => {
+        resolve(null);
+      };
+
+      xhr.send(formData);
+    });
+  }
+
+  async function uploadAttachment(
+    file: File,
+    onProgress: (progress: number) => void,
+  ): Promise<{ mediaId: string }> {
+    return new Promise(async (resolve, reject) => {
+      // Try to upload on local
+      const localUpload = await uploadOnLocalServer(file, (progress) => {
+        onProgress(progress);
+      });
+      if (localUpload) {
+        resolve(localUpload);
+      } else {
+        const uploadResult = startAttachmentUpload([file]);
+        uploadResult.then((result) => {
+          if (!result) {
+            setCurrentFile(null);
+            reject(
+              `Failed to upload attachment ${currentFile?.file.name ?? ""}`,
+            );
+            return;
+          }
+          const mediaId = result?.[0].serverData.mediaId;
+          if (!mediaId) {
+            setCurrentFile(null);
+            reject(
+              `Failed to upload attachment ${currentFile?.file.name ?? ""}`,
+            );
+            return;
+          }
+          setAttachment((prev) =>
+            prev.map((a) =>
+              a.mediaId === currentFile?.mediaId
+                ? { ...a, mediaId, isUploading: false, progress: 100 }
+                : a,
+            ),
+          );
+          resolve({ mediaId });
+          setCurrentFile(null);
+          setIsUploading(false);
+        });
+      }
+    });
+  }
+
+  async function handleStartUpload(files: File[]) {
+    setIsUploading(true);
+    const newAttachments: Attachment[] = [];
+
+    for (const file of files) {
+      // Vérifier la taille du fichier
+      const fileSizeMB = file.size / 1024 ** 2;
+      if (
+        fileSizeMB > MAX_FILE_SIZE_MB ||
+        (file.type.startsWith("image/") && fileSizeMB > MAX_IMAGE_SIZE_MB)
+      ) {
+        console.log(fileSizeMB);
+        console.log(MAX_FILE_SIZE_MB);
+        
+        
+        toast({
+          variant: "destructive",
+          description: `Le fichier ${file.name} dépasse la taille maximale de ${file.type.startsWith("image/") ? MAX_IMAGE_SIZE_MB : MAX_FILE_SIZE_MB} Mo.`,
+        });
+        setAttachment(attachments.filter(a=>(a.file.name === file.name && a.file.size === file.size)));
+        continue; // Passer au fichier suivant
+      }
+
+      try {
+        const attachment = { file, isUploading: true, progress: 0 };
+        newAttachments.push(attachment);
+        setAttachment((prev) => [...prev, attachment]);
+        setCurrentFile(attachment);
+        const { mediaId } = await uploadAttachment(file, (progress) => {
+          setAttachment((prev) =>
+            prev.map((a) =>
+              a.file.name === file.name ? { ...a, progress } : a,
+            ),
+          );
+        }).catch((error) => {
+          console.error(error);
+          throw new Error(error);
+        });
+
+        setAttachment((prev) =>
+          prev.map((a) =>
+            a.file.name === file.name
+              ? { ...a, mediaId, isUploading: false, progress: 100 }
+              : a,
+          ),
+        );
+        setCurrentFile(null);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          description: (error as Error).message,
+        });
+        setCurrentFile(null);
+        setAttachment((prev) =>
+          prev.map((a) =>
+            a.file.name === file.name
+              ? { ...a, isUploading: false, progress: 0 }
+              : a,
+          ),
+        );
+      }
     }
 
-    function removeAttachment(fileName: string) {
-        setAttachment(prev => prev.filter(a => a.file.name !== fileName));
-    }
+    setIsUploading(false);
+  }
 
-    function reset() {
-        setAttachment([]);
-        setIsUploading(false);
-    }
+  function removeAttachment(fileName: string) {
+    setAttachment((prev) => prev.filter((a) => a.file.name !== fileName));
+  }
 
-    return {
-        startUpload: handleStartUpload,
-        attachments,
-        isUploading,
-        removeAttachment,
-        reset
-    };
+  function reset() {
+    setAttachment([]);
+    setIsUploading(false);
+    setCurrentFile(null);
+  }
+
+  return {
+    startUpload: handleStartUpload,
+    attachments,
+    isUploading,
+    removeAttachment,
+    reset,
+  };
 }

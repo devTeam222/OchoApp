@@ -29,11 +29,7 @@ async function uploadAvatar(file: File): Promise<LocalUpload[] | null> {
 export function useUpdateProfileMutation() {
 
     const { toast } = useToast();
-    const {startUpload: startAvatarUpload} = useUploadThing("avatar", {
-        onClientUploadComplete(res) {
-            console.log(res);
-        },
-    })
+    const {startUpload: startAvatarUpload} = useUploadThing("avatar")
 
     const router = useRouter();
     const queryClient = useQueryClient();

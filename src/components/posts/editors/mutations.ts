@@ -54,7 +54,7 @@ export function useSubmitPostMutation() {
             })
 
             toast({
-                description: "Votre post a ete publie avec success"
+                description: "Votre post a ete publié avec success"
             })
         },
         onError(error) {

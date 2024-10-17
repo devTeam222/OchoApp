@@ -71,6 +71,7 @@ export default function ActiveChat({
       initialPageParam: null as string | null,
       getNextPageParam: (lastPage) => lastPage.nextCursor,
       refetchInterval: isProduction ? 5000 : 10000,
+      staleTime: Infinity
     });
   const { user: loggedUser } = useSession();
 
@@ -115,7 +116,7 @@ export default function ActiveChat({
       {status === "pending" && <MessagesLoadingSkeleton />}
 
       <InfiniteScrollContainer
-        className="relative flex flex-1 flex-col-reverse space-y-4 overflow-y-auto px-2 pb-2 shadow-inner sm:bg-background/50"
+        className="scrollbar-track-primary scrollbar-track-rounded-full relative flex flex-1 flex-col-reverse space-y-4 overflow-y-auto px-2 pb-2 shadow-inner sm:bg-background/50"
         onBottomReached={() =>
           hasNextPage && !isFetchingNextPage && fetchNextPage()
         }
