@@ -122,13 +122,11 @@ export async function GET(req: NextRequest) {
 
         // Fonction d'upload avec Uploadthing
         async function uploadAvatarWithUploadthing(webpBlob: File): Promise<string | null> {
-            try {
-                const uploadResult = await startUpload([webpBlob]);
-                return uploadResult?.[0].appUrl || null; // URL de l'avatar Uploadthing
-            } catch (error) {
-                console.error("Uploadthing upload failed", error);
+            const uploadResult = await startUpload([webpBlob]);
+            if (!uploadResult || !uploadResult[0]) {
                 return null;
             }
+            return uploadResult[0].appUrl
         }
         const webpAvatarFile = new File([webpAvatarBlob], `avatar-${userId}.webp`, { type: "image/webp" });
 
