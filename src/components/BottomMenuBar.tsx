@@ -8,8 +8,8 @@ export default function BottomMenuBar() {
 
   return (
     <MenuBar
-      className={`bottom-0 flex w-full justify-center gap-5 border-t bg-card sm:hidden ${
-        !isVisible ? "fixed bottom-[-100%] " : "transition-all sticky"
+      className={`bottom-0 flex w-full justify-center transition-all gap-5 border-t bg-card sm:hidden ${
+        !isVisible ? "fixed bottom-[-100%] " : "sticky"
       }`}
     />
   );

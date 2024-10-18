@@ -364,11 +364,11 @@ export default function NewChat({ onClose, className }: NewChatProps) {
             <button
               className={cn(
                 "absolute bottom-7 right-7 aspect-square h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground max-sm:flex sm:hidden",
-                isPending && "bg-primary-foreground text-primary",
+                (isPending || !selectedUsers.length) && "bg-primary-foreground text-primary",
               )}
               title="Demarrer une nouvelle discussion"
               onClick={() => handleChatStart()}
-              disabled={isPending}
+              disabled={isPending || !selectedUsers.length}
             >
               {!isPending ? <Check /> : <Loader2 className="animate-spin" />}
             </button>

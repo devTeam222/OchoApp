@@ -19,7 +19,7 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | OchoApp",
+    template: "%s - OchoApp",
     default: "OchoApp"
   },
   description: "The social media app for power nerd",

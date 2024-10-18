@@ -6,6 +6,8 @@ import { UsersRound } from "lucide-react";
 import { useSession } from "../SessionProvider";
 import GroupAvatar from "@/components/GroupAvatar";
 import { MessageType } from "@prisma/client";
+import Time from "@/components/Time";
+import { cn } from "@/lib/utils";
 
 interface ChannelProps {
   channel: ChannelData;
@@ -81,7 +83,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
     CREATE: channel.isGroup
       ? `${sender} ${messagePreview.sender?.id === loggedinUser.id ? "avez" : "a"} créé ce groupe`
       : `${otherUser?.displayName.split(" ")[0] || ""} peut maintenant discuter avec vous`,
-    CONTENT: `${showUserPreview ? sender || "" : ""}${showUserPreview ? ": " : ""}${messagePreview.content.length > 50 ? messagePreview.content.slice(0, 50) : messagePreview.content}`,
+    CONTENT: `${showUserPreview ? sender || "" : ""}${showUserPreview ? ": " : ""}${messagePreview.content.length > 100 ? messagePreview.content.slice(0, 100) : messagePreview.content}`,
     CLEAR: "Historique non disponible",
     DELETE: "Discussion supprimée",
     SAVED: "Envoyez-vous un message",
@@ -93,7 +95,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
   let messagePreviewContent = contentsTypes[messageType];
 
   if (currentMember?.type === "OLD" || currentMember?.type === "BANNED") {
-    messagePreviewContent = "Vous ne faites plus parti de cette discussion";
+    messagePreviewContent = "Vous ne pouvez plus interagir";
     messageType = "CLEAR";
   }
 
@@ -102,12 +104,13 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
       key={channel.id}
       className={`cursor-pointer p-2 ${active && "bg-primary/10"}`}
       onClick={onSelect}
+      title={messagePreviewContent || "Aucun message"}
     >
       <div className="flex items-center space-x-2">
         {channel.isGroup ? (
-          <GroupAvatar size={40} />
+          <GroupAvatar size={45} />
         ) : (
-          <UserAvatar avatarUrl={otherUser?.avatarUrl} size={40} />
+          <UserAvatar avatarUrl={otherUser?.avatarUrl} size={45} />
         )}
         <div>
           <span className="font-semibold">
@@ -117,11 +120,17 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
                 ? "Groupe de discussion"
                 : "Utilisateur OchoApp")}
           </span>
-          <p
-            className={`line-clamp-1 text-ellipsis text-sm ${messageType === "CONTENT" ? "text-muted-foreground" : "italic text-primary"}`}
-          >
-            {messagePreviewContent || "Aucun message"}
-          </p>
+          <div className="flex gap-1 text-sm items-center text-muted-foreground w-fit max-w-full">
+            <p
+              className={cn("line-clamp-1 text-ellipsis", messageType !== "CONTENT" && "italic text-primary")}
+            >
+              {messagePreviewContent || "Aucun message"}
+            </p>
+            •
+            <span>
+              <Time time={messagePreview.createdAt} full={false} />
+            </span>
+          </div>
         </div>
       </div>
     </li>

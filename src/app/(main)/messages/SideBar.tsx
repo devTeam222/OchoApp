@@ -89,7 +89,7 @@ export default function SideBar({
     <div className="relative flex h-full flex-col">
       <div className="flex items-center justify-between p-4 text-lg font-bold max-sm:bg-primary/10">
         <span>Discussions</span>
-        <span className="cursor-pointer hover:text-primary" onClick={onNewChat}>
+        <span className="cursor-pointer hover:text-primary max-sm:hidden" onClick={onNewChat}>
           <SquarePen />
         </span>
       </div>
@@ -111,7 +111,7 @@ export default function SideBar({
           </p>
         )}
         {status === "success" && (
-          <ul className="divide-y-2">
+          <ul className="divide-y sm:divide-y-2">
             {channels.map((channel) => (
               <Channel
                 key={channel.id}

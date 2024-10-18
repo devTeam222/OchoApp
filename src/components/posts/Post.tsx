@@ -349,7 +349,7 @@ function MediaPreview({
         width={500}
         height={500}
         className={cn(
-          "mx-auto h-full w-full rounded-xl bg-muted max-sm:max-w-[500px]",
+          "mx-auto h-full w-full rounded-xl bg-muted max-sm:max-w-[500px] object-cover",
           isFullscreen
             ? "max-h-screen max-w-[100vw]"
             : "max-h-[90vh] max-w-[90vw]",

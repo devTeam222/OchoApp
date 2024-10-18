@@ -58,7 +58,7 @@ export async function generateMetadata({
   if (!loggedInUser) return {};
   const user = await getUser(username, loggedInUser.id);
   return {
-    title: `${user.displayName} @${user.username}`,
+    title: `${user.displayName}`,
   };
 }
 
@@ -78,7 +78,7 @@ export default async function page({ params: { username } }: PageProps) {
 
   return (
     <main className="flex w-full min-w-0 gap-5 max-sm:p-4">
-      <div className="w-full min-w-0 space-y-5">
+      <div className="w-full min-w-0 space-y-5 pb-3">
         <UserProfile
           user={user}
           loggedInUserId={loggedInUser.id}
