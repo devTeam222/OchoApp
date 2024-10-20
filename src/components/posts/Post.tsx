@@ -71,7 +71,7 @@ export default function Post({ post }: PostProps) {
               className="block text-sm text-muted-foreground hover:underline"
               suppressHydrationWarning
             >
-              <Time time={post.createdAt} relative={relative} long />
+              <Time time={post.createdAt} relative={relative} long={!relative} />
             </Link>
           </div>
         </div>
