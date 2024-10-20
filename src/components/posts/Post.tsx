@@ -40,13 +40,21 @@ export default function Post({ post }: PostProps) {
 
   const relative = diffInMs < Math.abs(48 * 3600 * 1000);
 
+  const lastSeenDate = new Date(post.user.lastSeen).getTime() - 40 * 1000;
+
+  const isUserOnline = lastSeenDate > now;
+  
+
   return (
     <article className="group/post flex flex-col gap-5 rounded-2xl bg-card p-5 shadow-sm">
       <div className="flex justify-between gap-3">
         <div className="flex flex-wrap gap-3">
           <UserTooltip user={post.user}>
-            <Link href={`/users/${post.user.username}`} title={`Afficher le profil de ${post.user.displayName}`}>
-              <UserAvatar avatarUrl={post.user.avatarUrl} />
+            <Link
+              href={`/users/${post.user.username}`}
+              title={`Afficher le profil de ${post.user.displayName}`}
+            >
+              <UserAvatar avatarUrl={post.user.avatarUrl} online={isUserOnline}/>
             </Link>
           </UserTooltip>
           <div>
@@ -63,7 +71,7 @@ export default function Post({ post }: PostProps) {
               className="block text-sm text-muted-foreground hover:underline"
               suppressHydrationWarning
             >
-              <Time time={post.createdAt} relative={relative} long/>
+              <Time time={post.createdAt} relative={relative} long />
             </Link>
           </div>
         </div>
@@ -224,7 +232,7 @@ function MediaPreviews({ attachments }: MediaPreviewsProps) {
           )}
         >
           <div className="relative flex h-full w-full items-center justify-center">
-            <Carousel className="flex h-full items-center w-full *:w-full">
+            <Carousel className="flex h-full w-full items-center *:w-full">
               <div
                 className="fixed h-full w-full"
                 onClick={() => setShowCarousel(false)}
@@ -285,7 +293,7 @@ function MediaPreviews({ attachments }: MediaPreviewsProps) {
                 ))}
               </CarouselContent>
               {attachments.length > 1 && (
-                <div className="absolute max-w-[100vw] p-3 w-full">
+                <div className="absolute w-full max-w-[100vw] p-3">
                   <CarouselPrevious />
                   <CarouselNext />
                 </div>
@@ -349,7 +357,7 @@ function MediaPreview({
         width={500}
         height={500}
         className={cn(
-          "mx-auto h-full w-full rounded-xl bg-muted max-sm:max-w-[500px] object-cover",
+          "mx-auto h-full w-full rounded-xl bg-muted object-cover max-sm:max-w-[500px]",
           isFullscreen
             ? "max-h-screen max-w-[100vw]"
             : "max-h-[90vh] max-w-[90vw]",
@@ -376,13 +384,13 @@ function MediaPreview({
           width={500}
           className={cn(
             "relative h-full w-full bg-muted",
-            isFullscreen
-              ? "max-h-screen max-w-[100vw]"
-              : "max-h-[90vh] max-w-[90vw]",
             hidden ? "object-cover" : "absolute bottom-0 top-0 object-contain",
+            isFullscreen
+              ? "max-h-screen max-w-[100vw] object-contain"
+              : "max-h-[90vh] max-w-[90vw]",
           )}
         >
-          <source src={media.url}/>
+          <source src={media.url} />
         </video>
       </div>
     );

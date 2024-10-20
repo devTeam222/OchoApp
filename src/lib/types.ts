@@ -14,6 +14,7 @@ export function getUserDataSelect(loggedInUserId: string) {
     avatarUrl: true,
     bio: true,
     createdAt: true,
+    lastSeen: true,
     followers: {
       where: {
         followerId: loggedInUserId
@@ -48,6 +49,7 @@ export function getChatChannelDataInclude() {
             avatarUrl: true,
             bio: true,
             createdAt: true,
+            lastSeen: true,
             followers: {
               select: {
                 followerId: true
@@ -85,6 +87,7 @@ export function getMessageDataSelect() {
         username: true,
         avatarUrl: true,
         bio: true,
+        lastSeen: true,
       }
     },
     recipient: {
@@ -94,6 +97,7 @@ export function getMessageDataSelect() {
         username: true,
         avatarUrl: true,
         bio: true,
+        lastSeen: true,
       }   
     },
     createdAt: true,
@@ -118,6 +122,7 @@ export function getMessageDataInclude() {
         displayName: true,
         avatarUrl: true,
         bio: true,
+        lastSeen: true,
       }
     },
     recipient: {
@@ -127,6 +132,7 @@ export function getMessageDataInclude() {
         displayName: true,
         avatarUrl: true,
         bio: true,
+        lastSeen: true,
       }
     }
   } satisfies Prisma.MessageInclude;

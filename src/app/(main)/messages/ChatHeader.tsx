@@ -3,12 +3,7 @@ import { useSession } from "../SessionProvider";
 import GroupAvatar from "@/components/GroupAvatar";
 import UserAvatar from "@/components/UserAvatar";
 import { useEffect, useState } from "react";
-import {
-  ArrowLeft,
-  UserCircle2,
-  UserRoundPlus,
-  X,
-} from "lucide-react";
+import { ArrowLeft, UserCircle2, UserRoundPlus, X } from "lucide-react";
 import Linkify from "@/components/Linkify";
 import { Button } from "@/components/ui/button";
 import Time from "@/components/Time";
@@ -104,6 +99,16 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
   const firstPage = allMembers.slice(0, 10);
   const lastPage = allMembers.slice(10, allMembers.length);
 
+  const now = Date.now();
+
+  const isUserOnline =
+    !active &&
+    (channel.id === `saved-${loggedUser.id}` ||
+      (!!otherUser?.lastSeen &&
+        new Date(otherUser.lastSeen).getTime() - 40 * 1000 > now));
+
+        const lastSeenTimeStamp = otherUser?.lastSeen ? new Date(new Date(otherUser.lastSeen).getTime() - 40 * 1000).getTime() : null;
+
   return (
     <div
       className={`${active ? "absolute inset-0 z-10 h-full w-full overflow-y-auto bg-card max-sm:bg-background sm:rounded-e-3xl" : "relative flex-1"}`}
@@ -114,15 +119,14 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
           (!active ? "hidden" : "")
         }
       >
-        
         <div
-          className="cursor-pointer sm:opacity-0 sm:pointer-events-none"
+          className="cursor-pointer sm:pointer-events-none sm:opacity-0"
           onClick={() => setActive(false)}
         >
           <ArrowLeft size={35} />
         </div>
         <div
-          className="cursor-pointer hover:text-red-500 max-sm:opacity-0 max-sm:pointer-events-none"
+          className="cursor-pointer hover:text-red-500 max-sm:pointer-events-none max-sm:opacity-0"
           onClick={() => setActive(false)}
         >
           <X size={35} />
@@ -148,6 +152,7 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
               avatarUrl={otherUser?.avatarUrl}
               size={size}
               className="transition-all *:transition-all"
+              online={isUserOnline}
             />
           )}
           <div className="">
@@ -166,7 +171,19 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                   </span>
                 </div>
               ) : (
-                `@${otherUser?.username}`
+                <span className="">
+                  {isUserOnline ? (
+                    "En ligne"
+                  ) : lastSeenTimeStamp &&
+                    lastSeenTimeStamp - 40_000 < now ? (
+                    <>
+                      Actif{" "}
+                      <Time time={new Date(lastSeenTimeStamp - 30_000)} relative long={false} />
+                    </>
+                  ) : (
+                    `@${otherUser?.username}}`
+                  )}
+                </span>
               )}
             </div>
           </div>
@@ -175,7 +192,24 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
               {channel.isGroup ? (
                 <span className="">{`Groupe • ${allMembers.length} membre${allMembers.length > 1 ? "s" : ""}`}</span>
               ) : (
-                `@${otherUser?.username}`
+                <span>
+                  <div>@{otherUser?.username}</div>
+                  <div className="text-center">
+                    {isUserOnline
+                      ? "En ligne"
+                      : lastSeenTimeStamp &&
+                      lastSeenTimeStamp - 40_000 < now && (
+                          <>
+                            Actif{" "}
+                            <Time
+                              time={new Date(lastSeenTimeStamp - 30_000)}
+                              relative
+                              long={false}
+                            />
+                          </>
+                        )}
+                  </div>
+                </span>
               )}
             </div>
           )}
@@ -346,13 +380,15 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                 )}
               </ul>
             )}
-            {channel.isGroup && loggedinMember?.type !=="OLD" && loggedinMember?.type !=="BANNED" && (
-              <ul className="flex w-full select-none flex-col py-3">
-                <li className="cursor-pointer p-4 text-red-500 active:bg-muted/30">
-                  <LeaveGroupDialog channel={channel}/>
-                </li>
-              </ul>
-            )}
+            {channel.isGroup &&
+              loggedinMember?.type !== "OLD" &&
+              loggedinMember?.type !== "BANNED" && (
+                <ul className="flex w-full select-none flex-col py-3">
+                  <li className="cursor-pointer p-4 text-red-500 active:bg-muted/30">
+                    <LeaveGroupDialog channel={channel} />
+                  </li>
+                </ul>
+              )}
           </div>
         )}
       </div>

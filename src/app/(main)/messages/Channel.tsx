@@ -99,6 +99,13 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
     messageType = "CLEAR";
   }
 
+  const now = Date.now();
+
+  const isUserOnline =
+    channel.id === `saved-${loggedinUser.id}` ||
+    (!!otherUser?.lastSeen &&
+      new Date(otherUser.lastSeen).getTime() - 40 * 1000 > now);
+
   return (
     <li
       key={channel.id}
@@ -110,7 +117,11 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
         {channel.isGroup ? (
           <GroupAvatar size={45} />
         ) : (
-          <UserAvatar avatarUrl={otherUser?.avatarUrl} size={45} />
+          <UserAvatar
+            avatarUrl={otherUser?.avatarUrl}
+            size={45}
+            online={isUserOnline}
+          />
         )}
         <div>
           <span className="font-semibold">
@@ -120,9 +131,12 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
                 ? "Groupe de discussion"
                 : "Utilisateur OchoApp")}
           </span>
-          <div className="flex gap-1 text-sm items-center text-muted-foreground w-fit max-w-full">
+          <div className="flex w-fit max-w-full items-center gap-1 text-sm text-muted-foreground">
             <p
-              className={cn("line-clamp-1 text-ellipsis", messageType !== "CONTENT" && "italic text-primary")}
+              className={cn(
+                "line-clamp-1 text-ellipsis",
+                messageType !== "CONTENT" && "italic text-primary",
+              )}
             >
               {messagePreviewContent || "Aucun message"}
             </p>

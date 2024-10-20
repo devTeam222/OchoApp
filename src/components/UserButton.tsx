@@ -19,7 +19,9 @@ import { Check, LogOutIcon, Monitor, Moon, Sun, UserIcon } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import kyInstance from "@/lib/ky";
+import { useEffect } from "react";
 
 interface UserButtonProps {
   className?: string;
@@ -27,6 +29,15 @@ interface UserButtonProps {
 
 export default function UserButton({ className }: UserButtonProps) {
   const { user } = useSession();
+
+  useQuery({
+    queryKey: ["last-seen", user.id],
+    queryFn: () =>
+      kyInstance
+        .get("/api/users/set-last-seen"),
+    refetchInterval: 60 * 1000,
+    throwOnError: false,
+  });
 
   const { theme, setTheme } = useTheme();
 
@@ -36,10 +47,10 @@ export default function UserButton({ className }: UserButtonProps) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className={cn("flex-none rounded-full aspect-square overflow-hidden", className)}
+          className={cn("flex-none rounded-full aspect-square", className)}
           title="Profil"
         >
-          <UserAvatar avatarUrl={user.avatarUrl} size={40} />
+          <UserAvatar avatarUrl={user.avatarUrl} size={40} online />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>

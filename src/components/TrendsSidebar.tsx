@@ -56,6 +56,12 @@ async function WhoToFollow() {
     <div className="space-y-5 rounded-2xl bg-card p-5 shadow-sm">
       <h2 className="text-xl font-bold">Suggestions pour vous</h2>
       {usersToFollow.map((user) => {
+        const now = Date.now();
+      
+      
+        const lastSeenDate = new Date(user.lastSeen).getTime() - 60 * 1000;
+      
+        const isUserOnline = lastSeenDate > now;
         return (
           <div
             key={user.id}
@@ -66,7 +72,7 @@ async function WhoToFollow() {
                 href={`/users/${user.username}`}
                 className="flex items-center gap-3"
               >
-                <UserAvatar avatarUrl={user.avatarUrl} className="flex-none" />
+                <UserAvatar avatarUrl={user.avatarUrl} className="flex-none" online={isUserOnline} />
                 <div>
                   <h3 className="line-clamp-1 break-all font-semibold hover:underline">
                     {user.displayName}

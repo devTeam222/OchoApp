@@ -1,3 +1,5 @@
+"use client"
+
 import Image, { StaticImageData } from "next/image";
 import avatarPlaceholder from "@/assets/avatar-placeholder.png";
 import { cn } from "@/lib/utils";
@@ -7,45 +9,46 @@ interface UserAvatarProps {
   avatarUrl: string | StaticImageData | null | undefined;
   size?: number;
   className?: string;
+  online?: boolean;
 }
 
 export default function UserAvatar({
   avatarUrl,
-  size,
+  size = 48,
   className,
+  online = false,
 }: UserAvatarProps) {
-  if (!avatarUrl) {
-    const sizePx = size ?? 48;
-    return (
-      <span>
-        <div
-          className={`relative flex aspect-square items-center justify-center overflow-hidden rounded-full bg-muted h-fit w-fit min-w-fit min-h-fit`}
-        >
-          <Image
-            src={avatarPlaceholder}
-            alt=""
-            className="pointer-events-none select-none opacity-0"
-            width={sizePx}
-            height={sizePx}
-          />
-          <UserRound
-            className="absolute rounded-full text-muted-foreground"
-            size={sizePx > 32 ? sizePx - 16 : sizePx - 4}
-          />
-        </div>
-      </span>
-    );
-  }
+  let isImageErr = false;
   return (
-    <Image
-      src={avatarUrl || avatarPlaceholder}
-      alt="User avatar"
-      width={size ?? 48}
-      height={size ?? 48}
+    <span
       className={cn(
-        "aspect-square h-fit flex-none rounded-full bg-secondary object-cover",
+        `relative flex aspect-square h-fit min-h-fit w-fit min-w-fit items-center justify-center rounded-full bg-muted`,
         className,
       )}
-    />
+    >
+      <UserRound
+        className={cn(
+          "absolute rounded-full text-muted-foreground",
+          avatarUrl && "pointer-events-none opacity-0",
+        )}
+        size={size > 32 ? size - 16 : size - 4}
+      />
+      <Image
+        src={avatarUrl ?? avatarPlaceholder}
+        alt=""
+        className={cn(
+          "aspect-square h-fit flex-none rounded-full bg-secondary object-cover",
+          (!avatarUrl || isImageErr) && "pointer-events-none opacity-0",
+        )}
+        width={size}
+        height={size}
+        onError={() => {
+          isImageErr = true;
+        }}
+      />
+      {online && (
+        <div className="absolute bottom-0 right-0 aspect-square h-3 w-3 rounded-full border-2 border-solid border-background bg-primary" />
+      )}
+    </span>
   );
 }

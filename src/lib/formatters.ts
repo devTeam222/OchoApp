@@ -15,12 +15,12 @@ export class TimeFormatter {
         this.currentDate = new Date();
 
         // Si 'time' est un nombre, on le traite comme un timestamp
-        if (typeof time === 'number') {
-            const timetamp = time.toString().length > 10 ? time : time * 1000;
-            this.time = new Date(timetamp);
-        } else {
+        if (time instanceof Date) {
             // Sinon, on suppose que c'est une instance de Date
             this.time = time;
+        } else {
+            const timetamp = time.toString().length > 10 ? time : time * 1000;
+            this.time = new Date(timetamp);
         }
     }
 
@@ -165,9 +165,14 @@ export class TimeFormatter {
 
     formatRelativeTime(): string {
         const now = new Date();
-        const diffInSeconds = Math.floor((this.time.getTime() - now.getTime()) / 1000);
+        const timestamp = this.time.getTime() - 2000;
+        
+        
+        const diffInSeconds = Math.floor((timestamp - now.getTime()) / 1000);
 
-        const rtf = new Intl.RelativeTimeFormat(this.getDocumentLang(), { numeric: 'auto' });
+        // Choisir le style du format en fonction de this.full
+        const style = this.long ? 'long' : 'short';
+        const rtf = new Intl.RelativeTimeFormat(this.getDocumentLang(), { numeric: 'auto', style });
 
         const timeFrames = [
             { unit: 'year', seconds: 60 * 60 * 24 * 365 },

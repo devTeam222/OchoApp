@@ -31,6 +31,7 @@ model User {
   channels             ChannelMember[]
   sentMessages         Message[]       @relation("Sender")
   receivedMessages     Message[]       @relation("Recipient")
+  reads                Read[]
   posts                Post[]
   likes                Like[]
   comments             Comment[]
@@ -39,6 +40,7 @@ model User {
   issuedNotification   Notification[]  @relation("Issuer")
 
   createdAt DateTime @default(now())
+  lastSeen  DateTime @default(now())
 
   @@map("users")
 }
@@ -115,6 +117,7 @@ model Message {
   type        MessageType
 
   createdAt DateTime @default(now())
+  reads     Read[]
 
   @@map("messages")
 }
@@ -128,6 +131,18 @@ enum MessageType {
   BAN
   CLEAR
   SAVED
+}
+
+model Read {
+  id        String  @id @default(uuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messageId String
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  readAt DateTime @default(now())
+
+  @@map("reads")
 }
 
 model Post {

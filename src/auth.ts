@@ -32,6 +32,7 @@ export const lucia = new Lucia(adapter, {
         posts: databaseUserAttributes._count?.posts ?? 0,
       },
       createdAt: databaseUserAttributes.createdAt,
+      lastSeen: databaseUserAttributes.lastSeen
     };
   },
 });
@@ -59,6 +60,7 @@ interface DatabaseUserAttributes {
     posts: number;
   };
   createdAt: Date;
+  lastSeen: Date;
 }
 
 export const google = new Google(
