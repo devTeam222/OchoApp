@@ -39,8 +39,8 @@ model User {
   receivedNotification Notification[]  @relation("Recipient")
   issuedNotification   Notification[]  @relation("Issuer")
 
-  createdAt DateTime @default(now())
   lastSeen  DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@map("users")
 }
