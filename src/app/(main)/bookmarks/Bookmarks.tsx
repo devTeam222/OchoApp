@@ -6,7 +6,7 @@ import PostsLoadingSkeleton from "@/components/posts/PostsLoadingSkeleton";
 import kyInstance from "@/lib/ky";
 import { PostsPage } from "@/lib/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { BookmarkIcon, Frown, Loader2 } from "lucide-react";
 
 export default function Bookmarks() {
   const {
@@ -37,16 +37,18 @@ export default function Bookmarks() {
 
   if (status === "success" && !posts.length && !hasNextPage) {
     return (
-      <p className="my-8 w-full text-center text-muted-foreground">
-        Vous n&apos;avez pas encore de favoris.
-      </p>
+      <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
+        <BookmarkIcon size={150} />
+        <h2 className="text-xl">Vous n&apos;avez pas encore de favoris.</h2>
+      </div>
     );
   }
   if (status === "error") {
     return (
-      <p className="text-center text-destructive">
-        Erreur lors de la récupération des données
-      </p>
+      <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
+        <Frown size={150} />
+        <h2 className="text-xl">Quelque chose s&apos;est mal passé.</h2>
+      </div>
     );
   }
 

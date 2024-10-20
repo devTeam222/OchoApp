@@ -1,6 +1,8 @@
 import TrendsSidebar from "@/components/TrendsSidebar";
 import { Metadata } from "next";
 import SearchResults from "./SearchResults";
+import { Search } from "lucide-react";
+import SearchTrend from "@/components/search/SearchTrend";
 
 interface PageProps {
   searchParams: { q: string };
@@ -24,10 +26,12 @@ export default function Page({ searchParams: { q } }: PageProps) {
         {q ? (
           <SearchResults query={q} />
         ) : (
-          <p className="my-8 w-full text-center text-muted-foreground">
-            Veuillez saisir des mots clé dans votre recherche
-          </p>
+          <div className="my-8 w-full text-center text-muted-foreground flex flex-col gap-2 items-center max-sm:hidden">
+            <Search size={150}/>
+            <h2 className="text-xl">Veuillez saisir des mots clé dans votre recherche</h2>
+          </div>
         )}
+        <SearchTrend/>
       </div>
       <TrendsSidebar />
     </main>

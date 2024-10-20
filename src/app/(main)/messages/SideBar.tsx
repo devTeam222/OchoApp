@@ -9,7 +9,7 @@ import ChannelsLoadingSkeleton from "./ChannelsLoadingSkeleton";
 import { useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { useActiveChannel } from "@/context/ActiveChatContext";
-import { SquarePen } from "lucide-react";
+import { Frown, MessageSquare, SquarePen } from "lucide-react";
 
 interface SidebarProps {
   activeChannel: (channel: ChannelData) => void;
@@ -71,7 +71,7 @@ export default function SideBar({
         }
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channels, status, activeChannelId]);
 
   function handleChannelSelect(channel: ChannelData) {
@@ -89,7 +89,10 @@ export default function SideBar({
     <div className="relative flex h-full flex-col">
       <div className="flex items-center justify-between p-4 text-lg font-bold max-sm:bg-primary/10">
         <span>Discussions</span>
-        <span className="cursor-pointer hover:text-primary max-sm:hidden" onClick={onNewChat}>
+        <span
+          className="cursor-pointer hover:text-primary max-sm:hidden"
+          onClick={onNewChat}
+        >
           <SquarePen />
         </span>
       </div>
@@ -100,14 +103,24 @@ export default function SideBar({
         }
       >
         {status === "success" && !channels.length && (
-          <p className="flex w-full flex-1 items-center px-3 py-8 text-center italic text-muted-foreground">
-            Aucune discussion disponible
+          <p className="flex w-full flex-1 select-none items-center px-3 py-8 text-center italic text-muted-foreground">
+            <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
+              <MessageSquare size={150} />
+              <h2 className="text-xl">
+                Aucune discussion disponible. Cliquez sur{" "}
+                <SquarePen className="inline" /> pour créer une nouvelle
+                discussion
+              </h2>
+            </div>
           </p>
         )}
         {status === "pending" && <ChannelsLoadingSkeleton />}
         {status === "error" && (
-          <p className="mx-auto flex w-full flex-1 items-center px-3 py-8 text-center italic text-muted-foreground">
-            Quelque chose s&apos;est mal passé. Essayez de raffraichir la page
+          <p className="flex w-full flex-1 select-none items-center px-3 py-8 text-center italic text-muted-foreground">
+            <div className="my-8 flex w-full select-none flex-col items-center gap-2 text-center text-muted-foreground">
+              <Frown size={150} />
+              <h2 className="text-xl">Quelque chose s&apos;est mal passé.</h2>
+            </div>
           </p>
         )}
         {status === "success" && (
@@ -125,7 +138,10 @@ export default function SideBar({
           </ul>
         )}
       </InfiniteScrollContainer>
-      <div className="fixed bottom-16 right-7 aspect-square h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary max-sm:flex sm:hidden"  onClick={onNewChat}>
+      <div
+        className="fixed bottom-16 right-7 aspect-square h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary max-sm:flex sm:hidden"
+        onClick={onNewChat}
+      >
         <SquarePen />
       </div>
     </div>

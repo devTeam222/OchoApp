@@ -6,7 +6,7 @@ import PostsLoadingSkeleton from "@/components/posts/PostsLoadingSkeleton";
 import kyInstance from "@/lib/ky";
 import { PostsPage } from "@/lib/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Frown, Loader2, Meh, PackageOpen } from "lucide-react";
 
 export default function ForYouFeed() {
   const {
@@ -37,16 +37,22 @@ export default function ForYouFeed() {
 
   if (status === "success" && !posts.length && !hasNextPage) {
     return (
-      <p className="my-8 w-full text-center text-muted-foreground">
-        Nous n&apos;avons encore trouvé des bonnes recommendations.
-      </p>
+      <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
+        <PackageOpen size={150} />
+        <h2 className="text-xl">
+          Nous n&apos;avons encore trouvé des bonnes recommendations pour vous.
+        </h2>
+      </div>
     );
   }
   if (status === "error") {
     return (
-      <p className="my-8 w-full text-center text-muted-foreground italic">
+      <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
+        <Frown size={150} />
+        <h2 className="text-xl">
         Quelque chose s&apos;est mal passé. 
-      </p>
+        </h2>
+      </div>
     );
   }
 

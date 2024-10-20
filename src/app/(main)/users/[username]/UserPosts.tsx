@@ -6,13 +6,13 @@ import PostsLoadingSkeleton from "@/components/posts/PostsLoadingSkeleton";
 import kyInstance from "@/lib/ky";
 import { PostsPage } from "@/lib/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Frown, Loader2, UserRoundPen } from "lucide-react";
 
-interface UserPostsProps{
-    userId: string
+interface UserPostsProps {
+  userId: string;
 }
 
-export default function UserPosts({userId}: UserPostsProps) {
+export default function UserPosts({ userId }: UserPostsProps) {
   const {
     data,
     fetchNextPage,
@@ -40,19 +40,27 @@ export default function UserPosts({userId}: UserPostsProps) {
   }
 
   if (status === "success" && !posts.length && !hasNextPage) {
-    return <p className="my-8 w-full text-muted-foreground text-center">Cet utilisateur n&apos;a encore publié ici on dirait</p>;
+    return (
+      <div className="my-8 flex w-full select-none flex-col items-center gap-2 text-center text-muted-foreground">
+        <UserRoundPen size={150} />
+        <h2 className="mb-9 text-xl">
+          Cet utilisateur n&apos;a pas de post public.
+        </h2>
+      </div>
+    );
   }
   if (status === "error") {
     return (
-      <p className="w-full text-center text-destructive">
-        Erreur lors de la récupération des données
-      </p>
+      <div className="my-8 flex w-full select-none flex-col items-center gap-2 text-center text-muted-foreground">
+        <Frown size={150} />
+        <h2 className="mb-9 text-xl">Quelque chose s&apos;est mal passé.</h2>
+      </div>
     );
   }
 
   return (
     <InfiniteScrollContainer
-      className="space-y-5"
+      className="mb-4 space-y-5"
       onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
     >
       {posts.map((post) => (

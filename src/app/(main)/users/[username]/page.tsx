@@ -13,6 +13,7 @@ import { cache } from "react";
 import UserPosts from "./UserPosts";
 import Linkify from "@/components/Linkify";
 import EditProfileButton from "./EditProfileButton";
+import { Frown } from "lucide-react";
 
 interface PageProps {
   params: { username: string };
@@ -67,10 +68,10 @@ export default async function page({ params: { username } }: PageProps) {
 
   if (!loggedInUser)
     return (
-      <p className="text-destructive">
-        Vous n&apos;êtes pas autorisé à afficher cette page veuillez
-        d&apos;abord vous connecter ou creer un compte
-      </p>
+      <div className="my-8 flex w-full select-none flex-col items-center gap-2 text-center text-muted-foreground">
+      <Frown size={150} />
+      <h2 className="text-xl">Quelque chose s&apos;est mal passé.</h2>
+    </div>
     );
 
   const user = await getUser(username, loggedInUser.id);

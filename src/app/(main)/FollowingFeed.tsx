@@ -6,7 +6,7 @@ import PostsLoadingSkeleton from "@/components/posts/PostsLoadingSkeleton";
 import kyInstance from "@/lib/ky";
 import { PostsPage } from "@/lib/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Frown, Loader2, SmilePlus } from "lucide-react";
 
 export default function FollowingFeed() {
   const {
@@ -37,18 +37,24 @@ export default function FollowingFeed() {
 
   if (status === "success" && !posts.length && !hasNextPage) {
     return (
-      <p className="my-8 w-full text-center text-muted-foreground px-3">
+      <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
+        <SmilePlus size={150} />
+        <h2 className="text-xl">
         Aucun post pour l&apos;instant. 
         Suivez des personnes pour voir leurs
         post publics ici
-      </p>
+        </h2>
+      </div>
     );
   }
   if (status === "error") {
     return (
-      <p className="my-8 w-full text-center text-muted-foreground italic px-3">
+      <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
+        <Frown size={150} />
+        <h2 className="text-xl">
         Quelque chose s&apos;est mal passé. 
-      </p>
+        </h2>
+      </div>
     );
   }
 
