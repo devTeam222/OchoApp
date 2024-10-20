@@ -6,12 +6,8 @@ const nextConfig = {
         },
     },
     serverExternalPackages: ["@node-rs/argon2"],
-    webpack: (config) => {
-        config.resolve.alias['@node-rs/argon2-wasm32-wasi'] = '@node-rs/argon2';
-        return config;
-    },
-    images: {
-        remotePatterns: [
+    images:{
+        remotePatterns:[
             {
                 protocol: "https",
                 hostname: "utfs.io",
@@ -23,7 +19,7 @@ const nextConfig = {
             },
         ],
     },
-    rewrites: () => {
+    rewrites: ()=>{
         return [
             {
                 source: "/hashtag/:tag",
@@ -34,4 +30,3 @@ const nextConfig = {
 };
 
 export default nextConfig;
-
