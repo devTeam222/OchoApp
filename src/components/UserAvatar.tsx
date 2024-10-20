@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import Image, { StaticImageData } from "next/image";
 import avatarPlaceholder from "@/assets/avatar-placeholder.png";
@@ -28,7 +28,7 @@ export default function UserAvatar({
     >
       <UserRound
         className={cn(
-          "absolute rounded-full text-muted-foreground",
+          "absolute left-[50%] top-[50%] -translate-x-[50%] -translate-y-[50%] rounded-full text-muted-foreground",
           avatarUrl && "pointer-events-none opacity-0",
         )}
         size={size > 32 ? size - 16 : size - 4}
