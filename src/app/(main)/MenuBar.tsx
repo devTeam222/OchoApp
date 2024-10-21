@@ -25,7 +25,7 @@ export default function MenuBar({ className }: MenuBarProps) {
     <div className={className}>
       <Button
         variant="ghost"
-        className="flex items-center justify-start max-sm:h-fit sm:gap-3"
+        className="flex items-center justify-start max-sm:h-fit sm:gap-3 max-sm:p-1.5"
         title="Accueil"
         asChild
       >
@@ -37,7 +37,7 @@ export default function MenuBar({ className }: MenuBarProps) {
       </Button>
       <Button
         variant="ghost"
-        className="flex items-center justify-start max-sm:h-fit sm:gap-3"
+        className="flex items-center justify-start max-sm:h-fit sm:gap-3 max-sm:p-1.5"
         title="Recherche"
         onClick={handleSearchClick} // Trigger search activation when clicked
         asChild
@@ -57,7 +57,7 @@ export default function MenuBar({ className }: MenuBarProps) {
 
       <Button
         variant="ghost"
-        className="flex items-center justify-start max-sm:h-fit sm:gap-3"
+        className="flex items-center justify-start max-sm:h-fit sm:gap-3 max-sm:p-1.5"
         title="Messages"
         asChild
       >
@@ -72,7 +72,7 @@ export default function MenuBar({ className }: MenuBarProps) {
       </Button>
       <Button
         variant="ghost"
-        className="flex items-center justify-start max-sm:h-fit sm:gap-3"
+        className="flex items-center justify-start max-sm:h-fit sm:gap-3 max-sm:p-1.5"
         title="Favoris"
         asChild
       >

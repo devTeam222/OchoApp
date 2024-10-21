@@ -29,7 +29,7 @@ export default function NotificationsButton({
   return (
     <Button
       variant="ghost"
-      className="flex items-center justify-start max-sm:h-fit sm:gap-3"
+      className="flex items-center justify-start max-sm:h-fit sm:gap-3 max-sm:p-1.5"
       title="Notifications"
       asChild
     >
