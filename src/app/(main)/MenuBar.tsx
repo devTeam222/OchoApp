@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Bookmark, Home, MessageSquareMore, Search } from "lucide-react";
+import { Bookmark, Compass, Home, MessageSquareMore, Search } from "lucide-react";
 import Link from "next/link";
 import NotificationsButton from "./NotificationsButton";
 import { useSession } from "./SessionProvider";
@@ -46,7 +46,8 @@ export default function MenuBar({ className }: MenuBarProps) {
           href="/search"
           className="items-center max-sm:flex max-sm:flex-col"
         >
-          <Search />
+          <Compass className="sm:hidden"/>
+          <Search className="max-sm:hidden"/>
           <span className="text-xs sm:hidden">Explorer</span>
           <span className="max-lg:hidden">Recherche</span>
         </Link>
