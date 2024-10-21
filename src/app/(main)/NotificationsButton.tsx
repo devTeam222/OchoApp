@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { Button } from "@/components/ui/button";
 import kyInstance from "@/lib/ky";
@@ -14,7 +14,7 @@ interface NotificationsButtonProps {
 export default function NotificationsButton({
   initialState,
 }: NotificationsButtonProps) {
-  const isProduction = process.env.NODE_ENV === "production"
+  const isProduction = process.env.NODE_ENV === "production";
 
   const { data } = useQuery({
     queryKey: ["unread-notifications"],
@@ -29,20 +29,24 @@ export default function NotificationsButton({
   return (
     <Button
       variant="ghost"
-      className="flex items-center justify-start gap-3"
+      className="flex items-center justify-start max-sm:h-fit sm:gap-3"
       title="Notifications"
       asChild
     >
-      <Link href="/notifications">
+      <Link
+        href="/notifications"
+        className="items-center max-sm:flex max-sm:flex-col"
+      >
         <div className="relative">
           <Bell />
           {!!data.unreadCount && (
-            <span className="absolute -right-1 -top-1 rounded-full bg-primary text-primary-foreground px-1 text-xs font-medium tabular-nums">
-                {data.unreadCount}
+            <span className="absolute -right-1 -top-1 rounded-full bg-primary px-1 text-xs font-medium tabular-nums text-primary-foreground">
+              {data.unreadCount}
             </span>
           )}
         </div>
-        <span className="hidden lg:inline">Notifications</span>
+        <span className="text-xs sm:hidden">Activités</span>
+        <span className="max-lg:hidden">Notifications</span>
       </Link>
     </Button>
   );

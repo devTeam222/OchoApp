@@ -25,26 +25,30 @@ export default function MenuBar({ className }: MenuBarProps) {
     <div className={className}>
       <Button
         variant="ghost"
-        className="flex items-center justify-start gap-3"
+        className="flex items-center justify-start max-sm:h-fit sm:gap-3"
         title="Accueil"
         asChild
       >
-        <Link href="/">
+        <Link href="/" className="items-center max-sm:flex max-sm:flex-col">
           <Home />
-          <span className="hidden lg:inline">Accueil</span>
+          <span className="text-xs sm:hidden">Accueil</span>
+          <span className="max-lg:hidden">Accueil</span>
         </Link>
       </Button>
-
       <Button
         variant="ghost"
-        className="flex items-center justify-start gap-3"
+        className="flex items-center justify-start max-sm:h-fit sm:gap-3"
         title="Recherche"
-        asChild
         onClick={handleSearchClick} // Trigger search activation when clicked
+        asChild
       >
-        <Link href="/search">
+        <Link
+          href="/search"
+          className="items-center max-sm:flex max-sm:flex-col"
+        >
           <Search />
-          <span className="hidden lg:inline">Recherche</span>
+          <span className="text-xs sm:hidden">Explorer</span>
+          <span className="max-lg:hidden">Recherche</span>
         </Link>
       </Button>
 
@@ -52,25 +56,32 @@ export default function MenuBar({ className }: MenuBarProps) {
 
       <Button
         variant="ghost"
-        className="flex items-center justify-start gap-3"
+        className="flex items-center justify-start max-sm:h-fit sm:gap-3"
         title="Messages"
         asChild
       >
-        <Link href="/messages">
+        <Link
+          href="/messages"
+          className="items-center max-sm:flex max-sm:flex-col"
+        >
           <MessageSquareMore />
-          <span className="hidden lg:inline">Messages</span>
+          <span className="text-xs sm:hidden">Messages</span>
+          <span className="max-lg:hidden">Messages</span>
         </Link>
       </Button>
-
       <Button
         variant="ghost"
-        className="flex items-center justify-start gap-3"
+        className="flex items-center justify-start max-sm:h-fit sm:gap-3"
         title="Favoris"
         asChild
       >
-        <Link href="/bookmarks">
+        <Link
+          href="/bookmarks"
+          className="items-center max-sm:flex max-sm:flex-col"
+        >
           <Bookmark />
-          <span className="hidden lg:inline">Favoris</span>
+          <span className="text-xs sm:hidden">Favoris</span>
+          <span className="max-lg:hidden">Favoris</span>
         </Link>
       </Button>
     </div>
