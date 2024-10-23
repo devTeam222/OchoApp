@@ -37,20 +37,34 @@ export default function MenuBar({ className }: MenuBarProps) {
       </Button>
       <Button
         variant="ghost"
-        className="flex items-center justify-start max-sm:h-fit sm:gap-3 max-sm:p-1.5"
+        className="flex items-center justify-start max-sm:h-fit sm:gap-3 max-sm:p-1.5 sm:hidden"
         title="Recherche"
         onClick={handleSearchClick} // Trigger search activation when clicked
         asChild
       >
-        <Link
-          href="/search"
-          className="items-center max-sm:flex max-sm:flex-col"
-        >
-          <Compass className="sm:hidden"/>
-          <Search className="max-sm:hidden"/>
-          <span className="text-xs sm:hidden">Explorer</span>
-          <span className="max-lg:hidden">Recherche</span>
-        </Link>
+          <Link
+            href="/explore"
+            className="items-center max-sm:flex max-sm:flex-col "
+          >
+            <Compass/>
+            <span className="text-xs">Explorer</span>
+          </Link>
+      </Button>
+      <Button
+        variant="ghost"
+        className="flex items-center justify-start max-sm:h-fit sm:gap-3 max-sm:p-1.5 max-sm:hidden"
+        title="Recherche"
+        onClick={handleSearchClick} // Trigger search activation when clicked
+        asChild
+      >
+        
+          <Link
+            href="/search"
+            className=""
+          >
+            <Search/>
+            <span className="max-lg:hidden">Recherche</span>
+          </Link>
       </Button>
 
       <NotificationsButton initialState={{ unreadCount: 0 }} />

@@ -24,7 +24,11 @@ const nextConfig = {
             {
                 source: "/hashtag/:tag",
                 destination: "/search?q=%23:tag"
-            }
+            },
+            {
+                source: "/explore",
+                destination: "/search"
+            },
         ]
     },
 };
