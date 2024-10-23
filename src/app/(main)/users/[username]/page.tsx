@@ -14,6 +14,7 @@ import UserPosts from "./UserPosts";
 import Linkify from "@/components/Linkify";
 import EditProfileButton from "./EditProfileButton";
 import { Frown } from "lucide-react";
+import SetNavigation from "@/components/SetNavigation";
 
 interface PageProps {
   params: { username: string };
@@ -79,6 +80,7 @@ export default async function page({ params: { username } }: PageProps) {
 
   return (
     <main className="flex w-full min-w-0 gap-5 max-sm:p-4">
+      <SetNavigation navPage={null}/>
       <div className="w-full min-w-0 space-y-5 pb-3">
         <UserProfile
           user={user}

@@ -1,18 +1,22 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button, ButtonProps } from "@/components/ui/button";
 import kyInstance from "@/lib/ky";
 import { NotificationCountInfo } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Bell } from "lucide-react";
 import Link from "next/link";
 
-interface NotificationsButtonProps {
+interface NotificationsButtonProps extends ButtonProps {
   initialState: NotificationCountInfo;
+  className?: string;
 }
 
 export default function NotificationsButton({
   initialState,
+  className,
+  ...props
 }: NotificationsButtonProps) {
   const isProduction = process.env.NODE_ENV === "production";
 
@@ -28,8 +32,9 @@ export default function NotificationsButton({
 
   return (
     <Button
+      {...props}
       variant="ghost"
-      className="flex items-center justify-start max-sm:h-fit sm:gap-3 max-sm:p-1.5"
+      className={cn("flex items-center justify-start max-sm:h-fit max-sm:p-1.5 sm:gap-3", className)}
       title="Notifications"
       asChild
     >

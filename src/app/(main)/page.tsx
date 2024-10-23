@@ -3,10 +3,12 @@ import TrendsSidebar from "@/components/TrendsSidebar";
 import ForYouFeed from "./ForYouFeed";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FollowingFeed from "./FollowingFeed";
+import SetNavigation from "@/components/SetNavigation";
 
 export default function Home() {
   return (
     <main className="flex w-full min-w-0 gap-5 max-sm:p-4 h-fit">
+      <SetNavigation navPage="home" />
       <div className="w-full min-w-0 space-y-5">
         <PostEditor />
         <Tabs defaultValue="for-you">

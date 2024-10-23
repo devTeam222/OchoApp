@@ -2,6 +2,7 @@ import { validateRequest } from "@/auth";
 import FollowButton from "@/components/FollowButton";
 import Linkify from "@/components/Linkify";
 import Post from "@/components/posts/Post";
+import SetNavigation from "@/components/SetNavigation";
 import UserAvatar from "@/components/UserAvatar";
 import UserTooltip from "@/components/UserTooltip";
 import prisma from "@/lib/prisma";
@@ -54,6 +55,7 @@ export default async function Page({ params: { postId } }: PageProps) {
 
   return (
     <main className="flex w-full min-w-0 gap-5 max-sm:p-4">
+      <SetNavigation navPage={null} />
       <div className="w-full min-w-0 space-y-5">
         <Post post={post} />
       </div>

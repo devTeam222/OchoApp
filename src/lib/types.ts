@@ -5,6 +5,11 @@ export type MenuBarContextType = {
   isVisible: boolean;
   setIsVisible: (isVisible: boolean) => void;
 };
+export type NavigationType = "home" | "explore" | "activity" | "messages" |"bookmarks" | null;
+export type NavigationContextType = {
+  currentNavigation: NavigationType;
+  setCurrentNavigation: (currentNavigation: NavigationType) => void;
+};
 
 export function getUserDataSelect(loggedInUserId: string) {
   return {

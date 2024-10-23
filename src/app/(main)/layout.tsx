@@ -7,6 +7,7 @@ import MenuBar from "./MenuBar";
 import BottomMenuBar from "@/components/BottomMenuBar";
 import { ActiveChatProvider } from "@/context/ActiveChatContext";
 import { SearchProvider } from "@/context/SearchContext";
+import { NavigationProvider } from "@/context/NavigationContext";
 
 export default async function Layout({
   children,
@@ -23,22 +24,24 @@ export default async function Layout({
 
   return (
     <SessionProvider value={session}>
-      <MenuBarProvider>
-        <SearchProvider>
-          <ActiveChatProvider>
-            <div className="relative flex h-screen max-h-dvh min-h-dvh w-full flex-col">
-              <Navbar />
-              <div className="relative h-full max-h-full w-full overflow-hidden">
-                <div className="mx-auto flex h-full max-h-full w-full max-w-7xl gap-5 overflow-auto sm:p-5">
-                  <MenuBar className="sticky top-0 hidden h-fit flex-none space-y-3 rounded-2xl bg-card px-3 py-5 sm:block lg:px-5 xl:w-60" />
-                  {children}
+      <NavigationProvider>
+        <MenuBarProvider>
+          <SearchProvider>
+            <ActiveChatProvider>
+              <div className="relative flex h-screen max-h-dvh min-h-dvh w-full flex-col">
+                <Navbar />
+                <div className="relative h-full max-h-full w-full overflow-hidden">
+                  <div className="mx-auto flex h-full max-h-full w-full max-w-7xl gap-5 overflow-auto sm:p-5">
+                    <MenuBar className="sticky top-0 hidden h-fit flex-none space-y-3 rounded-2xl bg-card px-3 py-5 sm:block lg:px-5 xl:w-60" />
+                    {children}
+                  </div>
                 </div>
+                <BottomMenuBar />
               </div>
-              <BottomMenuBar />
-            </div>
-          </ActiveChatProvider>
-        </SearchProvider>
-      </MenuBarProvider>
+            </ActiveChatProvider>
+          </SearchProvider>
+        </MenuBarProvider>
+      </NavigationProvider>
     </SessionProvider>
   );
 }
