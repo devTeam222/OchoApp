@@ -41,7 +41,7 @@ export default function Comments({ post, onClose }: CommentsProps) {
   const comments = data?.pages.flatMap((page) => page.comments) || [];
 
   return (
-    <div className="bottom-0 left-0 space-y-3 max-sm:fixed max-sm:z-10 max-sm:flex max-sm:w-full max-sm:flex-col-reverse max-sm:rounded-e-sm max-sm:rounded-s-sm max-sm:bg-card max-sm:p-2">
+    <div className="bottom-0 left-0 space-y-3 max-sm:fixed max-sm:z-10 max-sm:flex max-sm:w-full max-sm:flex-col-reverse max-sm:rounded-e-sm max-sm:rounded-s-sm max-sm:bg-card max-sm:p-2 max-sm:animate-appear-b">
       <CommentInput post={post} />
       {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
       {hasNextPage && (

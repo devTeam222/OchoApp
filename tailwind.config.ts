@@ -81,11 +81,36 @@ const config = {
           from: { transform: "scale(0)" },
           to: { transform: "scale(1)" },
         },
+        "scale-down": {
+          from: { transform: "scale(1)" },
+          to: { transform: "scale(0)" },
+        },
+        "appear-x": {
+          from: { opacity: "0", transform: "translateX(-100%)" },
+          to: { opacity: "1", transform: "translateX(0)" },
+        },
+        "appear-y" : {
+          from: { opacity: "0", transform: "translateY(-100%)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "appear-r": {
+          from: { opacity: "0", transform: "translateX(100%)" },
+          to: { opacity: "1", transform: "translateX(0)" },
+        },
+        "appear-b" : {
+          from: { opacity: "0", transform: "translateY(100%)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         scale: "scale 300ms forwards",
+        "scale-down": "scale-down 300ms forwards",
+        "appear-x": "appear-x 300ms forwards",
+        "appear-y": "appear-y 300ms forwards",
+        "appear-r": "appear-r 300ms forwards",
+        "appear-b": "appear-b 300ms forwards",
       },
     },
   },
