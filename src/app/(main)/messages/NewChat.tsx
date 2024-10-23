@@ -305,7 +305,8 @@ export default function NewChat({ onClose, className }: NewChatProps) {
             </li>
             {!!selectedUsers.length && (
               <>
-                <li className="sticky top-0 flex w-full animate-scale gap-2 overflow-y-auto p-3 px-4">
+                <li className="sticky top-0 w-full animate-scale gap-2 overflow-x-auto p-3 px-4">
+                  <div className="w-fit flex">
                   {selectedUsers.map((user, index) => (
                     <div
                       className="flex flex-col items-center gap-1"
@@ -319,10 +320,11 @@ export default function NewChat({ onClose, className }: NewChatProps) {
                         </div>
                       </div>
                       <span className="text-xs text-muted-foreground">
-                        {user.displayName.split(" ")[0]}
+                        {user.displayName.split(" ")[0].split("-")[0].split("_")[0]}
                       </span>
                     </div>
                   ))}
+                  </div>
                 </li>
                 <li className="sticky top-0 flex w-full animate-scale gap-2 px-2 max-sm:hidden">
                   <LoadingButton loading={isPending} className="flex-1">
@@ -332,6 +334,7 @@ export default function NewChat({ onClose, className }: NewChatProps) {
                     variant="secondary"
                     className="flex-1"
                     onClick={disableGroup}
+                    disabled={isPending}
                   >
                     Annuler
                   </Button>
