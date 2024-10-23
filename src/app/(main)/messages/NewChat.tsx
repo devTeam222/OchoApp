@@ -88,7 +88,16 @@ export default function NewChat({ onClose, className }: NewChatProps) {
     followingQuery.isFetching &&
     suggestionsQuery.isFetching;
 
+  const isPending = mutation.isPending || saveMsgMutation.isPending;
+
+  
   const handleChatStart = (user: UserData | null = null) => {
+    if (isPending) {
+      toast({
+        description: "Patientez la fin de l'opération en cours"
+      });
+      return;
+    }
     if (user && !isGroup) {
       const userId = user.id;
       if (loggedinUser.id === userId) {
@@ -161,7 +170,6 @@ export default function NewChat({ onClose, className }: NewChatProps) {
       });
     }
   };
-  const isPending = mutation.isPending || saveMsgMutation.isPending;
   return (
     <>
       <div
@@ -224,7 +232,9 @@ export default function NewChat({ onClose, className }: NewChatProps) {
             </li>
             {isPending && (
               <li className="w-full p-3">
-                <LoadingButton loading={isPending} className="w-full">Patientez</LoadingButton>
+                <LoadingButton loading={isPending} className="w-full">
+                  Patientez
+                </LoadingButton>
               </li>
             )}
             <li
@@ -271,7 +281,7 @@ export default function NewChat({ onClose, className }: NewChatProps) {
           </ul>
           <ul
             className={cn(
-              "relative flex min-w-full translate-x-0 flex-col gap-1 transition-all",
+              "relative flex min-w-full flex-1 translate-x-0 flex-col gap-1 overflow-y-auto transition-all",
               isGroup && "-translate-x-full",
             )}
           >
@@ -295,14 +305,14 @@ export default function NewChat({ onClose, className }: NewChatProps) {
             </li>
             {!!selectedUsers.length && (
               <>
-                <li className="animate-scale sticky top-0 flex w-full gap-2 overflow-y-auto p-3 px-4">
+                <li className="sticky top-0 flex w-full animate-scale gap-2 overflow-y-auto p-3 px-4">
                   {selectedUsers.map((user, index) => (
                     <div
                       className="flex flex-col items-center gap-1"
                       key={index}
                       onClick={() => removeUser(user)}
                     >
-                      <div className="animate-scale relative">
+                      <div className="relative animate-scale">
                         <UserAvatar avatarUrl={user.avatarUrl} size={48} />
                         <div className="absolute bottom-0 right-0 flex cursor-pointer items-center justify-center rounded-full bg-muted p-0.5 outline-2 outline-background">
                           <XIcon size={15} />
@@ -314,7 +324,7 @@ export default function NewChat({ onClose, className }: NewChatProps) {
                     </div>
                   ))}
                 </li>
-                <li className="animate-scale sticky top-0 flex w-full gap-2 px-2 max-sm:hidden">
+                <li className="sticky top-0 flex w-full animate-scale gap-2 px-2 max-sm:hidden">
                   <LoadingButton loading={isPending} className="flex-1">
                     Créer
                   </LoadingButton>
@@ -333,38 +343,43 @@ export default function NewChat({ onClose, className }: NewChatProps) {
                 <Loader2 className="animate-spin" />
               </div>
             )}
-            <UsersList
-              query={friendsQuery}
-              title="Amis"
-              isGroup
-              selectedUsers={selectedUsers}
-              onSelect={addUser}
-            />
-            <UsersList
-              query={followersQuery}
-              title="Followers"
-              isGroup
-              selectedUsers={selectedUsers}
-              onSelect={addUser}
-            />
-            <UsersList
-              query={followingQuery}
-              title="Suivis"
-              isGroup
-              selectedUsers={selectedUsers}
-              onSelect={addUser}
-            />
-            <UsersList
-              query={suggestionsQuery}
-              title="Suggestions"
-              isGroup
-              selectedUsers={selectedUsers}
-              onSelect={addUser}
-            />
+            <li className="flex-1 overflow-y-auto">
+              <ul className="flex flex-col gap-1">
+                <UsersList
+                  query={friendsQuery}
+                  title="Amis"
+                  isGroup
+                  selectedUsers={selectedUsers}
+                  onSelect={addUser}
+                />
+                <UsersList
+                  query={followersQuery}
+                  title="Followers"
+                  isGroup
+                  selectedUsers={selectedUsers}
+                  onSelect={addUser}
+                />
+                <UsersList
+                  query={followingQuery}
+                  title="Suivis"
+                  isGroup
+                  selectedUsers={selectedUsers}
+                  onSelect={addUser}
+                />
+                <UsersList
+                  query={suggestionsQuery}
+                  title="Suggestions"
+                  isGroup
+                  selectedUsers={selectedUsers}
+                  onSelect={addUser}
+                />
+              </ul>
+            </li>
             <button
               className={cn(
                 "absolute bottom-7 right-7 aspect-square h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground max-sm:flex sm:hidden",
-                (isPending || !selectedUsers.length) && "bg-primary-foreground text-primary",
+                (isPending || !selectedUsers.length) &&
+                  "bg-primary-foreground text-primary",
               )}
               title="Demarrer une nouvelle discussion"
               onClick={() => handleChatStart()}
@@ -378,4 +393,3 @@ export default function NewChat({ onClose, className }: NewChatProps) {
     </>
   );
 }
-

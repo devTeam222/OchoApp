@@ -129,14 +129,14 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
     <div className="space-y-4">
       {!!selectedUsers.length && (
         <>
-          <div className="animate-scale sticky top-0 flex w-full gap-2 overflow-y-auto p-3 px-4">
+          <div className="sticky top-0 flex w-full animate-scale gap-2 overflow-y-auto p-3 px-4">
             {selectedUsers.map((user, index) => (
               <div
                 className="flex flex-col items-center gap-1"
                 key={index}
                 onClick={() => removeUser(user)}
               >
-                <div className="animate-scale relative">
+                <div className="relative animate-scale">
                   <UserAvatar avatarUrl={user.avatarUrl} size={48} />
                   <div className="absolute bottom-0 right-0 flex cursor-pointer items-center justify-center rounded-full bg-muted p-0.5 outline-2 outline-background">
                     <XIcon size={15} />
@@ -148,7 +148,7 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
               </div>
             ))}
           </div>
-          <div className="animate-scale sticky top-0 flex w-full gap-2 px-2">
+          <div className="sticky top-0 flex w-full animate-scale gap-2 px-2">
             <LoadingButton
               onClick={handleSubmit}
               loading={mutation.isPending}
@@ -206,13 +206,13 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
             </p>
           </div>
         )}
-        <ul>
-        <UsersList
-          query={userQuery}
-          onSelect={addUser}
-          title="Utilisateurs disponibles"
-          selectedUsers={selectedUsers}
-        />
+        <ul className="flex-1 overflow-y-auto max-h-[60vh]">
+          <UsersList
+            query={userQuery}
+            onSelect={addUser}
+            title="Utilisateurs disponibles"
+            selectedUsers={selectedUsers}
+          />
         </ul>
       </div>
     </div>
