@@ -6,6 +6,7 @@ import CommentsLoadingSkeleton from "./CommentsLoadingSkeleton";
 import Comment from "./Comment";
 import { Button } from "../ui/button";
 import { Loader2, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface CommentsProps {
   post: PostData;
@@ -53,8 +54,8 @@ export default function Comments({ post, onClose }: CommentsProps) {
           Afficher les commentaires precedents
         </Button>
       )}
-      <div className="divide-y-2">
-        {status === "pending" && <CommentsLoadingSkeleton />}
+      {status === "pending" && <CommentsLoadingSkeleton />}
+      <div className={cn("divide-y-2", status === "pending" && "hidden")}>
         {status === "success" && !comments.length && !hasNextPage && (
           <p className="w-full py-4 text-center text-muted-foreground max-sm:flex max-sm:h-[50vh] max-sm:items-center max-sm:justify-center">
             Aucun commentaire à afficher
