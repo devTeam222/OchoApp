@@ -87,7 +87,7 @@ export default function SideBar({
 
   return (
     <div className="relative flex h-full flex-col">
-      <div className="flex items-center justify-between p-4 text-lg font-bold max-sm:bg-primary/10">
+      <div className="flex items-center justify-between p-4 text-lg font-bold max-sm:bg-accent">
         <span>Discussions</span>
         <span
           className="cursor-pointer hover:text-primary max-sm:hidden"

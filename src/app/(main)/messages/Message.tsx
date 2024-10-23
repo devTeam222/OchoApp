@@ -187,7 +187,7 @@ export default function Message({
             )}
             <Linkify>
               <p
-                className={`w-fit rounded-3xl px-4 py-2 *:font-bold ${message.senderId === loggedUser.id ? "bg-primary text-primary-foreground *:text-primary-foreground" : "bg-primary/10"}`}
+                className={`w-fit rounded-3xl px-4 py-2 *:font-bold ${message.senderId === loggedUser.id ? "bg-primary text-primary-foreground *:text-primary-foreground" : "bg-accent"}`}
               >
                 {message.content}
               </p>

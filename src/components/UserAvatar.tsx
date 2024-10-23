@@ -39,7 +39,7 @@ export default function UserAvatar({
         className={cn(
           "aspect-square h-fit flex-none rounded-full bg-secondary object-cover",
           (!avatarUrl || isImageErr) && "pointer-events-none opacity-0",
-          `max-w-[${size}] min-w-[${size}] max-h-[${size}] min-h-[${size}]`,
+          `max-w-[${size}px] min-w-[${size}px] max-h-[${size}px] min-h-[${size}px]`,
         )}
         width={size}
         height={size}

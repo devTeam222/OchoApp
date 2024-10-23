@@ -177,8 +177,8 @@ export default function StartChatForm({ onChatStart }: StartChatFormProps) {
                   key={user.id}
                   className={`cursor-pointer rounded-2xl p-2 ${
                     selectedUsers.some((u) => u.id === user.id)
-                      ? "bg-primary/10"
-                      : "bg-card shadow-sm hover:bg-primary/10"
+                      ? "bg-accent"
+                      : "bg-card shadow-sm hover:bg-accent"
                   }`}
                   onClick={() => handleUserSelect(user)}
                 >
@@ -205,8 +205,8 @@ export default function StartChatForm({ onChatStart }: StartChatFormProps) {
                     key={user.id}
                     className={`cursor-pointer rounded-2xl p-2 ${
                       selectedUsers.some((u) => u.id === user.id)
-                        ? "bg-primary/10"
-                        : "bg-card shadow-sm hover:bg-primary/10"
+                        ? "bg-accent"
+                        : "bg-card shadow-sm hover:bg-accent"
                     }`}
                     onClick={() => handleUserSelect(user)}
                   >
@@ -228,8 +228,8 @@ export default function StartChatForm({ onChatStart }: StartChatFormProps) {
                 key={user.id}
                 className={`cursor-pointer rounded-2xl p-2 ${
                   selectedUsers.some((u) => u.id === user.id)
-                    ? "bg-primary/10"
-                    : "bg-card shadow-sm hover:bg-primary/10"
+                    ? "bg-accent"
+                    : "bg-card shadow-sm hover:bg-accent"
                 }`}
                 onClick={() => handleUserSelect(user)}
               >

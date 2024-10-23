@@ -182,7 +182,7 @@ export default function NewChat({ onClose, className }: NewChatProps) {
           className,
         )}
       >
-        <div className="flex items-center bg-primary/10 px-2 py-4 text-xl font-bold">
+        <div className="flex items-center bg-accent px-2 py-4 text-xl font-bold">
           {isGroup ? (
             <div className="cursor-pointer p-2" onClick={disableGroup}>
               <ArrowLeft />

@@ -47,7 +47,7 @@ export default function Notification({ notification }: NotificationProps) {
       <article
         className={cn(
           "flex gap-3 rounded-2xl bg-card p-5 shadow-sm transition-colors hover:bg-card/70",
-          !notification.read && "bg-primary/10",
+          !notification.read && "bg-accent",
         )}
       >
         <div className="my-1">{icon}</div>

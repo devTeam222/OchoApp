@@ -109,7 +109,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
   return (
     <li
       key={channel.id}
-      className={`cursor-pointer p-2 ${active && "bg-primary/10"}`}
+      className={`cursor-pointer p-2 ${active && "bg-accent"}`}
       onClick={onSelect}
       title={messagePreviewContent || "Aucun message"}
     >
