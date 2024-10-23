@@ -53,7 +53,7 @@ export default function MenuBar({ className }: MenuBarProps) {
         variant="ghost"
         className={cn(
           "flex items-center justify-start max-sm:h-fit max-sm:p-1.5 sm:gap-3",
-          currentNavigation === "home" && "text-primary hover:text-primary",
+          currentNavigation === "home" && "text-primary hover:text-primary bg-accent",
         )}
         title="Accueil"
         asChild
@@ -69,7 +69,7 @@ export default function MenuBar({ className }: MenuBarProps) {
         variant="ghost"
         className={cn(
           "flex items-center justify-start max-sm:h-fit max-sm:p-1.5 sm:hidden sm:gap-3",
-          currentNavigation === "explore" && "text-primary hover:text-primary",
+          currentNavigation === "explore" && "text-primary hover:text-primary bg-accent",
         )}
         title="Recherche"
         onClick={handleSearchClick} // Trigger search activation when clicked
@@ -86,7 +86,7 @@ export default function MenuBar({ className }: MenuBarProps) {
       <Button
         variant="ghost"
         className={cn("flex items-center justify-start max-sm:hidden max-sm:h-fit max-sm:p-1.5 sm:gap-3", 
-          currentNavigation === "explore" && "text-primary hover:text-primary",
+          currentNavigation === "explore" && "text-primary hover:text-primary bg-accent",
         )}
         title="Recherche"
         onClick={handleSearchClick} // Trigger search activation when clicked
@@ -102,7 +102,7 @@ export default function MenuBar({ className }: MenuBarProps) {
         initialState={{ unreadCount: 0 }}
         onClick={setActivityNav}
         className={cn(
-          currentNavigation === "activity" && "text-primary hover:text-primary"
+          currentNavigation === "activity" && "text-primary hover:text-primary bg-accent"
         )}
       />
 
@@ -110,7 +110,7 @@ export default function MenuBar({ className }: MenuBarProps) {
         variant="ghost"
         className={cn(
           "flex items-center justify-start max-sm:h-fit max-sm:p-1.5 sm:gap-3",
-          currentNavigation === "messages" && "text-primary hover:text-primary",
+          currentNavigation === "messages" && "text-primary hover:text-primary bg-accent",
         )}
         title="Messages"
         asChild
@@ -129,7 +129,7 @@ export default function MenuBar({ className }: MenuBarProps) {
         variant="ghost"
         className={cn(
           "flex items-center justify-start max-sm:h-fit max-sm:p-1.5 sm:gap-3",
-          currentNavigation === "bookmarks" && "text-primary hover:text-primary",
+          currentNavigation === "bookmarks" && "text-primary hover:text-primary bg-accent",
         )}
         title="Favoris"
         asChild
