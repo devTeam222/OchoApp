@@ -5,13 +5,14 @@ import kyInstance from "@/lib/ky";
 import CommentsLoadingSkeleton from "./CommentsLoadingSkeleton";
 import Comment from "./Comment";
 import { Button } from "../ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 
 interface CommentsProps {
   post: PostData;
+  onClose: () => void;
 }
 
-export default function Comments({ post }: CommentsProps) {
+export default function Comments({ post, onClose }: CommentsProps) {
   const {
     data,
     fetchNextPage,
@@ -39,9 +40,9 @@ export default function Comments({ post }: CommentsProps) {
   const comments = data?.pages.flatMap((page) => page.comments) || [];
 
   return (
-    <div className="space-y-3">
-      <CommentInput post={post}/>
-      {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin"/>}
+    <div className="bottom-0 left-0 space-y-3 max-sm:fixed max-sm:z-10 max-sm:flex max-sm:w-full max-sm:flex-col-reverse max-sm:rounded-e-sm max-sm:rounded-s-sm max-sm:bg-card max-sm:p-2">
+      <CommentInput post={post} />
+      {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
       {hasNextPage && (
         <Button
           variant="link"
@@ -55,18 +56,28 @@ export default function Comments({ post }: CommentsProps) {
       <div className="divide-y-2">
         {status === "pending" && <CommentsLoadingSkeleton />}
         {status === "success" && !comments.length && !hasNextPage && (
-          <p className="w-full text-center text-muted-foreground py-4">
+          <p className="w-full py-4 text-center text-muted-foreground max-sm:flex max-sm:h-[50vh] max-sm:items-center max-sm:justify-center">
             Aucun commentaire à afficher
           </p>
         )}
         {status === "error" && (
-          <p className="w-full text-center text-destructive py-4">
-            Erreur lors de la récupération des commentaires
+          <p className="w-full py-4 text-center text-muted-foreground max-sm:flex max-sm:h-[50vh] max-sm:items-center max-sm:justify-center">
+            Quelque chose s&apos;est mal passé
           </p>
         )}
-        {comments.map((comment) => (
-          <Comment key={comment.id} comment={comment} />
-        ))}
+        <div className="overflow-y-auto max-sm:h-[50vh]">
+          {comments.map((comment) => (
+            <Comment key={comment.id} comment={comment} />
+          ))}
+        </div>
+      </div>
+      <div className="relative w-full sm:hidden">
+        {status === "success" && !!comments.length && (
+          <p>{`${comments.length} commentaire${comments.length > 1 ? "s" : ""}`}</p>
+        )}
+        <div className="absolute right-0 top-0" onClick={onClose}>
+          <X />
+        </div>
       </div>
     </div>
   );

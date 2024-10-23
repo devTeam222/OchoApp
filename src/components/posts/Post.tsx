@@ -43,7 +43,6 @@ export default function Post({ post }: PostProps) {
   const lastSeenDate = new Date(post.user.lastSeen).getTime() - 40 * 1000;
 
   const isUserOnline = lastSeenDate > now;
-  
 
   return (
     <article className="group/post flex flex-col gap-5 rounded-2xl bg-card p-5 shadow-sm">
@@ -54,7 +53,10 @@ export default function Post({ post }: PostProps) {
               href={`/users/${post.user.username}`}
               title={`Afficher le profil de ${post.user.displayName}`}
             >
-              <UserAvatar avatarUrl={post.user.avatarUrl} online={isUserOnline}/>
+              <UserAvatar
+                avatarUrl={post.user.avatarUrl}
+                online={isUserOnline}
+              />
             </Link>
           </UserTooltip>
           <div>
@@ -71,7 +73,11 @@ export default function Post({ post }: PostProps) {
               className="block text-sm text-muted-foreground hover:underline"
               suppressHydrationWarning
             >
-              <Time time={post.createdAt} relative={relative} long={!relative} />
+              <Time
+                time={post.createdAt}
+                relative={relative}
+                long={!relative}
+              />
             </Link>
           </div>
         </div>
@@ -116,7 +122,8 @@ export default function Post({ post }: PostProps) {
       </div>
       {showComment && (
         <>
-          <Comments post={post} />
+        <div className="sm:hidden fixed inset-0 z-10" onClick={() => setShowComment(false)}></div>
+          <Comments post={post} onClose={() => setShowComment(false)} />
           <Button
             variant="link"
             onClick={() => setShowComment(false)}
