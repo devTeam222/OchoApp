@@ -55,17 +55,25 @@ export default function Comments({ post, onClose }: CommentsProps) {
         </Button>
       )}
       {status === "pending" && <CommentsLoadingSkeleton />}
-      <div className={cn("divide-y-2", status === "pending" && "hidden")}>
-        {status === "success" && !comments.length && !hasNextPage && (
-          <p className="w-full py-4 text-center text-muted-foreground max-sm:flex max-sm:h-[50vh] max-sm:items-center max-sm:justify-center">
-            Aucun commentaire à afficher
-          </p>
+      {status === "success" && !comments.length && !hasNextPage && (
+        <p className="w-full py-4 text-center text-muted-foreground max-sm:flex max-sm:h-[50vh] max-sm:items-center max-sm:justify-center">
+          Aucun commentaire à afficher
+        </p>
+      )}
+      {status === "error" && (
+        <p className="w-full py-4 text-center text-muted-foreground max-sm:flex max-sm:h-[50vh] max-sm:items-center max-sm:justify-center">
+          Quelque chose s&apos;est mal passé
+        </p>
+      )}
+      <div
+        className={cn(
+          "divide-y-2",
+          (status === "pending" ||
+            (status === "success" && !comments.length && !hasNextPage) ||
+            status === "error") &&
+            "hidden",
         )}
-        {status === "error" && (
-          <p className="w-full py-4 text-center text-muted-foreground max-sm:flex max-sm:h-[50vh] max-sm:items-center max-sm:justify-center">
-            Quelque chose s&apos;est mal passé
-          </p>
-        )}
+      >
         <div className="overflow-y-auto max-sm:h-[50vh]">
           {comments.map((comment) => (
             <Comment key={comment.id} comment={comment} />
