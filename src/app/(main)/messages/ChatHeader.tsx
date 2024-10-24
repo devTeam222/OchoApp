@@ -135,11 +135,8 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
       <div
         className={`flex w-full flex-1 flex-col transition-all ${active ? "absolute inset-0 h-fit min-h-full bg-card max-sm:bg-background sm:rounded-e-3xl" : "relative"}`}
       >
-        {active && (
-          <div className="pointer-events-none absolute inset-0 h-full w-full bg-accent transition-none sm:hidden"></div>
-        )}
         <div
-          className={`group/head flex flex-1 items-center gap-2 ${active ? "cursor-default flex-col p-3" : "cursor-pointer"}`}
+          className={`group/head transition-all flex flex-1 items-center gap-2 ${active ? "cursor-default flex-col p-3" : "cursor-pointer"}`}
           onClick={() => !active && setActive(true)}
         >
           {channel.isGroup ? (
