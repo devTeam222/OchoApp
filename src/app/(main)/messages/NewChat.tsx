@@ -306,10 +306,10 @@ export default function NewChat({ onClose, className }: NewChatProps) {
             {!!selectedUsers.length && (
               <>
                 <li className="sticky top-0 w-full animate-scale gap-2 overflow-x-auto p-3 px-4">
-                  <div className="w-fit flex">
+                  <div className="min-w-fit  flex-nowrap flex gap-1">
                   {selectedUsers.map((user, index) => (
                     <div
-                      className="flex flex-col items-center gap-1"
+                      className="flex flex-col items-center gap-2 flex-shrink-0"
                       key={index}
                       onClick={() => removeUser(user)}
                     >
