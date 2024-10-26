@@ -21,7 +21,7 @@ export default function MessagesButton({
   const isProduction = process.env.NODE_ENV === "production";
 
   const { data } = useQuery({
-    queryKey: ["unread-messages"],
+    queryKey: ["unread-chat-messages"],
     queryFn: () =>
       kyInstance
         .get("/api/messages/unread-count")

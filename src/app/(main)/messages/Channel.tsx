@@ -125,8 +125,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
       new Date(otherUser.lastSeen).getTime() - 40 * 1000 > now);
 
   const select = () => {
-    queryClient.invalidateQueries({ queryKey });
-    queryClient.invalidateQueries({ queryKey: ["unread-messages"] });
+    queryClient.setQueryData(["unread-chat-messages", channel.id], { unreadCount: 0 })
     onSelect();
   };
 

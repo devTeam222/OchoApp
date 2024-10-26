@@ -25,7 +25,7 @@ export default function ChatWindow() {
   }
 
   const handleChannelSelect = (channelId: string) => {
-    queryClient.invalidateQueries({ queryKey : ["unread-chat-messages", channelId] });
+    queryClient.invalidateQueries({ queryKey : ["unread-chat-messages"] });
     queryClient.invalidateQueries({ queryKey: ["unread-messages"] });
     setSelectedChannelId(channelId);
   };

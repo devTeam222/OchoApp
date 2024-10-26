@@ -30,10 +30,6 @@ export default function Message({
   const [isChecked, setIsChecked] = useState(showTime);
 
   const queryKey: QueryKey = ["reads-info", message.id];
-  queryClient.invalidateQueries({
-    queryKey: ["unread-chat-messages", channel.id],
-  });
-  queryClient.invalidateQueries({ queryKey: ["unread-messages"] });
 
   const { data } = useQuery({
     queryKey,
@@ -42,9 +38,9 @@ export default function Message({
     staleTime: Infinity,
   });
 
-  const reads = data?.reads ?? [] ;
+  const reads = data?.reads ?? [];
 
-  useQuery({
+  const { status } = useQuery({
     queryKey,
     queryFn: () => {
       const isRead = !!(
@@ -54,6 +50,15 @@ export default function Message({
     },
     throwOnError: false,
   });
+  queryClient.setQueryData(["unread-chat-messages"], { unreadCount: 0 });
+  queryClient.setQueryData(["unread-chat-messages", channel.id], {
+    unreadCount: 0,
+  });
+
+  if (status === "success") {
+    queryClient.setQueryData(["unread-chat-messages", channel.id], { unreadCount: 0 })
+    queryClient.invalidateQueries({ queryKey: ["unread-messages"] });
+  }
 
   const showDetail = isChecked || showTime;
 
