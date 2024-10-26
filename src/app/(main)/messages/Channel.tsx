@@ -168,15 +168,15 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
             <span>
               <Time time={messagePreview.createdAt} full={false} />
             </span>
-            {!!unreadCount && (
-              <span className="relative flex-1">
-                <span className="relative min-w-fit rounded-full bg-primary px-1 text-xs font-medium tabular-nums text-primary-foreground">
-                  {unreadCount > 9 ? "9+" : unreadCount}
-                </span>
-              </span>
-            )}
           </div>
         </div>
+        {!!unreadCount && (
+          <span className="relative flex-1 justify-end flex items-center">
+            <span className="relative min-w-fit rounded-full bg-primary px-1 text-xs font-medium tabular-nums text-primary-foreground">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          </span>
+        )}
       </div>
     </li>
   );

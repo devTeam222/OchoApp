@@ -30,6 +30,10 @@ export default function Message({
   const [isChecked, setIsChecked] = useState(showTime);
 
   const queryKey: QueryKey = ["reads-info", message.id];
+  queryClient.invalidateQueries({
+    queryKey: ["unread-chat-messages", channel.id],
+  });
+  queryClient.invalidateQueries({ queryKey: ["unread-messages"] });
 
   const { data } = useQuery({
     queryKey,
@@ -38,13 +42,15 @@ export default function Message({
     staleTime: Infinity,
   });
 
-  const { reads } = data ?? { reads: [] };
+  const reads = data?.reads ?? [] ;
 
   useQuery({
     queryKey,
     queryFn: () => {
-      const isRead = !!reads.find((read) => read.id === loggedUser.id);
-      !isRead && kyInstance.post(`/api/message/${messageId}/read`);
+      const isRead = !!(
+        reads && reads.find((read) => read.id === loggedUser.id)
+      );
+      return !isRead ? kyInstance.post(`/api/message/${messageId}/read`) : {};
     },
     throwOnError: false,
   });

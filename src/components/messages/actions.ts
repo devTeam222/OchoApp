@@ -1,9 +1,22 @@
-"use server"
+"use server";
 
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
-import { ChannelData, getChatChannelDataInclude, getMessageDataInclude, getUserDataSelect, MessageData, UserData } from "@/lib/types";
-import { addAdminSchema, addMemberSchema, createChannelSchema, createMessageSchema, memberActionSchema } from "@/lib/validation";
+import {
+  ChannelData,
+  getChatChannelDataInclude,
+  getMessageDataInclude,
+  getUserDataSelect,
+  MessageData,
+  UserData,
+} from "@/lib/types";
+import {
+  addAdminSchema,
+  addMemberSchema,
+  createChannelSchema,
+  createMessageSchema,
+  memberActionSchema,
+} from "@/lib/validation";
 
 export async function submitMessage(input: {
   content: string;
@@ -32,7 +45,22 @@ export async function submitMessage(input: {
       include: getMessageDataInclude(),
     });
 
-    newMessage.type = "CONTENT"
+    const messageId = newMessage.id;
+    await prisma.read.upsert({
+      where: {
+        userId_messageId: {
+          userId,
+          messageId,
+        },
+      }, 
+     create: {
+      userId,
+      messageId,
+     },
+     update: {}
+    });
+
+    newMessage.type = "CONTENT";
 
     return { newMessage, channelId, userId, newChannel: null }; // Pas de nouveau canal
   }
@@ -56,9 +84,23 @@ export async function submitMessage(input: {
     }),
   ]);
 
+  const messageId = newMessage.id;
+  await prisma.read.upsert({
+    where: {
+      userId_messageId: {
+        userId,
+        messageId,
+      },
+    }, 
+   create: {
+    userId,
+    messageId,
+   },
+   update: {}
+  });
+
   return { newMessage, channelId, userId, newChannel };
 }
-
 
 export async function createChatChannel(input: {
   name: string | null;
@@ -75,13 +117,14 @@ export async function createChatChannel(input: {
 
   const { name, isGroup, members } = createChannelSchema.parse(input);
 
-  (!members?.includes(userId) || members.length === 1) && members?.unshift(userId);
+  (!members?.includes(userId) || members.length === 1) &&
+    members?.unshift(userId);
 
   if (!members?.length) {
-    throw new Error("Selectionnez au moins un utilisateur")
+    throw new Error("Selectionnez au moins un utilisateur");
   }
   if (isGroup && members?.length < 2) {
-    throw new Error("Un groupe doit avoir au moins deux membres")
+    throw new Error("Un groupe doit avoir au moins deux membres");
   }
   if (!isGroup) {
     const existingChannel: ChannelData | null = await prisma.channel.findFirst({
@@ -89,7 +132,7 @@ export async function createChatChannel(input: {
         isGroup: false,
         AND: [
           { members: { some: { userId: members[0] } } },
-          { members: { some: { userId: members[1] } } }
+          { members: { some: { userId: members[1] } } },
         ],
       },
       include: getChatChannelDataInclude(),
@@ -106,7 +149,7 @@ export async function createChatChannel(input: {
       members: {
         create: members.map((memberId) => ({
           userId: memberId,
-          type: (isGroup && memberId === userId) ? "OWNER" : "MEMBER",
+          type: isGroup && memberId === userId ? "OWNER" : "MEMBER",
         })),
       },
     },
@@ -117,34 +160,33 @@ export async function createChatChannel(input: {
     data: {
       content: "created",
       channelId: newChannel.id,
-      senderId: (newChannel.isGroup ? user.id : null),
-      type: "CREATE"
+      senderId: newChannel.isGroup ? user.id : null,
+      type: "CREATE",
     },
     include: getMessageDataInclude(),
   });
 
-  const newMembers: (string)[] = newChannel.members.map(member => {
-    return member.userId
-  }).filter(
-    (memberId) => memberId !== userId
-  ).filter(
-    member => member !== null
-  )
+  const newMembers: string[] = newChannel.members
+    .map((member) => {
+      return member.userId;
+    })
+    .filter((memberId) => memberId !== userId)
+    .filter((member) => member !== null);
   if (newMembers && newMembers.length) {
     newMembers.map(async (memberId) => {
       const member = await prisma.channelMember.findUnique({
         where: {
           channelId_userId: {
             channelId: newChannel.id,
-            userId: memberId
-          }
+            userId: memberId,
+          },
         },
         select: {
-          user: { select: getUserDataSelect(memberId) }
-        }
+          user: { select: getUserDataSelect(memberId) },
+        },
       });
       if (!member?.user) {
-        return
+        return;
       }
       const message = await prisma.message.create({
         data: {
@@ -154,26 +196,24 @@ export async function createChatChannel(input: {
           type: "NEWMEMBER",
           channelId: newChannel.id,
         },
-        include: getMessageDataInclude()
+        include: getMessageDataInclude(),
       });
       return message;
     });
-
   }
 
-  const createInfo: MessageData = await prisma.message.findFirst({
+  const createInfo: MessageData = (await prisma.message.findFirst({
     where: {
       channelId: newChannel.id,
     },
     include: getMessageDataInclude(),
     orderBy: {
-      createdAt: 'desc',
+      createdAt: "desc",
     },
     take: 1,
-  }) as MessageData
-  
-  return { newChannel, userId, createInfo };
+  })) as MessageData;
 
+  return { newChannel, userId, createInfo };
 }
 export async function addMembers(input: {
   channelId: string;
@@ -189,15 +229,14 @@ export async function addMembers(input: {
 
   const { channelId, members } = addMemberSchema.parse(input);
 
-
   if (!members?.length) {
-    throw new Error("Selectionnez au moins un utilisateur")
+    throw new Error("Selectionnez au moins un utilisateur");
   }
   const channel = await prisma.channel.findUnique({
     where: {
-      id: channelId
-    }
-  })
+      id: channelId,
+    },
+  });
   if (!channel) {
     throw new Error("La discussion n'existe pas");
   }
@@ -209,19 +248,23 @@ export async function addMembers(input: {
   }
   const existingMembers = await prisma.channelMember.findMany({
     where: {
-      channelId
-    }
+      channelId,
+    },
   });
   if (existingMembers.length >= channel.maxMembers) {
     throw new Error("Ce groupe est plein");
   }
 
-  const newMembers = members.filter(memberId =>
-    !existingMembers.some(existingMember => existingMember.userId === memberId)
+  const newMembers = members.filter(
+    (memberId) =>
+      !existingMembers.some(
+        (existingMember) => existingMember.userId === memberId,
+      ),
   );
 
-  const newMembersIds = newMembers.map(memberId => ({
-    userId: memberId, channelId: channelId
+  const newMembersIds = newMembers.map((memberId) => ({
+    userId: memberId,
+    channelId: channelId,
   }));
   const newMembersCreated = await prisma.channelMember.createMany({
     data: newMembersIds,
@@ -236,15 +279,15 @@ export async function addMembers(input: {
       where: {
         channelId_userId: {
           channelId,
-          userId: memberId
-        }
+          userId: memberId,
+        },
       },
       select: {
-        user: { select: getUserDataSelect(memberId) }
-      }
+        user: { select: getUserDataSelect(memberId) },
+      },
     });
     if (!member?.user) {
-      return
+      return;
     }
     const message = await prisma.message.create({
       data: {
@@ -254,71 +297,68 @@ export async function addMembers(input: {
         type: "NEWMEMBER",
         channelId,
       },
-      include: getMessageDataInclude()
+      include: getMessageDataInclude(),
     });
     return message;
   });
-
 
   const lastMessage: MessageData | null = await prisma.message.findFirst({
     where: {
       channelId,
     },
     orderBy: {
-      createdAt: 'desc',
+      createdAt: "desc",
     },
     take: 1,
-    include: getMessageDataInclude()
+    include: getMessageDataInclude(),
   });
 
   // Fetch only new added members userdata
-  const newMembersList = (await Promise.all(newMembers.map(async (memberId) => {
-    const member = await prisma.channelMember.findUnique({
-      where: {
-        channelId_userId: {
-          userId: memberId,
-          channelId: channelId,
-        },
-      },
-      select: {
-        userId: true,
-        user: {
-          select: getUserDataSelect(memberId)
+  const newMembersList = (
+    await Promise.all(
+      newMembers.map(async (memberId) => {
+        const member = await prisma.channelMember.findUnique({
+          where: {
+            channelId_userId: {
+              userId: memberId,
+              channelId: channelId,
+            },
+          },
+          select: {
+            userId: true,
+            user: {
+              select: getUserDataSelect(memberId),
+            },
+          },
+        });
+
+        if (!member) {
+          return undefined; // Explicitly return undefined
         }
-      },
-    });
 
-    if (!member) {
-      return undefined; // Explicitly return undefined
-    }
-
-    return member;
-  }))).filter((member) => member !== undefined);
-
+        return member;
+      }),
+    )
+  ).filter((member) => member !== undefined);
 
   return { newMembersList, userId, channelId, sentInfoMessages, lastMessage };
-
 }
-export async function addAdmin(input: {
-  channelId: string;
-  member: string;
-}) {
+export async function addAdmin(input: { channelId: string; member: string }) {
   const { user } = await validateRequest();
 
   if (!user) {
     throw new Error("Action non autorisée");
   }
 
-  
   const { channelId, member } = addAdminSchema.parse(input);
-  
+
   const userId = member;
 
   // Check if the user exist
   const userExist = await prisma.user.findUnique({
     where: {
-      id: member
-    }
+      id: member,
+    },
   });
 
   // throw error if user is not found
@@ -328,9 +368,9 @@ export async function addAdmin(input: {
 
   const channel = await prisma.channel.findUnique({
     where: {
-      id: channelId
-    }
-  })
+      id: channelId,
+    },
+  });
 
   if (!channel) {
     throw new Error("La discussion n'existe pas");
@@ -339,15 +379,15 @@ export async function addAdmin(input: {
   if (!channel.isGroup) {
     throw new Error("Cette discussion n'est pas un groupe");
   }
-  
+
   // check if the user is member of the channel
   const channelMember = await prisma.channelMember.findUnique({
     where: {
       channelId_userId: {
         channelId,
-        userId
-      }
-    }
+        userId,
+      },
+    },
   });
   // throw an error if user is not a member
   if (!channelMember) {
@@ -356,23 +396,24 @@ export async function addAdmin(input: {
 
   // check if member type is not OLD or BANNED
   if (channelMember.type === "OLD" || channelMember.type === "BANNED") {
-    throw new Error("Cet utilisateur ne fais plus parti de cette discussion ou e été banni");
-  };
+    throw new Error(
+      "Cet utilisateur ne fais plus parti de cette discussion ou e été banni",
+    );
+  }
   // name admin by changing the type between ADMIN & MEMBER
   const newChannelMember = await prisma.channelMember.update({
     where: {
       channelId_userId: {
         channelId,
-        userId
-      }
+        userId,
+      },
     },
     data: {
-      type: channelMember.type === "ADMIN" ? "MEMBER" : "ADMIN"
-    }
-  })
+      type: channelMember.type === "ADMIN" ? "MEMBER" : "ADMIN",
+    },
+  });
 
   return { newChannelMember };
-
 }
 export async function removeMember(input: {
   channelId: string;
@@ -384,16 +425,15 @@ export async function removeMember(input: {
     throw new Error("Action non autorisée");
   }
 
-  
   const { channelId, memberId } = memberActionSchema.parse(input);
-  
+
   const userId = memberId || "";
 
   // Check if the user exist
   const userExist = await prisma.user.findUnique({
     where: {
-      id: memberId
-    }
+      id: memberId,
+    },
   });
 
   // throw error if user is not found
@@ -403,9 +443,9 @@ export async function removeMember(input: {
 
   const channel = await prisma.channel.findUnique({
     where: {
-      id: channelId
-    }
-  })
+      id: channelId,
+    },
+  });
 
   if (!channel) {
     throw new Error("La discussion n'existe pas");
@@ -414,15 +454,15 @@ export async function removeMember(input: {
   if (!channel.isGroup) {
     throw new Error("Cette discussion n'est pas un groupe");
   }
-  
+
   // check if the user is member of the channel
   const channelMember = await prisma.channelMember.findUnique({
     where: {
       channelId_userId: {
         channelId,
-        userId
-      }
-    }
+        userId,
+      },
+    },
   });
   // throw an error if user is not a member
   if (!channelMember) {
@@ -431,35 +471,37 @@ export async function removeMember(input: {
 
   // check if member type is not OLD or BANNED
   if (channelMember.type === "OLD" || channelMember.type === "BANNED") {
-    throw new Error("Cet utilisateur ne fais plus parti de cette discussion ou e été banni");
-  };
+    throw new Error(
+      "Cet utilisateur ne fais plus parti de cette discussion ou e été banni",
+    );
+  }
   // name admin by changing the type between ADMIN & MEMBER
   const oldMember = await prisma.channelMember.update({
     where: {
       channelId_userId: {
         channelId,
-        userId
-      }
+        userId,
+      },
     },
     data: {
       type: "OLD",
       leftAt: new Date(),
-    }
+    },
   });
-  if(!oldMember){
+  if (!oldMember) {
     throw new Error("Erreur lors de la suppression du membre");
   }
-   // Send a message 
-   const removeMsg = await prisma.message.create({
+  // Send a message
+  const removeMsg = await prisma.message.create({
     data: {
       content: "leave",
       channelId,
       type: "LEAVE",
       senderId: user.id,
       recipientId: memberId,
-    }
+    },
   });
-  if(!removeMsg){
+  if (!removeMsg) {
     throw new Error("Erreur lors de la suppression du membre");
   }
 }
@@ -473,16 +515,15 @@ export async function banMember(input: {
     throw new Error("Action non autorisée");
   }
 
-  
   const { channelId, memberId } = memberActionSchema.parse(input);
-  
+
   const userId = memberId || "";
 
   // Check if the user exist
   const userExist = await prisma.user.findUnique({
     where: {
-      id: memberId
-    }
+      id: memberId,
+    },
   });
 
   // throw error if user is not found
@@ -492,9 +533,9 @@ export async function banMember(input: {
 
   const channel = await prisma.channel.findUnique({
     where: {
-      id: channelId
-    }
-  })
+      id: channelId,
+    },
+  });
 
   if (!channel) {
     throw new Error("La discussion n'existe pas");
@@ -503,15 +544,15 @@ export async function banMember(input: {
   if (!channel.isGroup) {
     throw new Error("Cette discussion n'est pas un groupe");
   }
-  
+
   // check if the user is member of the channel
   const channelMember = await prisma.channelMember.findUnique({
     where: {
       channelId_userId: {
         channelId,
-        userId
-      }
-    }
+        userId,
+      },
+    },
   });
   // throw an error if user is not a member
   if (!channelMember) {
@@ -520,25 +561,27 @@ export async function banMember(input: {
 
   // check if member type is not OLD or BANNED
   if (channelMember.type === "OLD" || channelMember.type === "BANNED") {
-    throw new Error("Cet utilisateur ne fais plus parti de cette discussion ou e été banni");
-  };
+    throw new Error(
+      "Cet utilisateur ne fais plus parti de cette discussion ou e été banni",
+    );
+  }
   // ban the member
   const bannedMember = await prisma.channelMember.update({
     where: {
       channelId_userId: {
         channelId,
-        userId
-      }
+        userId,
+      },
     },
     data: {
       type: "BANNED",
       leftAt: new Date(),
-    }
+    },
   });
-  if(!bannedMember){
+  if (!bannedMember) {
     throw new Error("L'utilisateur n'a pas été banni");
   }
-  // Send a message 
+  // Send a message
   const banMsg = await prisma.message.create({
     data: {
       content: "ban",
@@ -546,7 +589,7 @@ export async function banMember(input: {
       type: "BAN",
       senderId: user.id,
       recipientId: memberId,
-    }
+    },
   });
 
   if (!banMsg) {
@@ -554,7 +597,10 @@ export async function banMember(input: {
   }
 }
 
-export async function leaveGroup(input: { channelId: string, deleteGroup: boolean }) {
+export async function leaveGroup(input: {
+  channelId: string;
+  deleteGroup: boolean;
+}) {
   const { user } = await validateRequest();
 
   if (!user) {
@@ -599,7 +645,9 @@ export async function leaveGroup(input: { channelId: string, deleteGroup: boolea
   // Si l'utilisateur est le propriétaire du groupe
   if (channelMember.type === "OWNER") {
     // Vérifier combien de membres sont encore dans le groupe
-    const remainingMembers = channel.members.filter(member => member.type !== "OLD" && member.type !== "BANNED");
+    const remainingMembers = channel.members.filter(
+      (member) => member.type !== "OLD" && member.type !== "BANNED",
+    );
 
     // Si l'utilisateur est le seul membre restant
     if (remainingMembers.length === 1) {
@@ -609,7 +657,10 @@ export async function leaveGroup(input: { channelId: string, deleteGroup: boolea
           id: channelId,
         },
       });
-      return { message: "Le groupe a été supprimé car il n'y avait plus qu'un seul membre." };
+      return {
+        message:
+          "Le groupe a été supprimé car il n'y avait plus qu'un seul membre.",
+      };
     }
 
     if (deleteGroup) {
@@ -623,7 +674,7 @@ export async function leaveGroup(input: { channelId: string, deleteGroup: boolea
     } else {
       // Nommer le membre le plus ancien comme propriétaire
       const nextOwner = remainingMembers
-        .filter(member => member.userId !== userId)
+        .filter((member) => member.userId !== userId)
         .sort((a, b) => a.joinedAt.getTime() - b.joinedAt.getTime())[0];
 
       if (!nextOwner) {
@@ -682,16 +733,15 @@ export async function restoreMember(input: {
     throw new Error("Action non autorisée");
   }
 
-  
   const { channelId, memberId } = memberActionSchema.parse(input);
-  
+
   const userId = memberId || "";
 
   // Check if the user exist
   const userExist = await prisma.user.findUnique({
     where: {
-      id: memberId
-    }
+      id: memberId,
+    },
   });
 
   // throw error if user is not found
@@ -701,9 +751,9 @@ export async function restoreMember(input: {
 
   const channel = await prisma.channel.findUnique({
     where: {
-      id: channelId
-    }
-  })
+      id: channelId,
+    },
+  });
 
   if (!channel) {
     throw new Error("La discussion n'existe pas");
@@ -712,15 +762,15 @@ export async function restoreMember(input: {
   if (!channel.isGroup) {
     throw new Error("Cette discussion n'est pas un groupe");
   }
-  
+
   // check if the user is member of the channel
   const channelMember = await prisma.channelMember.findUnique({
     where: {
       channelId_userId: {
         channelId,
-        userId
-      }
-    }
+        userId,
+      },
+    },
   });
   // throw an error if user is not a member
   if (!channelMember) {
@@ -732,13 +782,13 @@ export async function restoreMember(input: {
     where: {
       channelId_userId: {
         channelId,
-        userId
-      }
+        userId,
+      },
     },
     data: {
       type: "MEMBER",
       leftAt: null,
-    }
+    },
   });
   if (!newChannelMember) {
     throw new Error("Erreur lors de la mise à jour du membre");
@@ -751,31 +801,28 @@ export async function restoreMember(input: {
       type: "NEWMEMBER",
       channelId,
     },
-    include: getMessageDataInclude()
+    include: getMessageDataInclude(),
   });
 }
 export async function saveMessage(input: {}) {
-
   const { user: loggedInUser } = await validateRequest();
 
   if (!loggedInUser) {
-    throw new Error("Action non autorisée")
+    throw new Error("Action non autorisée");
   }
 
   const user = await prisma.user.findFirst({
     where: {
       id: loggedInUser.id,
     },
-    select: getUserDataSelect(loggedInUser.id)
+    select: getUserDataSelect(loggedInUser.id),
   });
 
   if (!user) {
-    throw new Error("Action non autorisée")
+    throw new Error("Action non autorisée");
   }
 
   const userId = user.id;
-
-
 
   const existingSavedMsgs = await prisma.message.findMany({
     where: {
@@ -784,11 +831,11 @@ export async function saveMessage(input: {}) {
       },
       type: {
         equals: "SAVED",
-      }
+      },
     },
     include: getMessageDataInclude(),
     take: 1,
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: "desc" },
   });
   if (existingSavedMsgs[0]) {
     const existingSavedMsg: MessageData = existingSavedMsgs[0];
@@ -799,11 +846,11 @@ export async function saveMessage(input: {}) {
         },
         type: {
           equals: "SAVED",
-        }
+        },
       },
       include: getMessageDataInclude(),
       take: 1,
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: "asc" },
     });
 
     const newChannel: ChannelData = {
@@ -816,16 +863,14 @@ export async function saveMessage(input: {}) {
           userId,
           type: "OWNER",
           joinedAt: loggedInUser.createdAt,
-          leftAt: null
+          leftAt: null,
         },
       ],
       maxMembers: 300,
-      messages: [
-        existingSavedMsg
-      ],
+      messages: [existingSavedMsg],
       isGroup: false,
       createdAt: createInfo?.createdAt || new Date(),
-    }
+    };
     return { newChannel, userId };
   }
 
@@ -833,7 +878,7 @@ export async function saveMessage(input: {}) {
     data: {
       content: `create-${user.id}`,
       senderId: userId,
-      type: "SAVED"
+      type: "SAVED",
     },
     include: getMessageDataInclude(),
   });
@@ -847,8 +892,8 @@ export async function saveMessage(input: {}) {
     recipient: user,
     type: "CREATE",
     channelId: userId,
-    createdAt: createInfo.createdAt
-  }
+    createdAt: createInfo.createdAt,
+  };
 
   const newChannel: ChannelData = {
     id: `saved-${userId}`,
@@ -864,12 +909,10 @@ export async function saveMessage(input: {}) {
       },
     ],
     maxMembers: 300,
-    messages: [
-      newMessage
-    ],
+    messages: [newMessage],
     isGroup: false,
     createdAt: createInfo.createdAt,
-  }
+  };
 
   if (!createInfo) {
     throw new Error("Impossible de créer le message de création du canal");
