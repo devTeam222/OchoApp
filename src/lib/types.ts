@@ -254,6 +254,14 @@ export interface LikeInfo {
   likes: number;
   isLikedByUser: boolean;
 }
+export interface ReadUser{
+  id: string;
+  username: string;
+  displayName: string;
+}
+export interface ReadInfo {
+  reads: ReadUser[];
+}
 
 export interface BookmarkInfo {
   isBookmarkedByUser: boolean;

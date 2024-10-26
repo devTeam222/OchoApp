@@ -1,13 +1,15 @@
 "use client";
 
 import UserAvatar from "@/components/UserAvatar";
-import { ChannelData, MessageData } from "@/lib/types";
+import { ChannelData, MessageData, NotificationCountInfo } from "@/lib/types";
 import { UsersRound } from "lucide-react";
 import { useSession } from "../SessionProvider";
 import GroupAvatar from "@/components/GroupAvatar";
 import { MessageType } from "@prisma/client";
 import Time from "@/components/Time";
 import { cn } from "@/lib/utils";
+import { QueryKey, useQuery, useQueryClient } from "@tanstack/react-query";
+import kyInstance from "@/lib/ky";
 
 interface ChannelProps {
   channel: ChannelData;
@@ -17,6 +19,22 @@ interface ChannelProps {
 
 export default function Channel({ channel, active, onSelect }: ChannelProps) {
   const { user: loggedinUser } = useSession();
+
+  const queryKey: QueryKey = ["unread-chat-messages", channel.id];
+  const queryClient = useQueryClient();
+
+  const { data } = useQuery({
+    queryKey,
+    queryFn: () =>
+      kyInstance
+        .get(`/api/messages/${channel.id}/unread-count`)
+        .json<NotificationCountInfo>(),
+    refetchInterval: active ? 2_000 : 50_000,
+    initialData: { unreadCount: 0 },
+    throwOnError: false,
+  });
+
+  const { unreadCount } = data;
 
   const otherUser =
     channel.id === `saved-${loggedinUser.id}`
@@ -106,11 +124,17 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
     (!!otherUser?.lastSeen &&
       new Date(otherUser.lastSeen).getTime() - 40 * 1000 > now);
 
+  const select = () => {
+    queryClient.invalidateQueries({ queryKey });
+    queryClient.invalidateQueries({ queryKey: ["unread-messages"] });
+    onSelect();
+  };
+
   return (
     <li
       key={channel.id}
       className={`cursor-pointer p-2 ${active && "bg-accent"}`}
-      onClick={onSelect}
+      onClick={select}
       title={messagePreviewContent || "Aucun message"}
     >
       <div className="flex items-center space-x-2">
@@ -144,6 +168,13 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
             <span>
               <Time time={messagePreview.createdAt} full={false} />
             </span>
+            {!!unreadCount && (
+              <span className="relative flex-1">
+                <span className="relative min-w-fit rounded-full bg-primary px-1 text-xs font-medium tabular-nums text-primary-foreground">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              </span>
+            )}
           </div>
         </div>
       </div>

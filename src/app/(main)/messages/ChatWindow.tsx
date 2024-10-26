@@ -8,6 +8,7 @@ import ActiveChat from "./ActiveChat";
 import { useActiveChannel } from "@/context/ActiveChatContext";
 import NewChat from "./NewChat";
 import { cn } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function ChatWindow() {
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(
@@ -17,12 +18,15 @@ export default function ChatWindow() {
   const [selectedChannel, setSelectedChannel] = useState<ChannelData>();
   const { user } = useSession();
   const { setActiveChannelId } = useActiveChannel();
+  const queryClient = useQueryClient();
 
   if (!user) {
     return null;
   }
 
   const handleChannelSelect = (channelId: string) => {
+    queryClient.invalidateQueries({ queryKey : ["unread-chat-messages", channelId] });
+    queryClient.invalidateQueries({ queryKey: ["unread-messages"] });
     setSelectedChannelId(channelId);
   };
   const closeNewChat = () => {
