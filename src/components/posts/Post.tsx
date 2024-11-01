@@ -25,6 +25,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "../ui/carousel";
+import ZoomableComponent from "../ZoomableComponent";
 
 interface PostProps {
   post: PostData;
@@ -41,7 +42,6 @@ export default function Post({ post }: PostProps) {
 
   useEffect(() => {
     // On récupère le paramètre `comment` depuis les paramètres de recherche
-
     if (comment) {
       setShowComment(true);
     }
@@ -371,26 +371,29 @@ function MediaPreview({
 
   if (media.type === "IMAGE") {
     return (
-      <Image
-        src={media.url}
-        alt="Attachment"
-        width={500}
-        height={500}
-        className={cn(
-          "mx-auto h-full w-full rounded-xl bg-background object-cover max-sm:max-w-[500px] shadow-sm",
-          isFullscreen
-            ? "max-h-screen max-w-[100vw]"
-            : "max-h-[90vh] max-w-[90vw]",
-          className,
-        )}
-      />
+      <ZoomableComponent clasName="mx-auto h-full w-full" zoomable={isFullscreen}>
+        <Image
+          src={media.url}
+          alt="Attachment"
+          width={500}
+          height={500}
+          className={cn(
+            "h-full w-full rounded-xl bg-background object-cover max-sm:max-w-[500px] shadow-sm outline outline-muted outline-2",
+            isFullscreen
+              ? "max-h-screen max-w-[100vw]"
+              : "max-h-[90vh] max-w-[90vw]",
+            className,
+          )}
+        />
+      </ZoomableComponent>
     );
   }
   if (media.type === "VIDEO") {
     return (
+      <ZoomableComponent clasName="mx-auto h-full w-full" zoomable={isFullscreen}>
       <div
         className={cn(
-          "relative mx-auto flex h-full w-full grid-cols-1 grid-rows-1 overflow-auto rounded-xl shadow-sm",
+          "relative flex h-full w-full grid-cols-1 grid-rows-1 overflow-auto rounded-xl shadow-sm",
           isFullscreen
             ? "max-h-screen max-w-[100vw]"
             : "max-h-[90vh] max-w-[90vw]",
@@ -413,6 +416,7 @@ function MediaPreview({
           <source src={media.url} />
         </video>
       </div>
+      </ZoomableComponent>
     );
   }
   return <p className="text-destructive">Format media non supporté</p>;

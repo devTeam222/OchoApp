@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 
 export default function SearchTrend() {
   return (
-    <div className="sticky top-0 h-fit w-full flex-none space-y-3 rounded-2xl pb-3 sm:hidden">
+    <div className="sticky top-0 h-fit w-full flex-none space-y-2 rounded-2xl pb-2 sm:hidden">
       <Suspense fallback={<PostsLoadingSkeleton />}>
         <TrendingTopics />
         <WhoToFollow />
@@ -121,7 +121,7 @@ async function WhoToFollow() {
 const getTrendingTopics = unstable_cache(
   async () => {
     const result = await prisma.$queryRaw<{ hashtag: string; count: bigint }[]>`
-        SELECT LOWER(unnest(regexp_matches(content, '#[[:alnum:]_]+', 'g'))) AS hashtag, COUNT(*) as count 
+        SELECT LOWER(unnest(regexp_matches(content, '#[[:alnum:]_-]+', 'g'))) AS hashtag, COUNT(*) as count 
         FROM posts
         GROUP BY hashtag
         ORDER BY count DESC, hashtag ASC
@@ -144,7 +144,7 @@ async function TrendingTopics() {
   return (
     <div
       className={cn(
-        "space-y-2 bg-card/50 p-5 shadow-sm sm:space-y-5 sm:rounded-2xl sm:bg-card",
+        "space-y-2 bg-card/50 p-5 shadow-sm sm:space-y-5 sm:rounded-2xl sm:bg-card mt-2",
         !trendingTopics.length && "hidden",
       )}
     >
