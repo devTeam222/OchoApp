@@ -153,7 +153,7 @@ export default function ZoomableComponent({
       <div
         className={cn(
           zoomable && scale > 1 && "cursor-grab",
-          "h-full w-full touch-none transition-transform duration-150",
+          "h-full w-full transition-transform duration-150",
         )}
         draggable
         onMouseDown={handleMouseDown}
