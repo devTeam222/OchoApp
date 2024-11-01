@@ -9,10 +9,10 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <main className="flex w-full min-w-0 gap-5 max-sm:p-4">
+    <main className="flex w-full min-w-0 gap-5 max-sm:pb-4">
       <SetNavigation navPage="bookmarks" />
-      <div className="w-full min-w-0 space-y-5">
-        <div className="rounded-2xl bg-card p-5 shadow-sm">
+      <div className="w-full min-w-0 space-y-2 sm:space-y-5">
+        <div className="sm:rounded-2xl bg-card/50 sm:bg-card p-5 shadow-sm">
           <h2 className="text-center text-2xl font-bold">Favoris</h2>
         </div>
         <Bookmarks />

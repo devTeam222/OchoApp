@@ -9,22 +9,34 @@ import prisma from "@/lib/prisma";
 import { getPostDataIncludes, getUserDataSelect, UserData } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { cache, Suspense } from "react";
 
 interface PageProps {
   params: { postId: string };
+  searchParams: { comment?: string };
 }
 
-const getPost = cache(async (postId: string, loggedInUserId: string) => {
+// Ajoutez une vérification pour le commentaire cible
+const getPost = cache(async (postId: string, loggedInUserId: string, targetComment?: string) => {
   const post = await prisma.post.findUnique({
-    where: {
-      id: postId,
-    },
+    where: { id: postId },
     include: getPostDataIncludes(loggedInUserId),
   });
 
   if (!post) notFound();
+
+  // Vérifiez si le commentaire cible existe
+  if (targetComment) {
+    const commentExists = await prisma.comment.findFirst({
+      where: { id: targetComment, postId },
+    });
+
+    // Si le commentaire n'existe pas, redirigez vers la page de post sans le paramètre `comment`
+    if (!commentExists) {
+      redirect(`/posts/${postId}`);
+    }
+  }
 
   return post;
 });
@@ -41,7 +53,7 @@ export async function generateMetadata({ params: { postId } }: PageProps) {
   };
 }
 
-export default async function Page({ params: { postId } }: PageProps) {
+export default async function Page({ params: { postId }, searchParams }: PageProps) {
   const { user } = await validateRequest();
   if (!user)
     return (
@@ -51,10 +63,10 @@ export default async function Page({ params: { postId } }: PageProps) {
       </p>
     );
 
-  const post = await getPost(postId, user.id);
+  const post = await getPost(postId, user.id, searchParams.comment);
 
   return (
-    <main className="flex w-full min-w-0 gap-5 max-sm:p-4">
+    <main className="flex w-full min-w-0 gap-5 max-sm:py-4">
       <SetNavigation navPage={null} />
       <div className="w-full min-w-0 space-y-5">
         <Post post={post} />
@@ -78,12 +90,7 @@ async function UserInfoSidebar({ user }: UserInfoSidebarProps) {
   if (!loggedInUser) return null;
 
   const loggedInUserData = await prisma.user.findFirst({
-    where: {
-      id: {
-        equals: loggedInUser.id,
-        mode: "insensitive",
-      },
-    },
+    where: { id: { equals: loggedInUser.id, mode: "insensitive" } },
     select: getUserDataSelect(user.id),
   });
 
@@ -93,10 +100,7 @@ async function UserInfoSidebar({ user }: UserInfoSidebarProps) {
     <div className="space-y-5 rounded-2xl bg-card p-5 shadow-sm">
       <h2 className="text-xl font-bold">A propos de {user.displayName}</h2>
       <UserTooltip user={user}>
-        <Link
-          href={`/users/${user.username}`}
-          className="flex items-center gap-3"
-        >
+        <Link href={`/users/${user.username}`} className="flex items-center gap-3">
           <UserAvatar avatarUrl={user.avatarUrl} className="flex-none" />
           <div>
             <p className="line-clamp-1 break-all font-semibold hover:underline">
@@ -124,8 +128,9 @@ async function UserInfoSidebar({ user }: UserInfoSidebarProps) {
             isFolowing: loggedInUserData.followers.some(
               ({ followerId }) => followerId === user.id,
             ),
-            isFriend: user.followers.some(({ followerId }) => followerId === loggedInUser.id) &&
-            loggedInUserData.followers.some(({ followerId }) => followerId === user.id)
+            isFriend:
+              user.followers.some(({ followerId }) => followerId === loggedInUser.id) &&
+              loggedInUserData.followers.some(({ followerId }) => followerId === user.id),
           }}
         />
       )}

@@ -17,6 +17,7 @@ import { useEffect, useRef, useState } from "react";
 import { Maximize2, MessageSquare, Minimize2, X } from "lucide-react";
 import Comments from "../comments/Comments";
 import { Button } from "../ui/button";
+import { useSearchParams } from "next/navigation";
 import {
   Carousel,
   CarouselContent,
@@ -33,6 +34,18 @@ export default function Post({ post }: PostProps) {
   const { user } = useSession();
 
   const [showComment, setShowComment] = useState(false);
+  const [targetComment, setTargetComment] = useState<string | null>(null);
+
+  const searchParams = useSearchParams();
+  const comment = searchParams.get('comment');
+
+  useEffect(() => {
+    // On récupère le paramètre `comment` depuis les paramètres de recherche
+
+    if (comment) {
+      setShowComment(true);
+    }
+  }, [comment]);
 
   const timestamp = post.createdAt.getTime();
   const now = Date.now();
@@ -45,7 +58,7 @@ export default function Post({ post }: PostProps) {
   const isUserOnline = lastSeenDate > now;
 
   return (
-    <article className="group/post flex flex-col gap-5 rounded-2xl bg-card p-5 shadow-sm">
+    <article className="group/post flex flex-col gap-5 sm:rounded-2xl bg-card/50 sm:bg-card p-5 shadow-sm">
       <div className="flex justify-between gap-3">
         <div className="flex flex-wrap gap-3">
           <UserTooltip user={post.user}>
@@ -123,7 +136,7 @@ export default function Post({ post }: PostProps) {
       {showComment && (
         <>
         <div className="sm:hidden fixed inset-0 z-10" onClick={() => setShowComment(false)}></div>
-          <Comments post={post} onClose={() => setShowComment(false)} />
+          <Comments post={post} onClose={() => setShowComment(false)}/>
           <Button
             variant="link"
             onClick={() => setShowComment(false)}
@@ -364,7 +377,7 @@ function MediaPreview({
         width={500}
         height={500}
         className={cn(
-          "mx-auto h-full w-full rounded-xl bg-muted object-cover max-sm:max-w-[500px]",
+          "mx-auto h-full w-full rounded-xl bg-background object-cover max-sm:max-w-[500px] shadow-sm",
           isFullscreen
             ? "max-h-screen max-w-[100vw]"
             : "max-h-[90vh] max-w-[90vw]",
@@ -377,7 +390,7 @@ function MediaPreview({
     return (
       <div
         className={cn(
-          "relative mx-auto flex h-full w-full grid-cols-1 grid-rows-1 overflow-auto rounded-xl",
+          "relative mx-auto flex h-full w-full grid-cols-1 grid-rows-1 overflow-auto rounded-xl shadow-sm",
           isFullscreen
             ? "max-h-screen max-w-[100vw]"
             : "max-h-[90vh] max-w-[90vw]",
@@ -390,7 +403,7 @@ function MediaPreview({
           height={500}
           width={500}
           className={cn(
-            "relative h-full w-full bg-muted",
+            "relative h-full w-full bg-background shadow-sm",
             hidden ? "object-cover" : "absolute bottom-0 top-0 object-contain",
             isFullscreen
               ? "max-h-screen max-w-[100vw] object-contain"

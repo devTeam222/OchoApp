@@ -7,6 +7,10 @@ import Comment from "./Comment";
 import { Button } from "../ui/button";
 import { Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "../ui/use-toast";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface CommentsProps {
   post: PostData;
@@ -14,6 +18,13 @@ interface CommentsProps {
 }
 
 export default function Comments({ post, onClose }: CommentsProps) {
+  const [targetComment, setTargetComment] = useState<string | null>(null);
+  const router = useRouter();
+
+  const searchParams = useSearchParams();
+  const comment = searchParams.get("comment");
+  
+  const { toast } = useToast();
   const {
     data,
     fetchNextPage,
@@ -25,10 +36,12 @@ export default function Comments({ post, onClose }: CommentsProps) {
     queryKey: ["comments", post.id],
     queryFn: ({ pageParam }) =>
       kyInstance
-        .get(
-          `/api/posts/${post.id}/comments`,
-          pageParam ? { searchParams: { cursor: pageParam } } : {},
-        )
+        .get(`/api/posts/${post.id}/comments`, {
+          searchParams: new URLSearchParams({
+            cursor: pageParam ? String(pageParam) : "",
+            comment: targetComment ? String(targetComment) : "",
+          }),
+        })
         .json<CommentsPage>(),
     initialPageParam: null as string | null,
     getNextPageParam: (firstPage) => firstPage.previousCursor,
@@ -40,8 +53,32 @@ export default function Comments({ post, onClose }: CommentsProps) {
 
   const comments = data?.pages.flatMap((page) => page.comments) || [];
 
+  
+  useEffect(() => {
+    if (
+      status === "success" &&
+      comment &&
+      !comments.find((c) => c.id === comment)
+    ) {
+      toast({
+        variant: "destructive",
+        description: "Le commentaire n'est plus diaponible",
+      });
+      router.push(`/posts/${post.id}`);
+      onClose();
+    }
+    if (
+      status === "success" &&
+      comment &&
+      comments.find((c) => c.id === comment)
+    ) {
+      setTargetComment(comment);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, comment, data, comments]);
+
   return (
-    <div className="bottom-0 left-0 space-y-3 max-sm:fixed max-sm:z-10 max-sm:flex max-sm:w-full max-sm:flex-col-reverse max-sm:rounded-e-sm max-sm:rounded-s-sm max-sm:bg-card max-sm:p-2 max-sm:animate-appear-b">
+    <div className="bottom-0 left-0 space-y-3 max-sm:fixed max-sm:z-10 max-sm:flex max-sm:w-full max-sm:animate-appear-b max-sm:flex-col-reverse max-sm:rounded-e-sm max-sm:rounded-s-sm max-sm:bg-card max-sm:pt-2">
       <CommentInput post={post} />
       {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
       {hasNextPage && (
@@ -74,18 +111,22 @@ export default function Comments({ post, onClose }: CommentsProps) {
             "hidden",
         )}
       >
+        <div className="relative top-0 flex w-full items-center justify-between px-3 py-2 font-bold sm:hidden">
+          {status === "success" && !!comments.length && (
+            <p>{`${comments.length} commentaire${comments.length > 1 ? "s" : ""}`}</p>
+          )}
+          <div className="" onClick={onClose}>
+            <X />
+          </div>
+        </div>
         <div className="overflow-y-auto max-sm:h-[50vh]">
           {comments.map((comment) => (
-            <Comment key={comment.id} comment={comment} />
+            <Comment
+              key={comment.id}
+              comment={comment}
+              isTarget={!!targetComment?.trim() && comment.id === targetComment}
+            />
           ))}
-        </div>
-      </div>
-      <div className="relative w-full sm:hidden">
-        {status === "success" && !!comments.length && (
-          <p>{`${comments.length} commentaire${comments.length > 1 ? "s" : ""}`}</p>
-        )}
-        <div className="absolute right-0 top-0" onClick={onClose}>
-          <X />
         </div>
       </div>
     </div>

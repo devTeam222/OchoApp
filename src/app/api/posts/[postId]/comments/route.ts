@@ -12,6 +12,7 @@ export async function GET(
     try {
 
         const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
+        const comment = req.nextUrl.searchParams.get("comment") || null;
 
         const pageSize = 5;
 
@@ -22,8 +23,17 @@ export async function GET(
             return Response.json({error: "Action non autorisée"}, {status: 401})
         }
 
+        // Étape 1 : Récupérer le commentaire cible si un commentId est fourni
+        let targetComment = null;
+        if (comment) {
+            targetComment = await prisma.comment.findUnique({
+                where: { id: comment },
+                include: getCommentDataIncludes(user.id),
+            });
+        }
+
         const comments = await prisma.comment.findMany({
-            where: {postId},
+            where: { postId, id: { not: comment || undefined } },
             include: getCommentDataIncludes(user.id),
             orderBy: {createdAt: "asc"},
             take: -pageSize - 1,
@@ -33,9 +43,9 @@ export async function GET(
         const previousCursor = comments.length > pageSize ? comments[0].id : null;
 
         const data: CommentsPage = {
-            comments: comments.length > pageSize ? comments.slice(1) : comments,
-            previousCursor
-        }
+            comments: targetComment ? [targetComment, ...comments.slice(0, pageSize)] : comments.slice(0, pageSize),
+            previousCursor,
+        };
 
         return Response.json(data)
         

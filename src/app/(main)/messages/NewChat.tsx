@@ -106,6 +106,8 @@ export default function NewChat({ onClose, className }: NewChatProps) {
           {
             onSuccess: ({ newChannel }) => {
               setActiveChannelId(newChannel.id);
+              setSelectedUsers([]);
+              setIsgroup(false)
               onClose();
             },
             onError(error) {
@@ -129,6 +131,7 @@ export default function NewChat({ onClose, className }: NewChatProps) {
           onSuccess: ({ newChannel }) => {
             setActiveChannelId(newChannel.id);
             onClose();
+            setSelectedUsers([]);
           },
           onError(error) {
             console.error(error);
@@ -151,6 +154,7 @@ export default function NewChat({ onClose, className }: NewChatProps) {
           onSuccess: ({ newChannel }) => {
             setActiveChannelId(newChannel.id);
             onClose();
+            setSelectedUsers([]);
           },
           onError(error) {
             console.error(error);

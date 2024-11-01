@@ -7,9 +7,9 @@ import SetNavigation from "@/components/SetNavigation";
 
 export default function Home() {
   return (
-    <main className="flex w-full min-w-0 gap-5 max-sm:p-4 h-fit">
+    <main className="flex w-full min-w-0 gap-5 max-sm:pb-4 h-fit">
       <SetNavigation navPage="home" />
-      <div className="w-full min-w-0 space-y-5">
+      <div className="w-full min-w-0 space-y-2 sm:space-y-5">
         <PostEditor />
         <Tabs defaultValue="for-you">
           <TabsList>

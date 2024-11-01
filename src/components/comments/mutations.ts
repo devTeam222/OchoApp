@@ -2,6 +2,7 @@ import { InfiniteData, QueryKey, useMutation, useQueryClient } from "@tanstack/r
 import { useToast } from "../ui/use-toast";
 import { deleteComment, submitComment } from "./action";
 import { CommentsPage } from "@/lib/types";
+import { redirect, usePathname, useRouter } from "next/navigation";
 
 
 
@@ -48,7 +49,6 @@ export function useSubmitCommentMutation(postId: string) {
             toast({
                 description: "Commentaire envoyé"
             })
-
         },
         onError(error) {
             console.error(error);
@@ -64,6 +64,8 @@ export function useSubmitCommentMutation(postId: string) {
 
 export function useDeleteCommentMutation() {
     const { toast } = useToast();
+    const pathname = usePathname();
+    const router = useRouter();
 
     const queryClient = useQueryClient();
 
@@ -91,7 +93,10 @@ export function useDeleteCommentMutation() {
             )
             toast({
                 description: "Commentaire supprimé"
-            })
+            });
+            if(pathname.startsWith(`/posts/${deletedComment.postId}`)){
+                router.push(`/posts/${deletedComment.postId}`);
+            }
         },
         onError(error) {
             console.error(error);

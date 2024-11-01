@@ -24,9 +24,9 @@ export default function Notification({ notification }: NotificationProps) {
       href: `/users/${notification.issuer.username}`,
     },
     COMMENT: {
-      message: `${notification.issuer.displayName} a commenté ton post.`,
+      message: `${notification.issuer.displayName} a commenté ${notification.comment?.content ? `"${notification.comment.content.slice(0, 30)}"` : "ton post"}.`,
       icon: <MessageSquareMore className="size-7 fill-primary text-primary" />,
-      href: `/posts/${notification.postId}`,
+      href: `/posts/${notification.postId}${notification.commentId ? `?comment=${notification.commentId}` : ""}`,
     },
     LIKE: {
       message: `${notification.issuer.displayName} a aimé ton post.`,
@@ -37,7 +37,7 @@ export default function Notification({ notification }: NotificationProps) {
       message: `${notification.issuer.displayName} vous a identifié.`,
       icon: <AtSign className="size-7 text-yellow-500" />,
       href: `/posts/${notification.postId}`,
-    }
+    },
   };
 
   const { message, icon, href } = notificationTypeMap[notification.type];
@@ -46,7 +46,7 @@ export default function Notification({ notification }: NotificationProps) {
     <Link href={href} className="block">
       <article
         className={cn(
-          "flex gap-3 rounded-2xl bg-card p-5 shadow-sm transition-colors hover:bg-card/70",
+          "flex gap-3 bg-card/50 p-5 shadow-sm transition-colors hover:bg-card/70 sm:rounded-2xl sm:bg-card",
           !notification.read && "bg-accent",
         )}
       >

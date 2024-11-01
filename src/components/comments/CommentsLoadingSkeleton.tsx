@@ -24,7 +24,7 @@ function CommentLoadingSkeleton({ size = "md" }: CommentLoadingSkeletonProps) {
   };
   const sizeClass = sizes[size];
   return (
-      <div className="flex gap-3 animate-pulse py-3 w-full">
+      <div className="flex gap-3 animate-pulse py-3 px-2 w-full">
         <Skeleton className="hidden size-10 rounded-full sm:inline" />
         <Skeleton className="size-8 rounded-full sm:hidden" />
         <div className="space-y-1.5 flex-1">

@@ -79,15 +79,15 @@ export default async function page({ params: { username } }: PageProps) {
   const loggedUserData = await getLoggedUser(user.id, loggedInUser.id);
 
   return (
-    <main className="flex w-full min-w-0 gap-5 max-sm:p-4">
+    <main className="flex w-full min-w-0 gap-5 max-sm:pb-4 relative">
       <SetNavigation navPage={null}/>
-      <div className="w-full min-w-0 space-y-5 pb-3">
+      <div className="w-full min-w-0 space-y-2 sm:space-y-5 pb-2">
         <UserProfile
           user={user}
           loggedInUserId={loggedInUser.id}
           loggedInUser={loggedUserData}
         />
-        <div className="rounded-2xl bg-card p-5 shadow-sm">
+        <div className="sm:rounded-2xl bg-card/50 sm:bg-card p-5 shadow-sm">
           <h2 className="text-center text-2xl font-bold">Publications</h2>
         </div>
         <UserPosts userId={user.id} />
@@ -122,7 +122,7 @@ async function UserProfile({
   };
 
   return (
-    <div className="flex h-fit w-full flex-col items-center gap-5 rounded-2xl bg-card p-5 shadow-sm">
+    <div className="flex h-fit w-full flex-col items-center gap-5 sm:rounded-2xl bg-card/50 sm:bg-card p-5 shadow-sm">
       <UserAvatar
         avatarUrl={user.avatarUrl}
         size={250}

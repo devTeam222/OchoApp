@@ -10,6 +10,7 @@ import Time from "@/components/Time";
 import { cn } from "@/lib/utils";
 import { QueryKey, useQuery, useQueryClient } from "@tanstack/react-query";
 import kyInstance from "@/lib/ky";
+import FormattedInt from "@/components/FormattedInt";
 
 interface ChannelProps {
   channel: ChannelData;
@@ -172,7 +173,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
         {!!unreadCount && (
           <span className="relative flex-1 justify-end flex items-center">
             <span className="relative min-w-fit rounded-full bg-primary px-1 text-xs font-medium tabular-nums text-primary-foreground">
-              {unreadCount > 9 ? "9+" : unreadCount}
+              <FormattedInt number={unreadCount}/>
             </span>
           </span>
         )}

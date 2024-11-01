@@ -4,6 +4,7 @@ import { useSubmitCommentMutation } from "./mutations";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Loader2, SendIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface CommentInput {
   post: PostData;
@@ -11,6 +12,8 @@ interface CommentInput {
 
 export default function CommentInput({ post }: CommentInput) {
   const [input, setInput] = useState("");
+
+  const router = useRouter();
 
   const mutation = useSubmitCommentMutation(post.id);
 
@@ -25,13 +28,16 @@ export default function CommentInput({ post }: CommentInput) {
         content: input,
       },
       {
-        onSuccess: () => setInput(""),
+        onSuccess: (newComment) => {
+          setInput("");
+          router.push(`/posts/${post.id}?comment=${newComment.id}`);
+        },
       },
     );
   }
 
   return (
-    <form className="flex w-full items-center gap-2" onSubmit={onSubmit}>
+    <form className="flex w-full items-center gap-2 p-2 max-sm:outline max-sm:outline-muted" onSubmit={onSubmit}>
       <Input
         placeholder="Commenter..."
         value={input}
@@ -46,9 +52,9 @@ export default function CommentInput({ post }: CommentInput) {
         disabled={!input.trim() || mutation.isPending}
       >
         {mutation.isPending ? (
-            <Loader2 className="animate-spin"/>
+          <Loader2 className="animate-spin" />
         ) : (
-            <SendIcon />
+          <SendIcon />
         )}
       </Button>
     </form>

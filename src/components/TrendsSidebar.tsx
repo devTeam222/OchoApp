@@ -53,14 +53,13 @@ async function WhoToFollow() {
   });
 
   return (
-    <div className="space-y-5 rounded-2xl bg-card p-5 shadow-sm">
+    <div className="space-y-5 bg-card p-5 shadow-sm sm:rounded-2xl">
       <h2 className="text-xl font-bold">Suggestions pour vous</h2>
       {usersToFollow.map((user) => {
         const now = Date.now();
-      
-      
+
         const lastSeenDate = new Date(user.lastSeen).getTime() - 60 * 1000;
-      
+
         const isUserOnline = lastSeenDate > now;
         return (
           <div
@@ -72,7 +71,11 @@ async function WhoToFollow() {
                 href={`/users/${user.username}`}
                 className="flex items-center gap-3"
               >
-                <UserAvatar avatarUrl={user.avatarUrl} className="flex-none" online={isUserOnline} />
+                <UserAvatar
+                  avatarUrl={user.avatarUrl}
+                  className="flex-none"
+                  online={isUserOnline}
+                />
                 <div>
                   <h3 className="line-clamp-1 break-all font-semibold hover:underline">
                     {user.displayName}
@@ -93,15 +96,22 @@ async function WhoToFollow() {
                 isFolowing: loggedInUserData.followers.some(
                   ({ followerId }) => followerId === user.id,
                 ),
-                isFriend: user.followers.some(({ followerId }) => followerId === loggedInUserData.id) &&
-                loggedInUserData.followers.some(({ followerId }) => followerId === user.id)
+                isFriend:
+                  user.followers.some(
+                    ({ followerId }) => followerId === loggedInUserData.id,
+                  ) &&
+                  loggedInUserData.followers.some(
+                    ({ followerId }) => followerId === user.id,
+                  ),
               }}
             />
           </div>
         );
       })}
       {!usersToFollow.length && (
-        <p className="w-full px-2 text-center py-8 text-muted-foreground italic">Aucune suggestion pour le moment</p>
+        <p className="w-full px-2 py-8 text-center italic text-muted-foreground">
+          Aucune suggestion pour le moment
+        </p>
       )}
     </div>
   );
@@ -131,10 +141,12 @@ async function TrendingTopics() {
   const trendingTopics = await getTrendingTopics();
 
   return (
-    <div className="space-y-5 rounded-2xl bg-card p-5 shadow-sm">
+    <div className="space-y-5 bg-card p-5 shadow-sm sm:rounded-2xl">
       <h2 className="text-xl font-bold">Tendances</h2>
       {!trendingTopics.length && (
-        <p className="w-full px-2 text-center py-8 text-muted-foreground italic">Aucune tendance pour le moment</p>
+        <p className="w-full px-2 py-8 text-center italic text-muted-foreground">
+          Aucune tendance pour le moment
+        </p>
       )}
       {trendingTopics.map(({ hashtag, count }) => {
         const title = hashtag.split("#")[1];

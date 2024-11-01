@@ -96,7 +96,7 @@ export default function ActiveChat({
 
   return (
     <div className="absolute flex h-full w-full flex-1 flex-col max-sm:bg-card/30">
-      <div className="flex w-full items-center gap-2 px-4 py-3 max-sm:bg-accent">
+      <div className="flex w-full items-center gap-2 px-4 py-3 max-sm:bg-card/50">
         <div
           className="flex cursor-pointer hover:text-red-500"
           onClick={onClose}
@@ -155,7 +155,7 @@ export default function ActiveChat({
         )}
       </InfiniteScrollContainer>
 
-      <div className="max-sm:bg-accent">
+      <div className="max-sm:bg-card/50">
         {!isMember ? (
           <div className="select-none px-5 py-1.5 text-center text-sm">
             <p>{message}</p>

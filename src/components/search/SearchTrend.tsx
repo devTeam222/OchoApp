@@ -54,7 +54,7 @@ async function WhoToFollow() {
   });
 
   return (
-    <div className="space-y-5 rounded-2xl bg-card p-5 shadow-sm">
+    <div className="space-y-5 bg-card/50 p-5 shadow-sm sm:rounded-2xl sm:bg-card">
       <h2 className="text-xl font-bold">Suggestions pour vous</h2>
       {usersToFollow.map((user) => {
         const now = Date.now();
@@ -144,7 +144,7 @@ async function TrendingTopics() {
   return (
     <div
       className={cn(
-        "space-y-5 rounded-2xl bg-card p-5 shadow-sm",
+        "space-y-2 bg-card/50 p-5 shadow-sm sm:space-y-5 sm:rounded-2xl sm:bg-card",
         !trendingTopics.length && "hidden",
       )}
     >

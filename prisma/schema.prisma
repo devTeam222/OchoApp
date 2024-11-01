@@ -139,10 +139,10 @@ model Read {
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   messageId String
   message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  @@unique([userId, messageId])
 
   readAt DateTime @default(now())
 
+  @@unique([userId, messageId])
   @@map("reads")
 }
 
@@ -180,12 +180,13 @@ enum MediaType {
 }
 
 model Comment {
-  id      String @id @default(cuid())
-  content String
-  userId  String
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postId  String
-  post    Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  id                  String         @id @default(cuid())
+  content             String
+  userId              String
+  user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId              String
+  post                Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  commentNotification Notification[]
 
   createdAt DateTime @default(now())
 
@@ -216,13 +217,15 @@ model Bookmark {
 }
 
 model Notification {
-  id          String  @id @default(cuid())
+  id          String   @id @default(cuid())
   recipientId String
-  recipient   User    @relation("Recipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  recipient   User     @relation("Recipient", fields: [recipientId], references: [id], onDelete: Cascade)
   issuerId    String
-  issuer      User    @relation("Issuer", fields: [issuerId], references: [id], onDelete: Cascade)
+  issuer      User     @relation("Issuer", fields: [issuerId], references: [id], onDelete: Cascade)
   postId      String?
-  post        Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post        Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  commentId   String?
+  comment     Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
   type      NotificationType
   read      Boolean          @default(false)
