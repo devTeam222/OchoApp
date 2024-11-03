@@ -178,7 +178,7 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                       <Time time={new Date(lastSeenTimeStamp - 30_000)} relative long={false} />
                     </>
                   ) : (
-                    `@${otherUser?.username}}`
+                    `@${otherUser?.username || "ochoapp-user"}`
                   )}
                 </span>
               )}
@@ -190,7 +190,7 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                 <span className="">{`Groupe • ${allMembers.length} membre${allMembers.length > 1 ? "s" : ""}`}</span>
               ) : (
                 <span>
-                  <div>@{otherUser?.username}</div>
+                  <div>@{otherUser?.username || "ochoapp-user"}</div>
                   <div className="text-center">
                     {isUserOnline
                       ? "En ligne"

@@ -150,7 +150,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
         <div>
           <span className="font-semibold">
             {channel.name ||
-              `${otherUser?.displayName} ${channel.id === `saved-${loggedinUser.id}` ? "(vous)" : ""}` ||
+              `${otherUser?.displayName || "Utilisateur OchoApp"} ${channel.id === `saved-${loggedinUser.id}` ? "(vous)" : ""}` ||
               (channel.isGroup
                 ? "Groupe de discussion"
                 : "Utilisateur OchoApp")}
