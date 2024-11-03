@@ -257,10 +257,12 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                   </span>
                 ) : (
                   <span>
-                    Membre depuis{" "}
-                    {!!otherUser?.createdAt && (
-                      <Time time={otherUser.createdAt} long />
-                    )}
+                    {otherUser?.id ? (<>
+                      Membre depuis{" "}
+                      {!!otherUser?.createdAt && (
+                        <Time time={otherUser.createdAt} long />
+                      )}
+                    </>) : (<>Ce compte a été supprimé</>)}
                   </span>
                 )}
               </span>
