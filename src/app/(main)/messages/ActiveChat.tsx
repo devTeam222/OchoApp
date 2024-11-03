@@ -95,7 +95,8 @@ export default function ActiveChat({
   const messages = data?.pages.flatMap((page) => page?.messages) || [];
 
   const otherUser = !channel.isGroup
-    ? (channel.members.find((user) => user?.userId !== loggedMember?.userId)?.user || null)
+    ? channel.members.find((user) => user?.userId !== loggedMember?.userId)
+        ?.user || null
     : null;
 
   return (
@@ -160,14 +161,14 @@ export default function ActiveChat({
       </InfiniteScrollContainer>
 
       <div className="max-sm:bg-card/50">
-        {!channel.isGroup && !otherUser?.id &&
-           (
-            <div className="select-none px-5 py-1.5 text-center text-sm">
-              <p>{message}</p>
-              <p>L&apos;utilisateur n&apos; plus disponible</p>
-            </div>
-          )}
-        {!isMember && channel.isGroup ? (
+        {!channel.isGroup && !otherUser?.id && (
+          <div className="select-none px-5 py-1.5 text-center text-sm">
+            <p>{message}</p>
+            <p>L&apos;utilisateur n&apos; plus disponible</p>
+          </div>
+        )}
+        {!isMember &&
+        (channel.isGroup || (!channel.isGroup && !otherUser?.id)) ? (
           <div className="select-none px-5 py-1.5 text-center text-sm">
             <p>{message}</p>
             <p>Vous n&apos;êtes plus membre de cette discussion</p>
