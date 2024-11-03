@@ -71,7 +71,7 @@ export default function ActiveChat({
       initialPageParam: null as string | null,
       getNextPageParam: (lastPage) => lastPage.nextCursor,
       refetchInterval: isProduction ? 5000 : 10000,
-      staleTime: Infinity
+      staleTime: Infinity,
     });
   const { user: loggedUser } = useSession();
 
@@ -93,6 +93,10 @@ export default function ActiveChat({
   let message = "Vous ne pouvez pas envoyer de message";
 
   const messages = data?.pages.flatMap((page) => page?.messages) || [];
+
+  const otherUser = !channel.isGroup
+    ? (channel.members.find((user) => user?.userId !== loggedMember?.userId)?.user || null)
+    : null;
 
   return (
     <div className="absolute flex h-full w-full flex-1 flex-col max-sm:bg-card/30">
@@ -116,7 +120,7 @@ export default function ActiveChat({
       {status === "pending" && <MessagesLoadingSkeleton />}
 
       <InfiniteScrollContainer
-        className="scrollbar-track-primary scrollbar-track-rounded-full relative flex flex-1 flex-col-reverse space-y-4 overflow-y-auto px-2 pb-2 shadow-inner sm:bg-background/50"
+        className="relative flex flex-1 flex-col-reverse space-y-4 overflow-y-auto px-2 pb-2 shadow-inner scrollbar-track-primary scrollbar-track-rounded-full sm:bg-background/50"
         onBottomReached={() =>
           hasNextPage && !isFetchingNextPage && fetchNextPage()
         }
@@ -149,14 +153,21 @@ export default function ActiveChat({
             );
           })}
         {isFetchingNextPage && (
-          <div className="w-full flex justify-center">
+          <div className="flex w-full justify-center">
             <Loader2 className="mx-auto my-3 animate-spin" />
           </div>
         )}
       </InfiniteScrollContainer>
 
       <div className="max-sm:bg-card/50">
-        {!isMember ? (
+        {!channel.isGroup && !otherUser?.id &&
+           (
+            <div className="select-none px-5 py-1.5 text-center text-sm">
+              <p>{message}</p>
+              <p>L&apos;utilisateur n&apos; plus disponible</p>
+            </div>
+          )}
+        {!isMember && channel.isGroup ? (
           <div className="select-none px-5 py-1.5 text-center text-sm">
             <p>{message}</p>
             <p>Vous n&apos;êtes plus membre de cette discussion</p>
