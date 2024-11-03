@@ -164,7 +164,7 @@ export default function ActiveChat({
         {!channel.isGroup && !otherUser?.id && (
           <div className="select-none px-5 py-1.5 text-center text-sm">
             <p>{message}</p>
-            <p>L&apos;utilisateur n&apos; plus disponible</p>
+            <p>L&apos;utilisateur n&apos;est plus disponible</p>
           </div>
         )}
         {!isMember ? (
