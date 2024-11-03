@@ -167,14 +167,16 @@ export default function ActiveChat({
             <p>L&apos;utilisateur n&apos; plus disponible</p>
           </div>
         )}
-        {!isMember &&
-        (channel.isGroup || (!channel.isGroup && !otherUser?.id)) ? (
+        {!isMember ? (
           <div className="select-none px-5 py-1.5 text-center text-sm">
             <p>{message}</p>
             <p>Vous n&apos;êtes plus membre de cette discussion</p>
           </div>
         ) : (
-          !!channelId && <MessageForm channelId={channelId} />
+          !!channelId &&
+          ((!channel.isGroup && otherUser?.id) || channel.isGroup) && (
+            <MessageForm channelId={channelId} />
+          )
         )}
       </div>
     </div>
