@@ -19,7 +19,7 @@ export default function Comment({ comment, isTarget = false }: CommentProps) {
   return (
     <div
       className={cn(
-      "group/comment flex gap-3 sm:rounded-sm px-2 py-3 transition-alll",
+      "group/comment flex gap-3 sm:rounded-sm px-2 py-3 transition-all bg-background/30",
         isTarget && "bg-primary/10 border-solid border-s-primary border-s-4 sm:border-primary/50 sm:border-4",
       )}
     >
@@ -29,7 +29,7 @@ export default function Comment({ comment, isTarget = false }: CommentProps) {
             href={`users/${comment.user.username}`}
             className="hidden sm:inline"
           >
-            <UserAvatar avatarUrl={comment.user.avatarUrl} size={40} />
+            <UserAvatar avatarUrl={comment.user.avatarUrl} size={32} />
           </Link>
           <span className="sm:hidden">
             <UserAvatar avatarUrl={comment.user.avatarUrl} size={32} />

@@ -78,7 +78,7 @@ export default function Comments({ post, onClose }: CommentsProps) {
   }, [status, comment, data, comments]);
 
   return (
-    <div className="bottom-0 left-0 space-y-3 max-sm:fixed max-sm:z-10 max-sm:flex max-sm:w-full max-sm:animate-appear-b max-sm:flex-col-reverse max-sm:rounded-e-sm max-sm:rounded-s-sm max-sm:bg-card max-sm:pt-2">
+    <div className="bottom-0 left-0 sm:space-y-3 max-sm:fixed max-sm:z-10 max-sm:flex max-sm:w-full max-sm:animate-appear-b max-sm:flex-col-reverse max-sm:rounded-e-sm max-sm:rounded-s-sm max-sm:bg-card max-sm:pt-2">
       <CommentInput post={post} />
       {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
       {hasNextPage && (
@@ -119,7 +119,7 @@ export default function Comments({ post, onClose }: CommentsProps) {
             <X />
           </div>
         </div>
-        <div className="overflow-y-auto max-sm:h-[50vh]">
+        <div className="overflow-y-auto max-sm:h-[50vh] max-sm:bg-card/50 space-y-1 py-1">
           {comments.map((comment) => (
             <Comment
               key={comment.id}
