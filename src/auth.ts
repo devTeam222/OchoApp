@@ -3,7 +3,7 @@ import prisma from "./lib/prisma";
 import { Lucia, Session, User } from "lucia";
 import { cache } from "react";
 import { cookies } from "next/headers";
-import { Facebook, Google } from "arctic";
+import { Facebook, GitHub, Google } from "arctic";
 
 const adapter = new PrismaAdapter(prisma.session, prisma.user);
 
@@ -74,6 +74,12 @@ export const facebook = new Facebook(
   process.env.FACEBOOK_CLIENT_SECRET!,
   `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback/facebook`,
 );
+
+export const github = new GitHub(
+  process.env.GITHUB_CLIENT_ID!,
+  process.env.GITHUB_CLIENT_SECRET!,
+  {redirectURI:`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback/github`},
+)
 
 export const validateRequest = cache(
   async (): Promise<

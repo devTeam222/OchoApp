@@ -17,6 +17,11 @@ const nextConfig = {
                 protocol: "https",
                 hostname: "platform-lookaside.fbsbx.com",
             },
+            {
+                protocol: "https",
+                hostname: "avatars.githubusercontent.com",
+                pathname: "/u/*"
+            },
         ],
     },
     rewrites: ()=>{

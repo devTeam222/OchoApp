@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import GoogleSignInButton from "./GoogleSignInButton";
-import FacebookSignInButton from "./FacebookSigninButton";
+import GithubSignInButton from "./GithubSignInButton";
 
 export default function Support() {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
@@ -17,6 +17,6 @@ export default function Support() {
 
   return <div className="w-full flex flex-col gap-2">
     <GoogleSignInButton supported={isSameOrigin} />
-    <FacebookSignInButton supported={isSameOrigin}/>
+    <GithubSignInButton supported={isSameOrigin} />
   </div>;
 }
