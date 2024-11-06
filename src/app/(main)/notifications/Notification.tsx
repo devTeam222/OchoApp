@@ -1,3 +1,4 @@
+import Time from "@/components/Time";
 import UserAvatar from "@/components/UserAvatar";
 import { NotificationData } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -19,23 +20,39 @@ export default function Notification({ notification }: NotificationProps) {
     }
   > = {
     FOLLOW: {
-      message: `${notification.issuer.displayName} a commencé à te suivre.`,
-      icon: <User2 className="size-7 text-primary" />,
+      message: `a commencé à te suivre.`,
+      icon: (
+        <div className="absolute -bottom-0.5 -right-0.5 flex aspect-square items-center justify-center overflow-hidden rounded-full bg-foreground p-1">
+          <User2 className="size-4 rounded-full fill-primary text-primary" />
+        </div>
+      ),
       href: `/users/${notification.issuer.username}`,
     },
     COMMENT: {
-      message: `${notification.issuer.displayName} a commenté ${notification.comment?.content ? `"${notification.comment.content.slice(0, 30)}"` : "ton post"}.`,
-      icon: <MessageSquareMore className="size-7 fill-primary text-primary" />,
+      message: `a commenté ${notification.comment?.content ? `"${notification.comment.content.slice(0, 30)}"` : "ton post"}.`,
+      icon: (
+        <div className="absolute -bottom-0.5 -right-0.5 flex aspect-square items-center justify-center rounded-full bg-foreground p-1">
+          <MessageSquareMore className="size-4 fill-primary text-primary" />
+        </div>
+      ),
       href: `/posts/${notification.postId}${notification.commentId ? `?comment=${notification.commentId}` : ""}`,
     },
     LIKE: {
-      message: `${notification.issuer.displayName} a aimé ton post.`,
-      icon: <Heart className="size-7 fill-red-500 text-red-500" />,
+      message: `a aimé ton post.`,
+      icon: (
+        <div className="absolute -bottom-0.5 -right-0.5 flex aspect-square items-center justify-center rounded-full bg-foreground p-1">
+          <Heart className="size-4 fill-red-500 text-red-500" />
+        </div>
+      ),
       href: `/posts/${notification.postId}`,
     },
     IDENTIFY: {
-      message: `${notification.issuer.displayName} vous a identifié.`,
-      icon: <AtSign className="size-7 text-yellow-500" />,
+      message: `vous a identifié.`,
+      icon: (
+        <div className="absolute -bottom-0.5 -right-0.5 aspect-square max-h-10 max-w-10 rounded-full bg-foreground p-0.5 *:w-full">
+          <AtSign className="size-5 text-yellow-500" />
+        </div>
+      ),
       href: `/posts/${notification.postId}`,
     },
   };
@@ -50,12 +67,21 @@ export default function Notification({ notification }: NotificationProps) {
           !notification.read && "bg-accent",
         )}
       >
-        <div className="my-1">{icon}</div>
-        <div className="space-y-3">
-          <UserAvatar avatarUrl={notification.issuer.avatarUrl} />
-          <div>
-            <span className="font-bold">{notification.issuer.displayName}</span>{" "}
-            <span>{message}</span>
+        <div className="flex gap-3">
+          <div className="relative w-fit h-fit">
+            <UserAvatar avatarUrl={notification.issuer.avatarUrl} />
+            {icon}
+          </div>
+          <div className="p-1">
+            <div>
+              <span className="font-bold">
+                {notification.issuer.displayName}
+              </span>{" "}
+              <span>{message}</span>
+            </div>
+            <span className="text-muted-foreground">
+              <Time time={notification.createdAt} long={false} relative/>
+            </span>
           </div>
           {notification.post && (
             <div className="line-clamp-3 text-ellipsis whitespace-pre-line text-muted-foreground"></div>
