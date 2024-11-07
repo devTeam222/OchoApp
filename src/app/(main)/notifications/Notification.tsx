@@ -73,11 +73,10 @@ export default function Notification({ notification }: NotificationProps) {
             {icon}
           </div>
           <div className="p-1">
-            <div>
-              <span className="font-bold">
+            <div className="line-clamp-3 overflow-hidden text-ellipsis">
+              <span className="font-bold max-w-40 overflow-hidden text-ellipsis">
                 {notification.issuer.displayName}
-              </span>{" "}
-              <span>{message}</span>
+              </span>{" "}{message}
             </div>
             <span className="text-muted-foreground">
               <Time time={notification.createdAt} long={false} relative/>
