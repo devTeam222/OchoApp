@@ -67,7 +67,7 @@ export default function Notification({ notification }: NotificationProps) {
           !notification.read && "bg-accent",
         )}
       >
-        <div className="flex gap-3 flex-shrink-0">
+        <div className="flex gap-3 flex-shrink-0 w-full">
           <div className="relative w-fit h-fit">
             <UserAvatar avatarUrl={notification.issuer.avatarUrl} />
             {icon}
