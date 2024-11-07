@@ -72,8 +72,8 @@ export default function Notification({ notification }: NotificationProps) {
             <UserAvatar avatarUrl={notification.issuer.avatarUrl} />
             {icon}
           </div>
-          <div className="p-1">
-            <div className="line-clamp-3 overflow-hidden text-ellipsis">
+          <div className="p-1 flex-1">
+            <div className="line-clamp-3 overflow-hidden text-ellipsis w-full">
               <span className="font-bold max-w-40 overflow-hidden text-ellipsis">
                 {notification.issuer.displayName}
               </span>{" "}{message}
