@@ -29,7 +29,7 @@ export default function Notification({ notification }: NotificationProps) {
       href: `/users/${notification.issuer.username}`,
     },
     COMMENT: {
-      message: `a commenté ${notification.comment?.content ? `"${notification.comment.content.slice(0, 30)}"` : "ton post"}.`,
+      message: `a commenté ${notification.comment?.content ? `« ${notification.comment.content.slice(0, 30)} »` : "ton post"}.`,
       icon: (
         <div className="absolute -bottom-0.5 -right-0.5 flex aspect-square items-center justify-center rounded-full bg-foreground p-1">
           <MessageSquareMore className="size-4 fill-primary text-primary" />
