@@ -119,14 +119,14 @@ export default function ActiveChat({
           <X size={25} className="max-sm:hidden" />
         </div>
       </div>
-      {status === "pending" && <MessagesLoadingSkeleton />}
 
       <InfiniteScrollContainer
-        className="relative flex flex-1 flex-col-reverse space-y-4 overflow-y-auto px-2 pb-2 shadow-inner scrollbar-track-primary scrollbar-track-rounded-full sm:bg-background/50"
+        className="relative flex flex-1 flex-col-reverse space-y-4 overflow-x-hidden overflow-y-auto px-2 pb-2 shadow-inner scrollbar-track-primary scrollbar-track-rounded-full sm:bg-background/50"
         onBottomReached={() =>
           hasNextPage && !isFetchingNextPage && fetchNextPage()
         }
-      >
+        >
+        {status === "pending" && <MessagesLoadingSkeleton />}
         {status === "success" && !messages.length && (
           <p className="my-auto flex w-full flex-1 select-none items-center justify-center px-2 text-center italic text-muted-foreground">
             Aucun message à afficher. Envoyez un nouveau message.

@@ -11,6 +11,8 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import UserTooltip from "@/components/UserTooltip";
 import kyInstance from "@/lib/ky";
+import { Button } from "@/components/ui/button";
+import MessageMoreButton from "@/components/messages/MessageMoreButton";
 
 type MessageProps = {
   message: MessageData;
@@ -28,6 +30,7 @@ export default function Message({
   const messageId = message.id;
   const channelId = channel.id;
   const [isChecked, setIsChecked] = useState(showTime);
+  const [isMessageMoreOpen, setIsMessageMoreOpen] = useState(false);
 
   const queryKey: QueryKey = ["reads-info", message.id];
 
@@ -36,6 +39,7 @@ export default function Message({
     queryFn: () =>
       kyInstance.get(`/api/message/${messageId}/read`).json<ReadInfo>(),
     staleTime: Infinity,
+    refetchInterval: 1000,
   });
 
   const reads = data?.reads ?? [];
@@ -56,7 +60,9 @@ export default function Message({
   });
 
   if (status === "success") {
-    queryClient.setQueryData(["unread-chat-messages", channel.id], { unreadCount: 0 })
+    queryClient.setQueryData(["unread-chat-messages", channel.id], {
+      unreadCount: 0,
+    });
     queryClient.invalidateQueries({ queryKey: ["unread-messages"] });
   }
 
@@ -64,6 +70,15 @@ export default function Message({
 
   function toggleCheck() {
     setIsChecked(!isChecked);
+  }
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsMessageMoreOpen(true);
+  };
+
+  const toggleContextOpenChange = (open: boolean) =>{
+    setIsMessageMoreOpen(open);
   }
 
   if (!loggedUser) {
@@ -214,24 +229,42 @@ export default function Message({
             )}
           </span>
         )}
-        <div className={"relative w-fit max-w-[75%]"} onClick={toggleCheck}>
+        <div className={"relative w-fit max-w-[75%] group/message"}>
           {message.senderId !== loggedUser.id && (
             <div className="ps-2 text-sm text-muted-foreground">
               {message.sender?.displayName || "Utilisateur OchoApp"}
             </div>
           )}
-          <Linkify>
-            <p
+          <div
+            className={cn(
+              "flex w-fit items-center gap-1",
+              message.senderId !== loggedUser.id && "flex-row-reverse",
+            )}
+          >
+            <MessageMoreButton
+              message={message}
               className={cn(
-                "w-fit rounded-3xl px-4 py-2 *:font-bold",
-                message.senderId === loggedUser.id
-                  ? "bg-primary text-primary-foreground *:text-primary-foreground"
-                  : "bg-accent",
+                "opacity-0 sm:group-hover/message:opacity-100",
+                showDetail && "opacity-100",
               )}
-            >
-              {message.content}
-            </p>
-          </Linkify>
+              open={isMessageMoreOpen}
+              onOpenChange={toggleContextOpenChange}
+            />
+            <Linkify>
+              <p
+                onClick={toggleCheck}
+                onContextMenu={handleContextMenu}
+                className={cn(
+                  "w-fit rounded-3xl px-4 py-2 *:font-bold select-none",
+                  message.senderId === loggedUser.id
+                    ? "bg-primary text-primary-foreground *:text-primary-foreground"
+                    : "bg-accent",
+                )}
+              >
+                {message.content}
+              </p>
+            </Linkify>
+          </div>
         </div>
       </div>
       <div

@@ -1,5 +1,6 @@
 "use server";
 
+import Message from "@/app/(main)/messages/Message";
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
 import {
@@ -100,6 +101,31 @@ export async function submitMessage(input: {
   });
 
   return { newMessage, channelId, userId, newChannel };
+}
+
+export async function deleteMessage(id: string) {
+  const { user } = await validateRequest();
+
+  if (!user) {
+      throw new Error("Action non autorisée");
+  }
+
+  const message = await prisma.message.findUnique({
+      where: { id }
+  })
+  if (!message) {
+      throw new Error("Commentaire non trouve");
+  }
+  if (message.senderId !== user.id) {
+      throw new Error("Action non autorisée");
+  }
+
+  const deletedMessage = await prisma.message.delete({
+      where: { id },
+      include: getMessageDataInclude()
+  });
+
+  return deletedMessage
 }
 
 export async function createChatChannel(input: {

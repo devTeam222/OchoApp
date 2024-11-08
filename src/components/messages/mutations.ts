@@ -1,6 +1,7 @@
 import { useToast } from "@/components/ui/use-toast";
 import {
   InfiniteData,
+  QueryKey,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
@@ -9,6 +10,7 @@ import {
   addMembers,
   banMember,
   createChatChannel,
+  deleteMessage,
   leaveGroup,
   removeMember,
   restoreMember,
@@ -171,6 +173,34 @@ export function useSaveMessageMutation() {
   });
   return mutation;
 }
+
+export function useDeleteMessageMutation() {
+  const { toast } = useToast();
+
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+      mutationFn: deleteMessage,
+      onSuccess: async (deletedMessage) => {
+          const queryKey: QueryKey = ["messages", deletedMessage.channelId];
+
+          const readsKey: QueryKey = ["reads-info", deletedMessage.id];
+
+          await queryClient.cancelQueries({ queryKey:readsKey });
+          await queryClient.invalidateQueries({ queryKey });
+      },
+      onError(error) {
+          console.error(error);
+          toast({
+              variant: "destructive",
+              description: "Echec de suppression. Veuillez réessayer."
+          })
+      },
+  })
+
+  return mutation;
+}
+
 export function useCreateChatChannelMutation() {
   const { toast } = useToast();
 
