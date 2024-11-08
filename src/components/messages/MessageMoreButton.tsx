@@ -17,15 +17,15 @@ interface MessageMoreButtonProps {
   message: MessageData;
   className?: string;
   open?: boolean;
-  onRemove?: () => void;
   onOpenChange?: (open: boolean)=>void;
+  onReactOpen?: ()=>void; 
 }
 
 export default function MessageMoreButton({
   message,
   className,
   open = false,
-  onRemove,
+  onReactOpen,
   onOpenChange,
 }: MessageMoreButtonProps) {
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -63,7 +63,7 @@ export default function MessageMoreButton({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={onReactOpen}>
             <span className="flex items-center gap-3">
               <Smile className="size-4" />
               Reagir

@@ -13,6 +13,7 @@ import UserTooltip from "@/components/UserTooltip";
 import kyInstance from "@/lib/ky";
 import { Button } from "@/components/ui/button";
 import MessageMoreButton from "@/components/messages/MessageMoreButton";
+import { Plus } from "lucide-react";
 
 type MessageProps = {
   message: MessageData;
@@ -31,6 +32,8 @@ export default function Message({
   const channelId = channel.id;
   const [isChecked, setIsChecked] = useState(showTime);
   const [isMessageMoreOpen, setIsMessageMoreOpen] = useState(false);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [isQuickReactionOpen, setIsQuickReactionOpen] = useState(false);
 
   const queryKey: QueryKey = ["reads-info", message.id];
 
@@ -72,14 +75,34 @@ export default function Message({
     setIsChecked(!isChecked);
   }
 
+  function addReaction(emoji: string) {}
+
+  const openPicker = () => {
+    setIsQuickReactionOpen(false);
+    setIsPickerOpen(true);
+  };
+
+  const closePicker = () => {
+    setIsQuickReactionOpen(false);
+    setIsPickerOpen(false);
+  };
+
+  const openQuickreaction = () => {
+    setIsQuickReactionOpen(true);
+  };
+
+  const closeQuickreaction = () => {
+    setIsQuickReactionOpen(false);
+  };
+
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsMessageMoreOpen(true);
   };
 
-  const toggleContextOpenChange = (open: boolean) =>{
+  const toggleContextOpenChange = (open: boolean) => {
     setIsMessageMoreOpen(open);
-  }
+  };
 
   if (!loggedUser) {
     return null;
@@ -169,6 +192,8 @@ export default function Message({
   );
 
   const messageContent = contentsTypes[messageType];
+
+  const isOwner = message.senderId === loggedUser.id;
   return messageType !== "CONTENT" ? (
     <div className="relative flex w-full flex-col gap-2">
       <div
@@ -188,7 +213,12 @@ export default function Message({
       </div>
     </div>
   ) : (
-    <div className="relative flex w-full flex-col gap-2">
+    <div
+      className={cn(
+        "relative flex w-full flex-col gap-2",
+        (isQuickReactionOpen || isPickerOpen) && "z-10",
+      )}
+    >
       <div
         className={cn(
           "flex w-full select-none justify-center overflow-hidden text-center text-sm transition-all",
@@ -229,7 +259,7 @@ export default function Message({
             )}
           </span>
         )}
-        <div className={"relative w-fit max-w-[75%] group/message"}>
+        <div className={"group/message relative w-fit max-w-[75%]"}>
           {message.senderId !== loggedUser.id && (
             <div className="ps-2 text-sm text-muted-foreground">
               {message.sender?.displayName || "Utilisateur OchoApp"}
@@ -238,7 +268,7 @@ export default function Message({
           <div
             className={cn(
               "flex w-fit items-center gap-1",
-              message.senderId !== loggedUser.id && "flex-row-reverse",
+              !isOwner && "flex-row-reverse",
             )}
           >
             <MessageMoreButton
@@ -249,21 +279,52 @@ export default function Message({
               )}
               open={isMessageMoreOpen}
               onOpenChange={toggleContextOpenChange}
+              onReactOpen={openQuickreaction}
             />
-            <Linkify>
-              <p
-                onClick={toggleCheck}
-                onContextMenu={handleContextMenu}
+            <div className="relative h-fit w-fit">
+              <Linkify>
+                <p
+                  onClick={toggleCheck}
+                  onContextMenu={handleContextMenu}
+                  className={cn(
+                    "w-fit select-none rounded-3xl px-4 py-2 *:font-bold",
+                    isOwner
+                      ? "bg-primary text-primary-foreground *:text-primary-foreground"
+                      : "bg-accent",
+                    !message.content && "bg-transparent",
+                  )}
+                >
+                  {message.content ?? (
+                    <span className="italic">Message non disponibe</span>
+                  )}
+                </p>
+              </Linkify>
+              <div
                 className={cn(
-                  "w-fit rounded-3xl px-4 py-2 *:font-bold select-none",
-                  message.senderId === loggedUser.id
-                    ? "bg-primary text-primary-foreground *:text-primary-foreground"
-                    : "bg-accent",
+                  "invisible absolute -top-[50%] h-fit w-fit opacity-0 transition-all",
+                  isOwner ? "right-0" : "left-0",
+                  isQuickReactionOpen && "visible opacity-100",
                 )}
               >
-                {message.content}
-              </p>
-            </Linkify>
+                <div
+                  className={cn(
+                    "fixed inset-0 h-full w-full",
+                    !isQuickReactionOpen && "invisible",
+                  )}
+                  onClick={closeQuickreaction}
+                ></div>
+                {isQuickReactionOpen && (
+                  <QuickReaction
+                    onPickerOpen={openPicker}
+                    onReact={addReaction}
+                    className={cn(
+                      "*:animate-scale",
+                      !isQuickReactionOpen && "*:animate-scale-down",
+                    )}
+                  />
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -295,6 +356,49 @@ export default function Message({
           )}
         </p>
       </div>
+    </div>
+  );
+}
+
+interface QuickReactionProps {
+  onReact: (reaction: string) => void;
+  onPickerOpen: () => void;
+  className?: string;
+}
+
+function QuickReaction({
+  onReact,
+  onPickerOpen,
+  className,
+}: QuickReactionProps) {
+  const reactions = ["❤️", "😆", "😮", "😢", "😡", "👎"];
+
+  return (
+    <div
+      className={cn(
+        "flex flex-shrink-0 items-center gap-0.5 rounded-3xl bg-card/50 p-0.5",
+        className,
+      )}
+    >
+      {reactions.map((reaction, index) => (
+        <Button
+          variant="ghost"
+          className="rounded-full max-sm:bg-accent"
+          size="icon"
+          onClick={() => onReact(reaction)}
+          key={index}
+        >
+          <span className="text-2xl">{reaction}</span>
+        </Button>
+      ))}
+      <Button
+        variant="ghost"
+        className="rounded-full max-sm:bg-accent"
+        size="icon"
+        onClick={onPickerOpen}
+      >
+        <Plus />
+      </Button>
     </div>
   );
 }
