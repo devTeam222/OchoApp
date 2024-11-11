@@ -1,7 +1,7 @@
 // "use client"
 
 import UserAvatar from "@/components/UserAvatar";
-import { ChannelData, MessageData, ReadInfo, ReadUser } from "@/lib/types";
+import { ChannelData, MessageData, ReadInfo } from "@/lib/types";
 import { useSession } from "../SessionProvider";
 import Linkify from "@/components/Linkify";
 import { MessageType } from "@prisma/client";
@@ -11,9 +11,8 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import UserTooltip from "@/components/UserTooltip";
 import kyInstance from "@/lib/ky";
-import { Button } from "@/components/ui/button";
 import MessageMoreButton from "@/components/messages/MessageMoreButton";
-import { Plus } from "lucide-react";
+import Reaction from "@/components/Reaction";
 
 type MessageProps = {
   message: MessageData;
@@ -33,7 +32,6 @@ export default function Message({
   const [isChecked, setIsChecked] = useState(showTime);
   const [isMessageMoreOpen, setIsMessageMoreOpen] = useState(false);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
-  const [isQuickReactionOpen, setIsQuickReactionOpen] = useState(false);
 
   const queryKey: QueryKey = ["reads-info", message.id];
 
@@ -75,25 +73,9 @@ export default function Message({
     setIsChecked(!isChecked);
   }
 
-  function addReaction(emoji: string) {}
-
-  const openPicker = () => {
-    setIsQuickReactionOpen(false);
-    setIsPickerOpen(true);
-  };
-
-  const closePicker = () => {
-    setIsQuickReactionOpen(false);
-    setIsPickerOpen(false);
-  };
-
-  const openQuickreaction = () => {
-    setIsQuickReactionOpen(true);
-  };
-
-  const closeQuickreaction = () => {
-    setIsQuickReactionOpen(false);
-  };
+  function addReaction(emoji: string) {
+    console.log(emoji);
+  }
 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -216,7 +198,7 @@ export default function Message({
     <div
       className={cn(
         "relative flex w-full flex-col gap-2",
-        (isQuickReactionOpen || isPickerOpen) && "z-10",
+        (isPickerOpen) && "z-10",
       )}
     >
       <div
@@ -279,7 +261,7 @@ export default function Message({
               )}
               open={isMessageMoreOpen}
               onOpenChange={toggleContextOpenChange}
-              onReactOpen={openQuickreaction}
+              onReactOpen={() => setIsPickerOpen(true)}
             />
             <div className="relative h-fit w-fit">
               <Linkify>
@@ -299,31 +281,17 @@ export default function Message({
                   )}
                 </p>
               </Linkify>
-              <div
+              <Reaction
+                onReact={console.log}
                 className={cn(
-                  "invisible absolute -top-[50%] h-fit w-fit opacity-0 transition-all",
-                  isOwner ? "right-0" : "left-0",
-                  isQuickReactionOpen && "visible opacity-100",
+                  "absolute -bottom-1.5 bg-background rounded-2xl p-0.5 px-1",
+                  isOwner ? "-left-1.5" : "-right-1.5",
                 )}
-              >
-                <div
-                  className={cn(
-                    "fixed inset-0 h-full w-full",
-                    !isQuickReactionOpen && "invisible",
-                  )}
-                  onClick={closeQuickreaction}
-                ></div>
-                {isQuickReactionOpen && (
-                  <QuickReaction
-                    onPickerOpen={openPicker}
-                    onReact={addReaction}
-                    className={cn(
-                      "*:animate-scale",
-                      !isQuickReactionOpen && "*:animate-scale-down",
-                    )}
-                  />
-                )}
-              </div>
+                isOwner={isOwner}
+                open={isPickerOpen}
+                onOpenChange={setIsPickerOpen}
+                size={16}
+              />
             </div>
           </div>
         </div>
@@ -356,49 +324,6 @@ export default function Message({
           )}
         </p>
       </div>
-    </div>
-  );
-}
-
-interface QuickReactionProps {
-  onReact: (reaction: string) => void;
-  onPickerOpen: () => void;
-  className?: string;
-}
-
-function QuickReaction({
-  onReact,
-  onPickerOpen,
-  className,
-}: QuickReactionProps) {
-  const reactions = ["❤️", "😆", "😮", "😢", "😡", "👎"];
-
-  return (
-    <div
-      className={cn(
-        "flex flex-shrink-0 items-center gap-0.5 rounded-3xl bg-card/50 p-0.5",
-        className,
-      )}
-    >
-      {reactions.map((reaction, index) => (
-        <Button
-          variant="ghost"
-          className="rounded-full max-sm:bg-accent"
-          size="icon"
-          onClick={() => onReact(reaction)}
-          key={index}
-        >
-          <span className="text-2xl">{reaction}</span>
-        </Button>
-      ))}
-      <Button
-        variant="ghost"
-        className="rounded-full max-sm:bg-accent"
-        size="icon"
-        onClick={onPickerOpen}
-      >
-        <Plus />
-      </Button>
     </div>
   );
 }

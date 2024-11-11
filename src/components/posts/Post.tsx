@@ -38,7 +38,7 @@ export default function Post({ post }: PostProps) {
   const [targetComment, setTargetComment] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
-  const comment = searchParams.get('comment');
+  const comment = searchParams.get("comment");
 
   useEffect(() => {
     // On récupère le paramètre `comment` depuis les paramètres de recherche
@@ -58,7 +58,7 @@ export default function Post({ post }: PostProps) {
   const isUserOnline = lastSeenDate > now;
 
   return (
-    <article className="group/post flex flex-col gap-5 sm:rounded-2xl bg-card/50 sm:bg-card p-5 shadow-sm">
+    <article className="group/post flex flex-col gap-5 bg-card/50 p-5 shadow-sm sm:rounded-2xl sm:bg-card">
       <div className="flex justify-between gap-3">
         <div className="flex flex-wrap gap-3">
           <UserTooltip user={post.user}>
@@ -135,8 +135,11 @@ export default function Post({ post }: PostProps) {
       </div>
       {showComment && (
         <>
-        <div className="sm:hidden fixed inset-0 z-10" onClick={() => setShowComment(false)}></div>
-          <Comments post={post} onClose={() => setShowComment(false)}/>
+          <div
+            className="fixed inset-0 z-10 sm:hidden"
+            onClick={() => setShowComment(false)}
+          ></div>
+          <Comments post={post} onClose={() => setShowComment(false)} />
           <Button
             variant="link"
             onClick={() => setShowComment(false)}
@@ -209,7 +212,7 @@ function MediaPreviews({ attachments }: MediaPreviewsProps) {
         {attachments.slice(0, maxVisibleAttachments).map((m) => (
           <div
             className={cn(
-              "relative flex items-center overflow-hidden rounded-xl text-primary",
+              "relative flex items-center overflow-hidden rounded-xl text-primary flex-shrink-0",
               attachments.length > maxVisibleAttachments && "aspect-square",
             )}
             onClick={handleShowMore}
@@ -218,7 +221,7 @@ function MediaPreviews({ attachments }: MediaPreviewsProps) {
             <MediaPreview
               media={m}
               className={cn(
-                "h-full w-full",
+                "h-full w-full aspect-square",
                 attachments.length > maxVisibleAttachments && "object-cover",
               )}
               hidden
@@ -371,14 +374,17 @@ function MediaPreview({
 
   if (media.type === "IMAGE") {
     return (
-      <ZoomableComponent clasName="mx-auto h-full w-full" zoomable={isFullscreen}>
+      <ZoomableComponent
+        clasName="mx-auto h-full w-full"
+        zoomable={isFullscreen}
+      >
         <Image
           src={media.url}
           alt="Attachment"
           width={500}
           height={500}
           className={cn(
-            "h-full w-full rounded-xl bg-background object-cover max-sm:max-w-[500px] shadow-sm outline outline-muted outline-2",
+            "h-full w-full rounded-xl bg-background object-cover shadow-sm outline outline-2 outline-muted max-sm:max-w-[500px]",
             isFullscreen
               ? "max-h-screen max-w-[100vw]"
               : "max-h-[90vh] max-w-[90vw]",
@@ -390,32 +396,37 @@ function MediaPreview({
   }
   if (media.type === "VIDEO") {
     return (
-      <ZoomableComponent clasName="mx-auto h-full w-full" zoomable={isFullscreen}>
-      <div
-        className={cn(
-          "relative flex h-full w-full grid-cols-1 grid-rows-1 overflow-auto rounded-xl shadow-sm",
-          isFullscreen
-            ? "max-h-screen max-w-[100vw]"
-            : "max-h-[90vh] max-w-[90vw]",
-          className,
-        )}
+      <ZoomableComponent
+        clasName="mx-auto h-full w-full"
+        zoomable={isFullscreen}
       >
-        <video
-          ref={videoRef}
-          controls={useDefault}
-          height={500}
-          width={500}
+        <div
           className={cn(
-            "relative h-full w-full bg-background shadow-sm",
-            hidden ? "object-cover" : "absolute bottom-0 top-0 object-contain",
+            "relative flex h-full w-full grid-cols-1 grid-rows-1 overflow-auto rounded-xl shadow-sm",
             isFullscreen
-              ? "max-h-screen max-w-[100vw] object-contain"
+              ? "max-h-screen max-w-[100vw]"
               : "max-h-[90vh] max-w-[90vw]",
+            className,
           )}
         >
-          <source src={media.url} />
-        </video>
-      </div>
+          <video
+            ref={videoRef}
+            controls={useDefault}
+            height={500}
+            width={500}
+            className={cn(
+              "relative h-full w-full bg-background shadow-sm",
+              hidden
+                ? "object-cover"
+                : "absolute bottom-0 top-0 object-contain",
+              isFullscreen
+                ? "max-h-screen max-w-[100vw] object-contain"
+                : "max-h-[90vh] max-w-[90vw]",
+            )}
+          >
+            <source src={media.url} />
+          </video>
+        </div>
       </ZoomableComponent>
     );
   }
