@@ -109,6 +109,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
     NEWMEMBER: newMemberMsg,
     LEAVE: oldMemberMsg,
     BAN: oldMemberMsg,
+    REACTION: `${sender || ""} a réagi "${messagePreview.content}" à votre message`,
   };
 
   let messagePreviewContent = contentsTypes[messageType];
@@ -126,14 +127,16 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
       new Date(otherUser.lastSeen).getTime() - 40 * 1000 > now);
 
   const select = () => {
-    queryClient.setQueryData(["unread-chat-messages", channel.id], { unreadCount: 0 })
+    queryClient.setQueryData(["unread-chat-messages", channel.id], {
+      unreadCount: 0,
+    });
     onSelect();
   };
 
   return (
     <li
       key={channel.id}
-      className={`cursor-pointer p-2 ${active && "bg-accent"}`}
+      className={`cursor-pointer p-2 ${active && "bg-accent/50"}`}
       onClick={select}
       title={messagePreviewContent || "Aucun message"}
     >
@@ -147,7 +150,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
             online={isUserOnline}
           />
         )}
-        <div>
+        <div className="">
           <span className="font-semibold">
             {channel.name ||
               `${otherUser?.displayName || "Utilisateur OchoApp"} ${channel.id === `saved-${loggedinUser.id}` ? "(vous)" : ""}` ||
@@ -155,25 +158,25 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
                 ? "Groupe de discussion"
                 : "Utilisateur OchoApp")}
           </span>
-          <div className="flex w-fit max-w-full items-center gap-1 text-sm text-muted-foreground">
-            <p
+          <div className="flex w-fit max-w-full flex-shrink-0 items-center gap-1 text-sm text-muted-foreground">
+            <span
               className={cn(
-                "line-clamp-1 text-ellipsis",
+                "line-clamp-2 text-ellipsis",
                 messageType !== "CONTENT" && "italic text-primary",
               )}
             >
               {messagePreviewContent || "Aucun message"}
-            </p>
-            •
-            <span>
+            </span>
+            <span>•</span>
+            <span className="line-clamp-1 min-w-fit">
               <Time time={messagePreview.createdAt} full={false} />
             </span>
           </div>
         </div>
         {!!unreadCount && (
-          <span className="relative flex-1 justify-end flex items-center">
+          <span className="relative flex flex-1 items-center justify-end">
             <span className="relative min-w-fit rounded-full bg-primary px-1 text-xs font-medium tabular-nums text-primary-foreground">
-              <FormattedInt number={unreadCount}/>
+              <FormattedInt number={unreadCount} />
             </span>
           </span>
         )}

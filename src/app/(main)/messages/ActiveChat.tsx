@@ -121,7 +121,7 @@ export default function ActiveChat({
       </div>
 
       <InfiniteScrollContainer
-        className="relative flex flex-1 flex-col-reverse space-y-4 overflow-x-hidden overflow-y-auto px-2 pb-2 shadow-inner scrollbar-track-primary scrollbar-track-rounded-full sm:bg-background/50"
+        className="relative flex flex-1 flex-col-reverse space-y-4 overflow-x-hidden overflow-y-auto px-2 pb-4 shadow-inner scrollbar-track-primary scrollbar-track-rounded-full sm:bg-background/50"
         onBottomReached={() =>
           hasNextPage && !isFetchingNextPage && fetchNextPage()
         }

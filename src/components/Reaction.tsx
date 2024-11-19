@@ -6,9 +6,22 @@ import QuickReaction from "./messages/QuickReaction";
 import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
 import { cn } from "@/lib/utils";
+import {
+  QueryKey,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { MessageData, ReactionData, ReactionInfo } from "@/lib/types";
+import kyInstance from "@/lib/ky";
+import { useSession } from "@/app/(main)/SessionProvider";
+import { useToast } from "./ui/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import UserAvatar from "./UserAvatar";
+import { Skeleton } from "./ui/skeleton";
 
 interface ReactionProps {
-  onReact: (emoji: string) => void;
+  message: MessageData;
   onOpenChange?: (open: boolean) => void;
   children?: React.ReactNode;
   open?: boolean;
@@ -18,7 +31,7 @@ interface ReactionProps {
 }
 
 export default function Reaction({
-  onReact,
+  message,
   children,
   open = false,
   size = 24,
@@ -28,6 +41,124 @@ export default function Reaction({
 }: ReactionProps) {
   const [showReaction, setShowReaction] = useState(open);
   const [showPicker, setShowPicker] = useState(false);
+  const { user: loggedInUser } = useSession();
+
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const hasUserReacted = message.reactions.some(
+    ({ user }) => user.id === loggedInUser.id,
+  );
+
+  const initialState: ReactionInfo = {
+    reactions: message._count.reactions,
+    hasUserReacted,
+    content: hasUserReacted
+      ? message.reactions.find(
+          (reaction) => reaction.user.id === loggedInUser.id,
+        )?.content
+      : undefined,
+  };
+
+  const messageId = message.id;
+
+  const queryKey: QueryKey = ["message-reaction", messageId];
+
+  const { data: reactionData } = useQuery({
+    queryKey,
+    queryFn: () =>
+      kyInstance.get(`/api/message/${messageId}/reaction`).json<ReactionInfo>(),
+    initialData: initialState,
+    staleTime: Infinity,
+  });
+  const {
+    data: allReactions,
+    status: reactionsStatus,
+    isPending: reactionLoading,
+  } = useQuery({
+    queryKey: ["message-reactions", messageId],
+    queryFn: () =>
+      kyInstance
+        .get(`/api/message/${messageId}/reactions`)
+        .json<ReactionData[]>(),
+    staleTime: Infinity,
+    refetchInterval: 10_000,
+  });
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: (emoji: string) => {
+      const isReactionRemoval = allReactions?.some(
+        (reaction) =>
+          reaction.user.id === loggedInUser.id && reaction.content === emoji,
+      );
+
+      return isReactionRemoval
+        ? kyInstance.delete(`/api/message/${messageId}/reaction`)
+        : kyInstance.post(`/api/message/${messageId}/reaction`, {
+            json: { content: emoji.trim() },
+          });
+    },
+    onMutate: async (emoji: string) => {
+      await queryClient.cancelQueries({
+        queryKey: ["message-reactions", messageId],
+      });
+
+      // Obtenir l'état précédent
+      const previousReactions = queryClient.getQueryData<ReactionData[]>([
+        "message-reactions",
+        messageId,
+      ]);
+
+      if (!previousReactions) return { previousReactions };
+
+      // Mise à jour optimiste
+      const isReactionRemoval = previousReactions.some(
+        (reaction) =>
+          reaction.user.id === loggedInUser.id && reaction.content === emoji,
+      );
+
+      const updatedReactions = isReactionRemoval
+        ? previousReactions.filter(
+            (reaction) =>
+              !(
+                reaction.user.id === loggedInUser.id &&
+                reaction.content === emoji
+              ),
+          )
+        : [
+            ...previousReactions,
+            {
+              id: `${messageId}-${loggedInUser.id}-${emoji}`, // Génération d'un ID fictif
+              content: emoji,
+              user: loggedInUser,
+            },
+          ];
+
+      queryClient.setQueryData(
+        ["message-reactions", messageId],
+        updatedReactions,
+      );
+
+      return { previousReactions };
+    },
+    onError: (error, _, context) => {
+      if (context?.previousReactions) {
+        queryClient.setQueryData(
+          ["message-reactions", messageId],
+          context.previousReactions,
+        );
+      }
+      toast({
+        variant: "destructive",
+        description: "Une erreur est survenue. Veuillez réessayer.",
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["message-reactions", messageId],
+      });
+    },
+  });
 
   useEffect(() => {
     setShowReaction(open);
@@ -47,15 +178,70 @@ export default function Reaction({
     setShowPicker(!showPicker);
   };
 
+  const onReact = (emoji: string) => {
+    closeReaction();
+    mutate(emoji.trim());
+  };
+
+  const reactions = allReactions || [];
+
+  // Grouper et compter les réactions par contenu
+  const groupedReactions = reactions.reduce<
+    Record<
+      string,
+      {
+        count: number;
+        users: {
+          id: string;
+          username: string;
+          avatarUrl: string | null;
+          displayName: string;
+        }[];
+      }
+    >
+  >((acc, reaction) => {
+    const { content, user } = reaction;
+    if (!acc[content]) {
+      acc[content] = { count: 0, users: [] };
+    }
+    acc[content].count++;
+    acc[content].users.push(user);
+    return acc;
+  }, {});
+
+  // Trier les groupes par ordre décroissant du nombre d'occurrences
+  const sortedReactions = Object.entries(groupedReactions).sort((a, b) => {
+    if (b[1].count === a[1].count) {
+      // Comparaison alphabétique en cas d'égalité sur `count`
+      return a[0].localeCompare(b[0]);
+    }
+    // Tri principal par `count`
+    return b[1].count - a[1].count;
+  });
+
   return (
     <>
       {!showReaction && (
         <span
           onClick={toggleReaction}
-          className={cn("h-fit w-fit cursor-pointer", className)}
+          className={cn(
+            "h-fit w-fit cursor-pointer",
+            className,
+            !!allReactions?.length &&
+              !children &&
+              "-bottom-[50%] flex items-center p-2 gap-1",
+          )}
           title="Ajouter une reaction"
         >
-          {children || <SmilePlusIcon size={size} />}
+          {children || !allReactions?.length ? (
+            <SmilePlusIcon size={size} />
+          ) : (
+            sortedReactions.map(([content, { count }]) => (
+              <span key={content} className="text-xs">
+                {content}<span className="text-muted-foreground">{count}</span>
+              </span>
+            ))
+          )}
         </span>
       )}
       {(showReaction || showPicker) && (
@@ -85,21 +271,291 @@ export default function Reaction({
               <Loader2 className="animate-spin" />
             </div>
             <Picker
-              onEmojiSelect={({ native }: { native: string }) => {
-                onReact(native);
-              }}
+              onEmojiSelect={({ native }: { native: string }) =>
+                onReact(native)
+              }
               data={data}
             />
           </div>
         )}
-        {showReaction && (
-          <QuickReaction
-            onReact={onReact}
-            onPickerOpen={togglePicker}
-            className={cn("z-10", showPicker && "invisible")}
-          />
-        )}
+        {showReaction &&
+          (reactionsStatus === "success" && !allReactions?.length ? (
+            <QuickReaction
+              onReact={onReact}
+              onPickerOpen={togglePicker}
+              className={cn("z-10", showPicker && "invisible")}
+            />
+          ) : (
+            <AllReactions
+              reactions={allReactions || []}
+              onPickerOpen={togglePicker}
+              onReact={onReact}
+              loading={reactionLoading}
+              quickClassName={cn("z-10", showPicker && "invisible")}
+            />
+          ))}
       </div>
     </>
+  );
+}
+
+interface AllReactionsProps {
+  reactions: ReactionData[];
+  onReact: (emoji: string) => void;
+  onPickerOpen: () => void;
+  className?: string;
+  quickClassName?: string;
+  loading: boolean;
+  open?: boolean;
+}
+
+function AllReactions({
+  reactions,
+  className,
+  quickClassName,
+  onReact,
+  loading,
+  onPickerOpen,
+  open = false,
+}: AllReactionsProps) {
+  const [showQuickReaction, setShowQuickReaction] = useState(open);
+  const { user: loggedinUser } = useSession();
+
+  useEffect(() => {
+    setShowQuickReaction(open);
+    return () => {
+      setShowQuickReaction(false);
+    };
+  }, [open]);
+
+  const closeQuickReaction = () => setShowQuickReaction(false);
+  const openQuickReaction = () => setShowQuickReaction(true);
+
+  // Grouper et compter les réactions par contenu
+  const groupedReactions = reactions.reduce<
+    Record<
+      string,
+      {
+        count: number;
+        users: {
+          id: string;
+          username: string;
+          avatarUrl: string | null;
+          displayName: string;
+        }[];
+      }
+    >
+  >((acc, reaction) => {
+    const { content, user } = reaction;
+    if (!acc[content]) {
+      acc[content] = { count: 0, users: [] };
+    }
+    acc[content].count++;
+    acc[content].users.push(user);
+    return acc;
+  }, {});
+
+  // Trier les groupes par ordre décroissant du nombre d'occurrences
+  const sortedReactions = Object.entries(groupedReactions).sort((a, b) => {
+    if (b[1].count === a[1].count) {
+      // Comparaison alphabétique en cas d'égalité sur `count`
+      return a[0].localeCompare(b[0]);
+    }
+    // Tri principal par `count`
+    return b[1].count - a[1].count;
+  });
+
+  const userReaction = sortedReactions.find(([_, { users }]) =>
+    users.some((user) => user.id === loggedinUser.id),
+  );
+
+  return showQuickReaction ? (
+    <QuickReaction
+      onReact={onReact}
+      onPickerOpen={onPickerOpen}
+      className={quickClassName}
+    />
+  ) : (
+    <div
+      className={cn(
+        "flex min-h-96 min-w-[95%] select-none flex-col rounded-sm bg-card p-3 max-sm:fixed max-sm:bottom-[2%] max-sm:left-[150%] max-sm:-translate-x-[50%] sm:min-h-80 sm:min-w-72",
+        className,
+      )}
+    >
+      <h3 className="text-lg font-semibold">Réactions</h3>
+      <Tabs
+        defaultValue="all"
+        className="relative flex h-full flex-1 flex-col gap-1"
+      >
+        <TabsContent value="you" className="flex-1">
+          {userReaction ? (
+            <ReactionUsers
+              users={[
+                {
+                  id: loggedinUser.id,
+                  username: loggedinUser.username,
+                  avatarUrl: loggedinUser.avatarUrl,
+                  displayName: loggedinUser.displayName,
+                },
+              ]}
+              onReact={onReact}
+              content={userReaction[0]}
+            />
+          ) : (
+            <div className="h-full cursor-pointer overflow-y-auto">
+              <div
+                className="flex w-full items-center gap-2"
+                onClick={openQuickReaction}
+              >
+                <UserAvatar avatarUrl={loggedinUser.avatarUrl} size={32} />
+                <div className="flex flex-1 flex-col items-start justify-center">
+                  <span>{loggedinUser.displayName} (Vous)</span>
+                  <span className={cn("text-muted-foreground", "text-xs")}>
+                    Appuyez ou cliquez pour ajouter une réaction
+                  </span>
+                </div>
+                <span className="text-xl">
+                  <SmilePlusIcon />
+                </span>
+              </div>
+            </div>
+          )}
+        </TabsContent>
+        <TabsContent value="all" className="flex-1">
+          {loading && <ReactionSkeleton />}
+          {sortedReactions.map(([content, { users }]) => (
+            <div key={content}>
+              <ReactionUsers
+                users={users}
+                onReact={onReact}
+                content={content}
+              />
+            </div>
+          ))}
+        </TabsContent>
+        {sortedReactions.map(([content, { users }]) => (
+          <TabsContent key={content} value={content} className="flex-1">
+            <ReactionUsers users={users} onReact={onReact} content={content} />
+          </TabsContent>
+        ))}
+
+        <TabsList className="bg-transparent shadow-none">
+          {
+            <TabsTrigger value="you">
+              <span className="text-xs">
+                {userReaction ? "Vous" : "Ajouter"}
+              </span>
+            </TabsTrigger>
+          }
+          <TabsTrigger value="all">
+            <span className="text-xs">Tout</span>
+          </TabsTrigger>
+          {sortedReactions.map(([content, { count }]) => (
+            <TabsTrigger key={content} value={content}>
+              <span className="text-xs">
+                {content} <span className="text-muted-foreground">{count}</span>
+              </span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+    </div>
+  );
+}
+
+interface ReactionUsersProps {
+  users: {
+    id: string;
+    username: string;
+    avatarUrl: string | null;
+    displayName: string;
+  }[];
+  content: string;
+  onReact: (emoji: string) => void;
+}
+
+function ReactionUsers({ users, content, onReact }: ReactionUsersProps) {
+  const { user: loggedinUser } = useSession();
+
+  // Vérifier si des utilisateurs sont présents
+  if (users.length > 0) {
+    return (
+      <>
+        {users.map((user) => (
+          <div
+            key={user.id}
+            className={cn(
+              "flex w-full items-center gap-2",
+              user.id === loggedinUser.id && "cursor-pointer",
+            )}
+            onClick={
+              user.id === loggedinUser.id ? () => onReact(content) : undefined
+            }
+          >
+            <UserAvatar avatarUrl={user.avatarUrl} size={32} />
+            <div className="flex flex-1 flex-col items-start justify-center">
+              <span>
+                {user.id === loggedinUser.id ? "Vous" : user.displayName}
+              </span>
+              <span
+                className={cn(
+                  "text-[0.75rem] text-muted-foreground",
+                  user.id === loggedinUser.id && "text-xs",
+                )}
+              >
+                {user.id === loggedinUser.id
+                  ? "Appuyez ou cliquez pour supprimer"
+                  : `@${user.username}`}
+              </span>
+            </div>
+            <span className="text-xl">{content}</span>
+          </div>
+        ))}
+      </>
+    );
+  }
+
+  // Si aucun utilisateur, afficher "Aucune réaction"
+  return (
+    <div className="flex w-full items-center gap-2">
+      <UserAvatar avatarUrl={loggedinUser.avatarUrl} size={32} />
+      <div className="flex flex-1 flex-col items-start justify-center">
+        <span>Aucune réaction</span>
+        <span className="text-xs text-muted-foreground">
+          Appuyez pour ajouter une réaction
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function ReactionSkeleton() {
+  return (
+    <div className="w-full animate-pulse space-y-1">
+      <div className="flex w-full flex-shrink-0 items-center gap-2">
+        <Skeleton className="h-8 w-8 rounded-full" />
+        <div className="flex flex-1 flex-col items-start justify-center gap-0.5">
+          <Skeleton className="h-3 w-28 rounded" />
+          <Skeleton className="h-2.5 w-24 rounded" />
+        </div>
+        <Skeleton className="h-6 w-6 rounded-full" />
+      </div>
+      <div className="flex w-full flex-shrink-0 items-center gap-2">
+        <Skeleton className="h-8 w-8 rounded-full" />
+        <div className="flex flex-1 flex-col items-start justify-center gap-0.5">
+          <Skeleton className="h-3 w-20 rounded" />
+          <Skeleton className="h-2.5 w-16 rounded" />
+        </div>
+        <Skeleton className="h-6 w-6 rounded-full" />
+      </div>
+      <div className="flex w-full flex-shrink-0 items-center gap-2">
+        <Skeleton className="h-8 w-8 rounded-full" />
+        <div className="flex flex-1 flex-col items-start justify-center gap-0.5">
+          <Skeleton className="h-3 w-20 rounded" />
+          <Skeleton className="h-2.5 w-16 rounded" />
+        </div>
+        <Skeleton className="h-6 w-6 rounded-full" />
+      </div>
+    </div>
   );
 }

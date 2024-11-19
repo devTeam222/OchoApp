@@ -2,6 +2,16 @@ import { channel } from "diagnostics_channel";
 import { z } from "zod";
 
 const requiredString = z.string().trim().min(1, "Champ obligatoire");
+export const singleEmojiSchema = z
+  .string()
+  .trim()
+  .regex(
+    /^[\p{Emoji}\p{Emoji_Presentation}][\u200D\p{Emoji}\p{Emoji_Presentation}]*$/u,
+    "Emoji invalide",
+  )
+  .refine((str) => [...str].length === 1, {
+    message: "Un seul emoji s'il vous plaît",
+  });
 
 export const signupSchema = z.object({
   email: requiredString.email("Adresse email invalide"),
@@ -55,26 +65,23 @@ export const saveMessageSchema = z.object({
   members: z.array(z.string()).optional(),
 });
 
-
 export const createPostSchema = z.object({
   content: z.string(),
-  mediaIds: z.array(z.string()).max(5,
-    "Vous pouvez ajouter jusqu'à 5 médias",
-  )
-})
+  mediaIds: z.array(z.string()).max(5, "Vous pouvez ajouter jusqu'à 5 médias"),
+});
 
 export const createMessageSchema = z.object({
   content: requiredString,
   channelId: z.string(),
-})
+});
 
 export const updateUserProfileSchema = z.object({
   displayName: requiredString,
   bio: z.string().max(1000, "La bio ne peut pas depasser 1000 caractères."),
-})
+});
 
-export type UpdateUserProfileValues = z.infer<typeof updateUserProfileSchema>
+export type UpdateUserProfileValues = z.infer<typeof updateUserProfileSchema>;
 
 export const createCommentSchema = z.object({
   content: requiredString,
-})
+});

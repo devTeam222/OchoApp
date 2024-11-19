@@ -43,7 +43,7 @@ export async function submitMessage(input: {
         senderId: user.id,
         type: "SAVED",
       },
-      include: getMessageDataInclude(),
+      include: getMessageDataInclude(userId),
     });
 
     const messageId = newMessage.id;
@@ -75,7 +75,7 @@ export async function submitMessage(input: {
         senderId: user.id,
         type: "CONTENT",
       },
-      include: getMessageDataInclude(),
+      include: getMessageDataInclude(userId),
     }),
     prisma.channel.findFirst({
       where: {
@@ -122,7 +122,7 @@ export async function deleteMessage(id: string) {
 
   const deletedMessage = await prisma.message.delete({
       where: { id },
-      include: getMessageDataInclude()
+      include: getMessageDataInclude(user.id)
   });
 
   return deletedMessage
@@ -189,7 +189,7 @@ export async function createChatChannel(input: {
       senderId: newChannel.isGroup ? user.id : null,
       type: "CREATE",
     },
-    include: getMessageDataInclude(),
+    include: getMessageDataInclude(user.id),
   });
 
   const newMembers: string[] = newChannel.members
@@ -222,7 +222,7 @@ export async function createChatChannel(input: {
           type: "NEWMEMBER",
           channelId: newChannel.id,
         },
-        include: getMessageDataInclude(),
+        include: getMessageDataInclude(user.id),
       });
       return message;
     });
@@ -232,7 +232,7 @@ export async function createChatChannel(input: {
     where: {
       channelId: newChannel.id,
     },
-    include: getMessageDataInclude(),
+    include: getMessageDataInclude(user.id),
     orderBy: {
       createdAt: "desc",
     },
@@ -323,7 +323,7 @@ export async function addMembers(input: {
         type: "NEWMEMBER",
         channelId,
       },
-      include: getMessageDataInclude(),
+      include: getMessageDataInclude(user.id),
     });
     return message;
   });
@@ -336,7 +336,7 @@ export async function addMembers(input: {
       createdAt: "desc",
     },
     take: 1,
-    include: getMessageDataInclude(),
+    include: getMessageDataInclude(user.id),
   });
 
   // Fetch only new added members userdata
@@ -827,7 +827,7 @@ export async function restoreMember(input: {
       type: "NEWMEMBER",
       channelId,
     },
-    include: getMessageDataInclude(),
+    include: getMessageDataInclude(user.id),
   });
 }
 export async function saveMessage(input: {}) {
@@ -859,7 +859,7 @@ export async function saveMessage(input: {}) {
         equals: "SAVED",
       },
     },
-    include: getMessageDataInclude(),
+    include: getMessageDataInclude(user.id),
     take: 1,
     orderBy: { createdAt: "desc" },
   });
@@ -874,7 +874,7 @@ export async function saveMessage(input: {}) {
           equals: "SAVED",
         },
       },
-      include: getMessageDataInclude(),
+      include: getMessageDataInclude(user.id),
       take: 1,
       orderBy: { createdAt: "asc" },
     });
@@ -906,7 +906,7 @@ export async function saveMessage(input: {}) {
       senderId: userId,
       type: "SAVED",
     },
-    include: getMessageDataInclude(),
+    include: getMessageDataInclude(user.id),
   });
 
   const newMessage: MessageData = {
@@ -915,10 +915,15 @@ export async function saveMessage(input: {}) {
     senderId: userId,
     sender: createInfo.sender,
     recipientId: userId,
+    reactionId: null,
     recipient: user,
     type: "CREATE",
     channelId: userId,
     createdAt: createInfo.createdAt,
+    _count: {
+      reactions: 0
+    },
+    reactions:[]
   };
 
   const newChannel: ChannelData = {

@@ -116,6 +116,7 @@ export default function Message({
 
   if (recipient && channel.isGroup) {
     const memberName = recipient.displayName.split(" ")[0];
+
     // Check if message type is info of added member
     if (messageType === "NEWMEMBER") {
       newMemberMsg = `Nouveau membre : ${memberName}`;
@@ -156,6 +157,7 @@ export default function Message({
     NEWMEMBER: newMemberMsg,
     LEAVE: oldMemberMsg,
     BAN: oldMemberMsg,
+    REACTION: `${sender || ""} a réagi "${message.content}" à votre message`,
   };
 
   if (
@@ -177,28 +179,30 @@ export default function Message({
 
   const isOwner = message.senderId === loggedUser.id;
   return messageType !== "CONTENT" ? (
-    <div className="relative flex w-full flex-col gap-2">
-      <div
-        className={cn(
-          "flex w-full select-none justify-center overflow-hidden rounded-sm text-center text-sm transition-all",
-          !showTime ? "h-0 opacity-0" : "h-6 opacity-100",
-        )}
-      >
-        <div className="rounded-sm bg-primary/30 p-0.5 px-2">
-          <Time time={message.createdAt} full />
+    messageType !== "REACTION" ? (
+      <div className="relative flex w-full flex-col gap-2">
+        <div
+          className={cn(
+            "flex w-full select-none justify-center overflow-hidden rounded-sm text-center text-sm transition-all",
+            !showTime ? "h-0 opacity-0" : "h-6 opacity-100",
+          )}
+        >
+          <div className="rounded-sm bg-primary/30 p-0.5 px-2">
+            <Time time={message.createdAt} full />
+          </div>
+        </div>
+        <div
+          className={`top-0 flex select-none justify-center text-center text-sm text-primary ${messageType === "CREATE" ? "flex-1" : ""}`}
+        >
+          {messageContent}
         </div>
       </div>
-      <div
-        className={`top-0 flex select-none justify-center text-center text-sm text-primary ${messageType === "CREATE" ? "flex-1" : ""}`}
-      >
-        {messageContent}
-      </div>
-    </div>
+    ) : null
   ) : (
     <div
       className={cn(
         "relative flex w-full flex-col gap-2",
-        (isPickerOpen) && "z-10",
+        isPickerOpen && "z-10",
       )}
     >
       <div
@@ -241,7 +245,7 @@ export default function Message({
             )}
           </span>
         )}
-        <div className={"group/message relative w-fit max-w-[75%]"}>
+        <div className={"group/message relative w-fit max-w-[75%] select-none"}>
           {message.senderId !== loggedUser.id && (
             <div className="ps-2 text-sm text-muted-foreground">
               {message.sender?.displayName || "Utilisateur OchoApp"}
@@ -273,7 +277,8 @@ export default function Message({
                     isOwner
                       ? "bg-primary text-primary-foreground *:text-primary-foreground"
                       : "bg-accent",
-                    !message.content && "bg-transparent",
+                    !message.content &&
+                      "bg-transparent text-muted-foreground outline outline-2 outline-muted-foreground",
                   )}
                 >
                   {message.content ?? (
@@ -282,9 +287,9 @@ export default function Message({
                 </p>
               </Linkify>
               <Reaction
-                onReact={console.log}
+                message={message}
                 className={cn(
-                  "absolute -bottom-1.5 bg-background rounded-2xl p-0.5 px-1",
+                  "absolute -bottom-1.5 rounded-2xl bg-background p-0.5 px-1",
                   isOwner ? "-left-1.5" : "-right-1.5",
                 )}
                 isOwner={isOwner}

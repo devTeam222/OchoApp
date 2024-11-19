@@ -31,7 +31,7 @@ export async function GET(
           senderId: user.id,
           type: "SAVED",
         },
-        include: getMessageDataInclude(),
+        include: getMessageDataInclude(user.id),
         orderBy: { createdAt: "desc" },
         take: pageSize + 1,
         cursor: cursor ? { id: cursor } : undefined,
@@ -61,7 +61,7 @@ export async function GET(
 
       messages = await prisma.message.findMany({
         where: { channelId },
-        include: getMessageDataInclude(),
+        include: getMessageDataInclude(user.id),
         orderBy: { createdAt: "desc" },
         take: pageSize + 1, // Récupère une page supplémentaire pour vérifier s'il y a une page suivante
         cursor: cursor ? { id: cursor } : undefined,

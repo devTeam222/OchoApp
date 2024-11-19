@@ -32,7 +32,7 @@ export async function GET(
             equals: "SAVED",
           },
         },
-        include: getMessageDataInclude(),
+        include: getMessageDataInclude(userId),
         take: 1,
         orderBy: { createdAt: "desc" },
       });

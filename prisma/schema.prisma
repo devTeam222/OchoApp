@@ -40,8 +40,9 @@ model User {
   receivedNotification Notification[]  @relation("Recipient")
   issuedNotification   Notification[]  @relation("Issuer")
 
-  lastSeen  DateTime @default(now())
-  createdAt DateTime @default(now())
+  lastSeen  DateTime   @default(now())
+  createdAt DateTime   @default(now())
+  Reaction  Reaction[]
 
   @@map("users")
 }
@@ -115,10 +116,13 @@ model Message {
   recipientId String?
   channel     Channel?    @relation(fields: [channelId], references: [id], onDelete: Cascade)
   channelId   String?
+  reaction    Reaction?   @relation("Sender", fields: [reactionId], references: [id], onDelete: Cascade)
+  reactionId  String?
   type        MessageType
+  reads       Read[]
+  reactions   Reaction[]
 
   createdAt DateTime @default(now())
-  reads     Read[]
 
   @@map("messages")
 }
@@ -132,6 +136,7 @@ enum MessageType {
   BAN
   CLEAR
   SAVED
+  REACTION
 }
 
 model Read {
@@ -145,6 +150,21 @@ model Read {
 
   @@unique([userId, messageId])
   @@map("reads")
+}
+
+model Reaction {
+  id              String    @id @default(uuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messageId       String
+  message         Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  reactionMessage Message[] @relation("Sender")
+  content         String
+
+  readAt DateTime @default(now())
+
+  @@unique([userId, messageId])
+  @@map("reactions")
 }
 
 model Post {

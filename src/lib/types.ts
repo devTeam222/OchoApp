@@ -1,11 +1,16 @@
 import { Prisma } from "@prisma/client";
 
-
 export type MenuBarContextType = {
   isVisible: boolean;
   setIsVisible: (isVisible: boolean) => void;
 };
-export type NavigationType = "home" | "explore" | "activity" | "messages" |"bookmarks" | null;
+export type NavigationType =
+  | "home"
+  | "explore"
+  | "activity"
+  | "messages"
+  | "bookmarks"
+  | null;
 export type NavigationContextType = {
   currentNavigation: NavigationType;
   setCurrentNavigation: (currentNavigation: NavigationType) => void;
@@ -22,18 +27,18 @@ export function getUserDataSelect(loggedInUserId: string) {
     lastSeen: true,
     followers: {
       where: {
-        followerId: loggedInUserId
+        followerId: loggedInUserId,
       },
       select: {
-        followerId: true
-      }
+        followerId: true,
+      },
     },
     _count: {
       select: {
         posts: true,
-        followers: true
-      }
-    }
+        followers: true,
+      },
+    },
   } satisfies Prisma.UserSelect;
 }
 
@@ -57,16 +62,16 @@ export function getChatChannelDataInclude() {
             lastSeen: true,
             followers: {
               select: {
-                followerId: true
-              }
+                followerId: true,
+              },
             },
             _count: {
               select: {
                 posts: true,
-                followers: true
-              }
-            }
-          }
+                followers: true,
+              },
+            },
+          },
         },
         type: true,
         joinedAt: true,
@@ -76,7 +81,7 @@ export function getChatChannelDataInclude() {
     messages: {
       take: 1,
       select: getMessageDataSelect(),
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     },
   } satisfies Prisma.ChannelInclude;
 }
@@ -93,7 +98,7 @@ export function getMessageDataSelect() {
         avatarUrl: true,
         bio: true,
         lastSeen: true,
-      }
+      },
     },
     recipient: {
       select: {
@@ -103,22 +108,22 @@ export function getMessageDataSelect() {
         avatarUrl: true,
         bio: true,
         lastSeen: true,
-      }   
+      },
     },
     createdAt: true,
-  } satisfies Prisma.MessageSelect
+  } satisfies Prisma.MessageSelect;
 }
 
 export type ChannelData = Prisma.ChannelGetPayload<{
   include: ReturnType<typeof getChatChannelDataInclude>;
-}>
+}>;
 
 export interface ChannelsSection {
   channels: ChannelData[];
   nextCursor: string | null;
 }
 
-export function getMessageDataInclude() {
+export function getMessageDataInclude(loggedInUserId: string) {
   return {
     sender: {
       select: {
@@ -128,7 +133,7 @@ export function getMessageDataInclude() {
         avatarUrl: true,
         bio: true,
         lastSeen: true,
-      }
+      },
     },
     recipient: {
       select: {
@@ -138,14 +143,28 @@ export function getMessageDataInclude() {
         avatarUrl: true,
         bio: true,
         lastSeen: true,
-      }
-    }
+      },
+    },
+    _count: {
+      select: {
+        reactions: true,
+      },
+    },
+    reactions: {
+      select: {
+        user: true,
+        content: true,
+      },
+      where: {
+        userId: loggedInUserId,
+      },
+    },
   } satisfies Prisma.MessageInclude;
 }
 
 export type MessageData = Prisma.MessageGetPayload<{
   include: ReturnType<typeof getMessageDataInclude>;
-}>
+}>;
 
 export interface MessagesSection {
   messages: MessageData[];
@@ -160,29 +179,28 @@ export function getPostDataIncludes(loggedInUserId: string) {
     attachments: true,
     likes: {
       where: {
-        userId: loggedInUserId
+        userId: loggedInUserId,
       },
       select: {
-        userId: true
-      }
+        userId: true,
+      },
     },
     bookmarks: {
       where: {
-        userId: loggedInUserId
+        userId: loggedInUserId,
       },
       select: {
-        userId: true
-      }
+        userId: true,
+      },
     },
     _count: {
       select: {
         likes: true,
         comments: true,
-      }
+      },
     },
   } satisfies Prisma.PostInclude;
 }
-
 
 export type PostData = Prisma.PostGetPayload<{
   include: ReturnType<typeof getPostDataIncludes>;
@@ -225,24 +243,24 @@ export const notificationsInclude = {
       username: true,
       displayName: true,
       avatarUrl: true,
-    }
+    },
   },
   post: {
     select: {
       content: true,
-    }
+    },
   },
   comment: {
     select: {
       id: true,
       content: true,
-    }
-  }
+    },
+  },
 } satisfies Prisma.NotificationInclude;
 
 export type NotificationData = Prisma.NotificationGetPayload<{
-  include: typeof notificationsInclude
-}>
+  include: typeof notificationsInclude;
+}>;
 
 export interface NotificationsPage {
   notifications: NotificationData[];
@@ -260,7 +278,21 @@ export interface LikeInfo {
   likes: number;
   isLikedByUser: boolean;
 }
-export interface ReadUser{
+export interface ReactionData {
+  user: {
+    id: string;
+    displayName: string;
+    username: string;
+    avatarUrl: string | null;
+  };
+  content: string;
+}
+export interface ReactionInfo {
+  reactions: number;
+  hasUserReacted: boolean;
+  content?: string;
+}
+export interface ReadUser {
   id: string;
   username: string;
   displayName: string;
@@ -284,13 +316,13 @@ export type SaveMessageResponse = {
 };
 
 export type LocalUpload = {
-  url: string; 
-  name: string | null; 
-  appUrl: string; 
+  url: string;
+  name: string | null;
+  appUrl: string;
   type: string | null;
   size: number;
   serverData: {
     avatarUrl?: string;
     mediaId?: string;
-  }
-}
+  };
+};

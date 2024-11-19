@@ -31,7 +31,7 @@ export async function GET(
     });
 
     if (!message) {
-      return Response.json({ error: "Post non trouvé" }, { status: 404 });
+      return Response.json({ error: "Message non trouvé" }, { status: 404 });
     }
 
     const reads = message.reads.map((read) => read.user);

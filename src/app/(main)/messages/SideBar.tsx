@@ -3,7 +3,6 @@ import Channel from "./Channel";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import kyInstance from "@/lib/ky";
 import InfiniteScrollContainer from "@/components/InfiniteScrollContainer";
-import StartChatDialog from "@/components/messages/StartChatDialog";
 import { useSession } from "../SessionProvider";
 import ChannelsLoadingSkeleton from "./ChannelsLoadingSkeleton";
 import { useEffect } from "react";

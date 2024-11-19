@@ -92,12 +92,16 @@ export async function GET(req: NextRequest) {
 
         const leftDate = loggedMember?.leftAt;
 
-        if (leftDate) {
-          // Filtrer les messages
-          channel.messages = channel.messages.filter(
-            (message) => message.createdAt < leftDate,
-          );
-        }
+        // Filtrer les messages en fonction de la date de départ et du type REACTION
+        channel.messages = channel.messages.filter((message) => {
+          if (message.type === "REACTION") {
+            // Exclure les messages de type REACTION si le recipientId ne correspond pas à l'utilisateur connecté
+            return message.recipient?.id === loggedInUser.id;
+          }
+
+          // Exclure les messages créés après que l'utilisateur a quitté le canal
+          return leftDate ? message.createdAt < leftDate : true;
+        });
 
         return channel;
       }),
@@ -118,7 +122,7 @@ export async function GET(req: NextRequest) {
         senderId: user.id,
         type: "SAVED", // Type de message sauvegardé
       },
-      include: getMessageDataInclude(),
+      include: getMessageDataInclude(loggedInUser.id),
       orderBy: { createdAt: "desc" },
     });
 
