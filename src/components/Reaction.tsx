@@ -1,6 +1,6 @@
 "use client";
 
-import { SmilePlusIcon, Loader2 } from "lucide-react";
+import { SmilePlusIcon, Loader2, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import QuickReaction from "./messages/QuickReaction";
 import Picker from "@emoji-mart/react";
@@ -219,6 +219,8 @@ export default function Reaction({
     return b[1].count - a[1].count;
   });
 
+  const MAX_VISIBLE_REACTIONS = 3; // Nombre maximum de réactions visibles dans les onglets principaux
+
   return (
     <>
       {!showReaction && (
@@ -229,18 +231,28 @@ export default function Reaction({
             className,
             !!allReactions?.length &&
               !children &&
-              "-bottom-[50%] flex items-center p-2 gap-1",
+              "-bottom-[40%] flex items-center gap-1 p-0.5 px-2",
+            reactionsStatus !== "success" && !children && "hidden",
           )}
           title="Ajouter une reaction"
         >
           {children || !allReactions?.length ? (
             <SmilePlusIcon size={size} />
           ) : (
-            sortedReactions.map(([content, { count }]) => (
-              <span key={content} className="text-xs">
-                {content}<span className="text-muted-foreground">{count}</span>
-              </span>
-            ))
+            sortedReactions
+              .slice(0, MAX_VISIBLE_REACTIONS)
+              .map(([content, { count }]) => (
+                <span key={content} className="text-xs">
+                  {content}
+                  <span className="text-muted-foreground">{count}</span>
+                </span>
+              ))
+          )}
+          {sortedReactions.length > MAX_VISIBLE_REACTIONS && (
+            <span className="flex items-center text-xs font-bold bg-background px-1 rounded-lg text-muted-foreground">
+              {sortedReactions.length - MAX_VISIBLE_REACTIONS}{" "}
+              <PlusIcon size={12} />
+            </span>
           )}
         </span>
       )}
@@ -321,6 +333,8 @@ function AllReactions({
   const [showQuickReaction, setShowQuickReaction] = useState(open);
   const { user: loggedinUser } = useSession();
 
+  const MAX_VISIBLE_REACTIONS = 3; // Nombre maximum de réactions visibles dans les onglets principaux
+
   useEffect(() => {
     setShowQuickReaction(open);
     return () => {
@@ -358,12 +372,14 @@ function AllReactions({
   // Trier les groupes par ordre décroissant du nombre d'occurrences
   const sortedReactions = Object.entries(groupedReactions).sort((a, b) => {
     if (b[1].count === a[1].count) {
-      // Comparaison alphabétique en cas d'égalité sur `count`
       return a[0].localeCompare(b[0]);
     }
-    // Tri principal par `count`
     return b[1].count - a[1].count;
   });
+
+  // Réactions visibles et restantes
+  const visibleReactions = sortedReactions.slice(0, MAX_VISIBLE_REACTIONS);
+  const remainingReactions = sortedReactions.slice(MAX_VISIBLE_REACTIONS);
 
   const userReaction = sortedReactions.find(([_, { users }]) =>
     users.some((user) => user.id === loggedinUser.id),
@@ -387,43 +403,45 @@ function AllReactions({
         defaultValue="all"
         className="relative flex h-full flex-1 flex-col gap-1"
       >
-        <TabsContent value="you" className="flex-1">
-          {userReaction ? (
-            <ReactionUsers
-              users={[
-                {
-                  id: loggedinUser.id,
-                  username: loggedinUser.username,
-                  avatarUrl: loggedinUser.avatarUrl,
-                  displayName: loggedinUser.displayName,
-                },
-              ]}
-              onReact={onReact}
-              content={userReaction[0]}
-            />
-          ) : (
-            <div className="h-full cursor-pointer overflow-y-auto">
-              <div
-                className="flex w-full items-center gap-2"
-                onClick={openQuickReaction}
-              >
-                <UserAvatar avatarUrl={loggedinUser.avatarUrl} size={32} />
-                <div className="flex flex-1 flex-col items-start justify-center">
-                  <span>{loggedinUser.displayName} (Vous)</span>
-                  <span className={cn("text-muted-foreground", "text-xs")}>
-                    Appuyez ou cliquez pour ajouter une réaction
+        {!loading && (
+          <TabsContent value="you" className="flex-1">
+            {userReaction ? (
+              <ReactionUsers
+                users={[
+                  {
+                    id: loggedinUser.id,
+                    username: loggedinUser.username,
+                    avatarUrl: loggedinUser.avatarUrl,
+                    displayName: loggedinUser.displayName,
+                  },
+                ]}
+                onReact={onReact}
+                content={userReaction[0]}
+              />
+            ) : (
+              <div className="h-full cursor-pointer overflow-y-auto">
+                <div
+                  className="flex w-full items-center gap-2"
+                  onClick={openQuickReaction}
+                >
+                  <UserAvatar avatarUrl={loggedinUser.avatarUrl} size={32} />
+                  <div className="flex flex-1 flex-col items-start justify-center">
+                    <span>{loggedinUser.displayName} (Vous)</span>
+                    <span className={cn("text-muted-foreground", "text-xs")}>
+                      Appuyez ou cliquez pour ajouter une réaction
+                    </span>
+                  </div>
+                  <span className="text-xl">
+                    <SmilePlusIcon />
                   </span>
                 </div>
-                <span className="text-xl">
-                  <SmilePlusIcon />
-                </span>
               </div>
-            </div>
-          )}
-        </TabsContent>
+            )}
+          </TabsContent>
+        )}
         <TabsContent value="all" className="flex-1">
           {loading && <ReactionSkeleton />}
-          {sortedReactions.map(([content, { users }]) => (
+          {visibleReactions.map(([content, { users }]) => (
             <div key={content}>
               <ReactionUsers
                 users={users}
@@ -433,30 +451,48 @@ function AllReactions({
             </div>
           ))}
         </TabsContent>
-        {sortedReactions.map(([content, { users }]) => (
+        {visibleReactions.map(([content, { users }]) => (
           <TabsContent key={content} value={content} className="flex-1">
             <ReactionUsers users={users} onReact={onReact} content={content} />
           </TabsContent>
         ))}
+        {remainingReactions.length > 0 && (
+          <TabsContent value="more" className="flex-1">
+            {remainingReactions.map(([content, { users }]) => (
+              <div key={content}>
+                <ReactionUsers
+                  users={users}
+                  onReact={onReact}
+                  content={content}
+                />
+              </div>
+            ))}
+          </TabsContent>
+        )}
 
         <TabsList className="bg-transparent shadow-none">
-          {
+          {!loading && (
             <TabsTrigger value="you">
               <span className="text-xs">
                 {userReaction ? "Vous" : "Ajouter"}
               </span>
             </TabsTrigger>
-          }
+          )}
           <TabsTrigger value="all">
             <span className="text-xs">Tout</span>
           </TabsTrigger>
-          {sortedReactions.map(([content, { count }]) => (
+          {visibleReactions.map(([content, { count }]) => (
             <TabsTrigger key={content} value={content}>
               <span className="text-xs">
                 {content} <span className="text-muted-foreground">{count}</span>
               </span>
             </TabsTrigger>
           ))}
+          {remainingReactions.length > 0 && (
+            <TabsTrigger value="more">
+              <span className="text-xs">Plus</span>
+            </TabsTrigger>
+          )}
         </TabsList>
       </Tabs>
     </div>

@@ -109,7 +109,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
     NEWMEMBER: newMemberMsg,
     LEAVE: oldMemberMsg,
     BAN: oldMemberMsg,
-    REACTION: `${sender || ""} a réagi "${messagePreview.content}" à votre message`,
+    REACTION: `${sender || ""} ${isSender ? "avez" : "a"} réagi "${messagePreview.content}" ${isSender ? `au message de ${messagePreview.recipient?.displayName.split(" ")[0] || "Utilisateur OchoApp"}` : "à votre message"}`,
   };
 
   let messagePreviewContent = contentsTypes[messageType];
@@ -162,7 +162,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
             <span
               className={cn(
                 "line-clamp-2 text-ellipsis",
-                messageType !== "CONTENT" && "italic text-primary",
+                messageType !== "CONTENT" && "text-xs text-primary",
               )}
             >
               {messagePreviewContent || "Aucun message"}

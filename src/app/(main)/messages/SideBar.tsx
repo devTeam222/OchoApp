@@ -1,6 +1,6 @@
 import { ChannelData, ChannelsSection } from "@/lib/types";
 import Channel from "./Channel";
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import kyInstance from "@/lib/ky";
 import InfiniteScrollContainer from "@/components/InfiniteScrollContainer";
 import { useSession } from "../SessionProvider";

@@ -40,20 +40,35 @@ export default function Message({
     queryFn: () =>
       kyInstance.get(`/api/message/${messageId}/read`).json<ReadInfo>(),
     staleTime: Infinity,
-    refetchInterval: 1000,
+    refetchInterval: 5000,
   });
 
   const reads = data?.reads ?? [];
 
+  // Marquer comme lu si non déjà fait
   const { status } = useQuery({
-    queryKey,
-    queryFn: () => {
-      const isRead = !!(
-        reads && reads.find((read) => read.id === loggedUser.id)
-      );
-      return !isRead ? kyInstance.post(`/api/message/${messageId}/read`) : {};
+    queryKey: ["read-status", messageId, loggedUser.id],
+    queryFn: async () => {
+      const isRead = !!reads.find((read) => read.id === loggedUser.id);
+      if (!isRead) {
+        // Ajouter l'utilisateur dans le cache existant
+        queryClient.setQueryData<ReadInfo>(queryKey, (oldData) => ({
+          reads: [
+            ...(oldData?.reads ?? []),
+            {
+              id: loggedUser.id,
+              username: loggedUser.username,
+              displayName: loggedUser.displayName,
+            },
+          ],
+        }));
+
+        return kyInstance.post(`/api/message/${messageId}/read`);
+      }
+      return {};
     },
-    throwOnError: false,
+    refetchOnWindowFocus: false, // Pas de refetch lors du focus de la fenêtre
+    staleTime: Infinity,
   });
   queryClient.setQueryData(["unread-chat-messages"], { unreadCount: 0 });
   queryClient.setQueryData(["unread-chat-messages", channel.id], {
@@ -276,7 +291,7 @@ export default function Message({
                     "w-fit select-none rounded-3xl px-4 py-2 *:font-bold",
                     isOwner
                       ? "bg-primary text-primary-foreground *:text-primary-foreground"
-                      : "bg-accent",
+                      : "bg-primary/10",
                     !message.content &&
                       "bg-transparent text-muted-foreground outline outline-2 outline-muted-foreground",
                   )}
@@ -289,13 +304,13 @@ export default function Message({
               <Reaction
                 message={message}
                 className={cn(
-                  "absolute -bottom-1.5 rounded-2xl bg-background p-0.5 px-1",
+                  "absolute -bottom-2 rounded-2xl border-2 border-solid border-background bg-card px-1",
                   isOwner ? "-left-1.5" : "-right-1.5",
                 )}
                 isOwner={isOwner}
                 open={isPickerOpen}
                 onOpenChange={setIsPickerOpen}
-                size={16}
+                size={12}
               />
             </div>
           </div>

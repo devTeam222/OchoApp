@@ -96,7 +96,7 @@ export async function GET(req: NextRequest) {
         channel.messages = channel.messages.filter((message) => {
           if (message.type === "REACTION") {
             // Exclure les messages de type REACTION si le recipientId ne correspond pas à l'utilisateur connecté
-            return message.recipient?.id === loggedInUser.id;
+            return (message.recipient?.id === loggedInUser.id) || (message.sender?.id === loggedInUser.id);
           }
 
           // Exclure les messages créés après que l'utilisateur a quitté le canal

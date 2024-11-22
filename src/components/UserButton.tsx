@@ -15,7 +15,7 @@ import {
 } from "./ui/dropdown-menu";
 import UserAvatar from "./UserAvatar";
 import Link from "next/link";
-import { Check, LogOutIcon, Monitor, Moon, Sun, UserIcon, UserRound } from "lucide-react";
+import { Check, LogOutIcon, PaintbrushVertical, Moon, Sun, UserIcon, UserRound } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
@@ -65,7 +65,7 @@ export default function UserButton({ className }: UserButtonProps) {
         </Link>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
-            {theme === "system" && <Monitor className="mr-2 size-4" />}
+            {theme === "system" && <PaintbrushVertical className="mr-2 size-4" />}
             {theme === "light" && <Sun className="mr-2 size-4" />}
             {theme === "dark" && <Moon className="mr-2 size-4" />}
             Thême
@@ -77,7 +77,7 @@ export default function UserButton({ className }: UserButtonProps) {
                   setTheme("system");
                 }}
               >
-                <Monitor className="mr-2 size-4" />
+                <PaintbrushVertical className="mr-2 size-4" />
                 Système (défaut)
                 {theme === "system" && <Check className="ms-2 size-4" />}
               </DropdownMenuItem>
