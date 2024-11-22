@@ -33,37 +33,6 @@ export async function GET(req: NextRequest) {
       return Response.json({ error: "Action non autorisée" }, { status: 401 });
     }
 
-    // Condition pour paginer sur la date du dernier message (ou date de création si pas de message)
-    const lastMessageDateCondition = cursor
-      ? {
-          OR: [
-            {
-              messages: {
-                some: {
-                  createdAt: {
-                    lt: new Date(cursor),
-                  },
-                },
-              },
-            },
-            {
-              AND: [
-                {
-                  messages: {
-                    none: {},
-                  },
-                },
-                {
-                  createdAt: {
-                    lt: new Date(cursor),
-                  },
-                },
-              ],
-            },
-          ],
-        }
-      : undefined;
-
     // Récupérer les canaux dans lesquels l'utilisateur est membre avec leur dernier message
     const channels = await prisma.channel.findMany({
       where: {
@@ -72,7 +41,76 @@ export async function GET(req: NextRequest) {
             userId: user.id,
           },
         },
-        ...lastMessageDateCondition, // Filtrer par le dernier message ou la date de création
+        ...(cursor
+          ? {
+              OR: [
+                {
+                  messages: {
+                    some: {
+                      createdAt: {
+                        lt: new Date(cursor),
+                      },
+                      OR: [
+                        {
+                          type: {
+                            not: "REACTION", // Inclure les messages qui ne sont pas des "REACTION"
+                          },
+                        },
+                        {
+                          AND: [
+                            {
+                              type: "REACTION", // Ajouter une condition spécifique pour les "REACTION"
+                            },
+                            {
+                              OR: [
+                                { recipientId: loggedInUser.id },
+                                { senderId: loggedInUser.id },
+                              ],
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  AND: [
+                    {
+                      messages: {
+                        none: {
+                          OR: [
+                            {
+                              type: {
+                                not: "REACTION", // Aucun message sauf "REACTION"
+                              },
+                            },
+                            {
+                              AND: [
+                                {
+                                  type: "REACTION", // Vérifier uniquement les "REACTION"
+                                },
+                                {
+                                  OR: [
+                                    { recipientId: loggedInUser.id },
+                                    { senderId: loggedInUser.id },
+                                  ],
+                                },
+                              ],
+                            },
+                          ],
+                        },
+                      },
+                    },
+                    {
+                      createdAt: {
+                        lt: new Date(cursor),
+                      },
+                    },
+                  ],
+                },
+              ],
+            }
+          : undefined), // Filtrer par le dernier message ou la date de création
       },
       include: getChatChannelDataInclude(),
       take: pageSize + 1, // Récupérer une page supplémentaire pour déterminer s'il y a une page suivante
@@ -96,7 +134,10 @@ export async function GET(req: NextRequest) {
         channel.messages = channel.messages.filter((message) => {
           if (message.type === "REACTION") {
             // Exclure les messages de type REACTION si le recipientId ne correspond pas à l'utilisateur connecté
-            return (message.recipient?.id === loggedInUser.id) || (message.sender?.id === loggedInUser.id);
+            return (
+              message.recipient?.id === loggedInUser.id ||
+              message.sender?.id === loggedInUser.id
+            );
           }
 
           // Exclure les messages créés après que l'utilisateur a quitté le canal

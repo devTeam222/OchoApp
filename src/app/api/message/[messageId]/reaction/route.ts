@@ -79,7 +79,6 @@ export async function POST(
     if (!content) {
       return Response.json({ error: "Le contenu est requis" }, { status: 400 });
     }
-    console.log(content);
     
 
     const emoji = content.trim()

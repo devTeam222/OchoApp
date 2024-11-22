@@ -25,24 +25,51 @@ export async function GET(
 
     const unreadCount = await prisma.message.count({
       where: {
-        AND: {
-          channelId: {
-            equals: channelId,
-          },
-          reads: {
-            none: {
-              userId: user.id,
+        AND: [
+          {
+            channelId: {
+              equals: channelId,
             },
           },
-        },
+          {
+            reads: {
+              none: {
+                userId: user.id,
+              },
+            },
+          },
+          {
+            OR: [
+              {
+                type: {
+                  not: "REACTION", // Inclure tous les autres types sans condition supplémentaire
+                },
+              },
+              {
+                AND: [
+                  {
+                    type: "REACTION",
+                  },
+                  {
+                    OR: [
+                      { recipientId: user.id },
+                      { senderId: user.id },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
         NOT: {
           AND: {
             type: "CREATE",
             senderId: user.id,
-          }
-        }
+          },
+        },
       },
     });
+    
 
     const data: NotificationCountInfo = {
       unreadCount,

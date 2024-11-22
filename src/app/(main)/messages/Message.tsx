@@ -88,10 +88,6 @@ export default function Message({
     setIsChecked(!isChecked);
   }
 
-  function addReaction(emoji: string) {
-    console.log(emoji);
-  }
-
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsMessageMoreOpen(true);
@@ -305,7 +301,7 @@ export default function Message({
                 message={message}
                 className={cn(
                   "absolute -bottom-2 rounded-2xl border-2 border-solid border-background bg-card px-1",
-                  isOwner ? "-left-1.5" : "-right-1.5",
+                  isOwner ? "right-0" : "left-0",
                 )}
                 isOwner={isOwner}
                 open={isPickerOpen}
@@ -318,7 +314,7 @@ export default function Message({
       </div>
       <div
         className={cn(
-          "flex w-full select-none overflow-hidden px-4 text-justify text-xs transition-all",
+          "flex w-full select-none overflow-hidden px-4 text-justify text-xs transition-all py-2",
           !showDetail ? "h-0 opacity-0" : "opacity-100",
           message.senderId === loggedUser.id ? "flex-row-reverse" : "ps-10",
         )}
@@ -328,13 +324,13 @@ export default function Message({
           className={cn(
             showTime && "rounded-sm bg-primary/30 p-0.5 px-2",
             showDetail ? "animate-scale" : "hidden",
-            "max-h-40 w-fit max-w-[50%] text-ellipsis *:font-bold",
+            "max-h-40 w-fit max-w-[50%] text-ellipsis text-start *:font-bold",
           )}
         >
           {!!views.length ? (
             channel.isGroup ? (
               <>
-                <span>Vu</span> par {views.join(",")}
+                <span>Vu</span> par {views.join(", ")}
               </>
             ) : (
               <span>Vu</span>

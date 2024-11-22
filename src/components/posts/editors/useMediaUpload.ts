@@ -121,9 +121,6 @@ export default function useMediaUpload() {
         fileSizeMB > MAX_FILE_SIZE_MB ||
         (file.type.startsWith("image/") && fileSizeMB > MAX_IMAGE_SIZE_MB)
       ) {
-        console.log(fileSizeMB);
-        console.log(MAX_FILE_SIZE_MB);
-        
         
         toast({
           variant: "destructive",

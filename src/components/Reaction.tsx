@@ -219,7 +219,7 @@ export default function Reaction({
     return b[1].count - a[1].count;
   });
 
-  const MAX_VISIBLE_REACTIONS = 3; // Nombre maximum de réactions visibles dans les onglets principaux
+  const MAX_VISIBLE_REACTIONS = 2; // Nombre maximum de réactions visibles dans les onglets principaux
 
   return (
     <>
@@ -242,14 +242,14 @@ export default function Reaction({
             sortedReactions
               .slice(0, MAX_VISIBLE_REACTIONS)
               .map(([content, { count }]) => (
-                <span key={content} className="text-xs">
+                <span key={content} className="flex items-center text-xs">
                   {content}
                   <span className="text-muted-foreground">{count}</span>
                 </span>
               ))
           )}
           {sortedReactions.length > MAX_VISIBLE_REACTIONS && (
-            <span className="flex items-center text-xs font-bold bg-background px-1 rounded-lg text-muted-foreground">
+            <span className="flex items-center rounded-lg bg-background px-1 text-xs font-bold text-muted-foreground">
               {sortedReactions.length - MAX_VISIBLE_REACTIONS}{" "}
               <PlusIcon size={12} />
             </span>
@@ -333,7 +333,7 @@ function AllReactions({
   const [showQuickReaction, setShowQuickReaction] = useState(open);
   const { user: loggedinUser } = useSession();
 
-  const MAX_VISIBLE_REACTIONS = 3; // Nombre maximum de réactions visibles dans les onglets principaux
+  const MAX_VISIBLE_REACTIONS = 2; // Nombre maximum de réactions visibles dans les onglets principaux
 
   useEffect(() => {
     setShowQuickReaction(open);
@@ -442,6 +442,15 @@ function AllReactions({
         <TabsContent value="all" className="flex-1">
           {loading && <ReactionSkeleton />}
           {visibleReactions.map(([content, { users }]) => (
+            <div key={content}>
+              <ReactionUsers
+                users={users}
+                onReact={onReact}
+                content={content}
+              />
+            </div>
+          ))}
+          {remainingReactions.map(([content, { users }]) => (
             <div key={content}>
               <ReactionUsers
                 users={users}
