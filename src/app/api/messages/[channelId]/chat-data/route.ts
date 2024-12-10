@@ -40,6 +40,8 @@ export async function GET(
         const channel: ChannelData = {
           id: `saved-${userId}`,
           name: null,
+          description: null,
+          groupAvatarUrl: null,
           privilege: "MANAGE",
           members: [
             {
@@ -61,6 +63,8 @@ export async function GET(
       const channel: ChannelData = {
         id: `saved-${userId}`,
         name: null,
+        description: null,
+        groupAvatarUrl: null,
         privilege: "MANAGE",
         members: [
           {

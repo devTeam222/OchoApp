@@ -2,7 +2,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { UpdateUserProfileValues } from "@/lib/validation";
 import { InfiniteData, QueryFilters, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { updateUserProfile } from "./actions";
+import { deleteUserAvatar, updateUserProfile } from "./actions";
 import { LocalUpload, PostsPage } from "@/lib/types";
 import { useUploadThing } from "@/lib/uploadthing";
 import kyInstance from "@/lib/ky";
@@ -97,6 +97,64 @@ export function useUpdateProfileMutation() {
             toast({
                 variant: "destructive",
                 description: "Une erreur est survenue lors de la mise à jour de votre profil",
+            });
+        }
+    });
+
+    return mutation;
+}
+export function useDeleteAvatarMutation() {
+
+    const { toast } = useToast();
+
+    const router = useRouter();
+    const queryClient = useQueryClient();
+
+    const mutation = useMutation({
+        mutationFn: deleteUserAvatar,
+        onSuccess: async (updatedUser) => {
+
+            const queryFilter: QueryFilters = {
+                queryKey: ["post-feed"]
+            }
+
+            await queryClient.cancelQueries(queryFilter);
+
+            queryClient.setQueriesData<InfiniteData<PostsPage, string | null>>(
+                queryFilter,
+                (oldData) => {
+                    if (!oldData) return;
+                    return {
+                        pageParams: oldData.pageParams,
+                        pages: oldData.pages.map(page => ({
+                            nextCursor: page.nextCursor,
+                            posts: page.posts.map(post => {
+                                if (post.user.id === updatedUser?.id) {
+                                    return {
+                                        ...post,
+                                        user: {
+                                            ...updatedUser,
+                                            avatarUrl: null
+                                        }
+                                    }
+                                }
+                                return post
+                            })
+                        }))
+                    }
+                }
+            );
+            router.refresh();
+
+            toast({
+                description: "Vous venez de supprimer votre avatar."
+            })
+        },
+        onError: (error) => {
+            console.error(error);
+            toast({
+                variant: "destructive",
+                description: "Impossible de supprimer votre avatar veuillez réessayer.",
             });
         }
     });

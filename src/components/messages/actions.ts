@@ -882,6 +882,8 @@ export async function saveMessage(input: {}) {
     const newChannel: ChannelData = {
       id: `saved-${userId}`,
       name: null,
+      description: null,
+      groupAvatarUrl: null,
       privilege: "MANAGE",
       members: [
         {
@@ -929,6 +931,8 @@ export async function saveMessage(input: {}) {
   const newChannel: ChannelData = {
     id: `saved-${userId}`,
     name: null,
+    description: null,
+    groupAvatarUrl: null,
     privilege: "MANAGE",
     members: [
       {

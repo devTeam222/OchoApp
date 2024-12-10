@@ -103,13 +103,13 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
       ? `${sender} ${messagePreview.sender?.id === loggedinUser.id ? "avez" : "a"} créé ce groupe`
       : `${otherUser?.displayName.split(" ")[0] || ""} peut maintenant discuter avec vous`,
     CONTENT: `${showUserPreview ? sender || "" : ""}${showUserPreview ? ": " : ""}${messagePreview.content.length > 100 ? messagePreview.content.slice(0, 100) : messagePreview.content}`,
-    CLEAR: "Historique non disponible",
+    CLEAR: "Aperçu non disponible",
     DELETE: "Discussion supprimée",
     SAVED: "Envoyez-vous un message",
     NEWMEMBER: newMemberMsg,
     LEAVE: oldMemberMsg,
     BAN: oldMemberMsg,
-    REACTION: `${sender || ""} ${isSender ? "avez" : "a"} réagi "${messagePreview.content}" ${isSender ? `au message de ${messagePreview.recipient?.displayName.split(" ")[0] || "Utilisateur OchoApp"}` : "à votre message"}`,
+    REACTION: `${sender || ""} ${isSender ? "avez" : "a"} réagi ${messagePreview.content} ${isSender ? `au message de ${messagePreview.recipient?.displayName.split(" ")[0] || "Utilisateur OchoApp"}` : "à votre message"}`,
   };
 
   let messagePreviewContent = contentsTypes[messageType];

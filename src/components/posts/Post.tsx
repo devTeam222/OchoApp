@@ -17,7 +17,7 @@ import { useEffect, useRef, useState } from "react";
 import { Maximize2, MessageSquare, Minimize2, X } from "lucide-react";
 import Comments from "../comments/Comments";
 import { Button } from "../ui/button";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Carousel,
   CarouselContent,
@@ -33,6 +33,8 @@ interface PostProps {
 
 export default function Post({ post }: PostProps) {
   const { user } = useSession();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const [showComment, setShowComment] = useState(false);
   const [targetComment, setTargetComment] = useState<string | null>(null);
@@ -46,6 +48,12 @@ export default function Post({ post }: PostProps) {
       setShowComment(true);
     }
   }, [comment]);
+  function postPage() {
+    if (pathname.startsWith(`/posts/${post.id}`)) {
+      return;
+    }
+    router.push(`/posts/${post.id}`);
+  }
 
   const timestamp = post.createdAt.getTime();
   const now = Date.now();
@@ -58,8 +66,8 @@ export default function Post({ post }: PostProps) {
   const isUserOnline = lastSeenDate > now;
 
   return (
-    <article className="group/post flex flex-col gap-5 bg-card/50 p-5 shadow-sm sm:rounded-2xl sm:bg-card">
-      <div className="flex justify-between gap-3">
+    <article className="group/post flex flex-col bg-card/50 p-0.5 shadow-sm sm:rounded-2xl sm:bg-card">
+      <div className="flex justify-between gap-3 p-5">
         <div className="flex flex-wrap gap-3">
           <UserTooltip user={post.user}>
             <Link
@@ -101,16 +109,24 @@ export default function Post({ post }: PostProps) {
           />
         )}
       </div>
-      <Linkify postId={post.id}>
-        <div className="whitespace-pre-line break-words">
-          <p>{post.content}</p>
-        </div>
-      </Linkify>
-      {!!post.attachments.length && (
-        <MediaPreviews attachments={post.attachments} />
-      )}
+      <div className="relative flex flex-col gap-5 p-5">
+        <div
+          className="absolute inset-0 h-full w-full"
+          onClick={postPage}
+        ></div>
+        {!!post.content && (
+          <Linkify postId={post.id}>
+            <div className="whitespace-pre-line break-words z-10">
+              <p>{post.content}</p>
+            </div>
+          </Linkify>
+        )}
+        {!!post.attachments.length && (
+          <MediaPreviews attachments={post.attachments} />
+        )}
+      </div>
       <hr className="text-muted-foreground" />
-      <div className="flex justify-between gap-5">
+      <div className="flex justify-between gap-5 p-5">
         <div className="flex items-center gap-5">
           <LikeButton
             postId={post.id}
@@ -212,7 +228,7 @@ function MediaPreviews({ attachments }: MediaPreviewsProps) {
         {attachments.slice(0, maxVisibleAttachments).map((m) => (
           <div
             className={cn(
-              "relative flex items-center overflow-hidden rounded-xl text-primary flex-shrink-0",
+              "relative flex flex-shrink-0 items-center overflow-hidden rounded-xl text-primary",
               attachments.length > maxVisibleAttachments && "aspect-square",
             )}
             onClick={handleShowMore}
@@ -221,7 +237,7 @@ function MediaPreviews({ attachments }: MediaPreviewsProps) {
             <MediaPreview
               media={m}
               className={cn(
-                "h-full w-full aspect-square",
+                "aspect-square h-full w-full",
                 attachments.length > maxVisibleAttachments && "object-cover",
               )}
               hidden

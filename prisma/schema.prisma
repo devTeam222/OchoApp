@@ -67,14 +67,16 @@ model Follow {
 }
 
 model Channel {
-  id         String          @id @default(uuid())
-  name       String?
-  isGroup    Boolean         @default(false)
-  members    ChannelMember[]
-  maxMembers Int             @default(300)
-  messages   Message[]
-  privilege  Privilege       @default(MESSAGE)
-  createdAt  DateTime        @default(now())
+  id             String          @id @default(uuid())
+  name           String?
+  description    String?
+  groupAvatarUrl String?
+  isGroup        Boolean         @default(false)
+  members        ChannelMember[]
+  maxMembers     Int             @default(300)
+  messages       Message[]
+  privilege      Privilege       @default(MESSAGE)
+  createdAt      DateTime        @default(now())
 
   @@map("channels")
 }

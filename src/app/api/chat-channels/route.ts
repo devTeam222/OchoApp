@@ -175,6 +175,8 @@ export async function GET(req: NextRequest) {
       const selfChannel: ChannelData | null = {
         id: `saved-${user.id}`,
         name: null,
+        description: null,
+        groupAvatarUrl: null,
         privilege: "MANAGE",
         members: [
           {

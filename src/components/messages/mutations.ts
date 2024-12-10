@@ -17,7 +17,7 @@ import {
   saveMessage,
   submitMessage,
 } from "./actions";
-import { ChannelsSection, MessageData, MessagesSection } from "@/lib/types";
+import { ChannelsSection, MessagesSection } from "@/lib/types";
 
 export function useSubmitMessageMutation() {
   const { toast } = useToast();

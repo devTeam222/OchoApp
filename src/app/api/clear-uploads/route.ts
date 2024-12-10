@@ -4,7 +4,6 @@ import path from "path";
 import { UTApi } from "uploadthing/server";
 
 // Base directories for different types of uploads
-const avatarDir = path.resolve("data/uploads/avatars");
 const attachmentDir = path.resolve("data/uploads/attachments");
 
 export async function GET(req: Request) {

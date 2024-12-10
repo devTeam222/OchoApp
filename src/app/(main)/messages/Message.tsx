@@ -188,6 +188,14 @@ export default function Message({
 
   const messageContent = contentsTypes[messageType];
 
+  const canReact = channel.isGroup
+    ? channel.members.some((member) => member.userId === loggedUser.id) &&
+      channel.members.find((member) => member.userId === loggedUser.id)
+        ?.type !== "BANNED" &&
+      channel.members.find((member) => member.userId === loggedUser.id)
+        ?.type !== "OLD"
+    : !!otherUser.user?.id;
+
   const isOwner = message.senderId === loggedUser.id;
   return messageType !== "CONTENT" ? (
     messageType !== "REACTION" ? (
@@ -277,6 +285,7 @@ export default function Message({
               open={isMessageMoreOpen}
               onOpenChange={toggleContextOpenChange}
               onReactOpen={() => setIsPickerOpen(true)}
+              canReact={canReact}
             />
             <div className="relative h-fit w-fit">
               <Linkify>
@@ -297,7 +306,7 @@ export default function Message({
                   )}
                 </p>
               </Linkify>
-              <Reaction
+              {canReact && <Reaction
                 message={message}
                 className={cn(
                   "absolute -bottom-2 rounded-2xl border-2 border-solid border-background bg-card px-1",
@@ -307,14 +316,14 @@ export default function Message({
                 open={isPickerOpen}
                 onOpenChange={setIsPickerOpen}
                 size={12}
-              />
+              />}
             </div>
           </div>
         </div>
       </div>
       <div
         className={cn(
-          "flex w-full select-none overflow-hidden px-4 text-justify text-xs transition-all py-2",
+          "flex w-full select-none overflow-hidden px-4 py-2 text-justify text-xs transition-all",
           !showDetail ? "h-0 opacity-0" : "opacity-100",
           message.senderId === loggedUser.id ? "flex-row-reverse" : "ps-10",
         )}

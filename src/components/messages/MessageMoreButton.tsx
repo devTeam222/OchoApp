@@ -19,6 +19,7 @@ interface MessageMoreButtonProps {
   open?: boolean;
   onOpenChange?: (open: boolean)=>void;
   onReactOpen?: ()=>void; 
+  canReact: boolean;
 }
 
 export default function MessageMoreButton({
@@ -27,6 +28,7 @@ export default function MessageMoreButton({
   open = false,
   onReactOpen,
   onOpenChange,
+  canReact,
 }: MessageMoreButtonProps) {
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const {user: loggedinUser} = useSession();
@@ -63,12 +65,12 @@ export default function MessageMoreButton({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem onClick={onReactOpen}>
+          {canReact && <DropdownMenuItem onClick={onReactOpen}>
             <span className="flex items-center gap-3">
               <Smile className="size-4" />
               Reagir
             </span>
-          </DropdownMenuItem>
+          </DropdownMenuItem>}
           <DropdownMenuItem onClick={copyToClipboard}>
             <span className="flex items-center gap-3">
               <Copy className="size-4" />

@@ -12,7 +12,7 @@ import {
 } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useUpdateProfileMutation } from "./mutations";
+import { useDeleteAvatarMutation, useUpdateProfileMutation } from "./mutations";
 import {
   Form,
   FormControl,
@@ -28,10 +28,11 @@ import Image, { StaticImageData } from "next/image";
 import { useRef, useState } from "react";
 import { Label } from "@/components/ui/label";
 import avatarPlaceholder from "@/assets/avatar-placeholder.png";
-import { Camera } from "lucide-react";
+import { Camera, Trash2 } from "lucide-react";
 import CropImageDialog from "@/components/CropImageDialog";
 import Resizer from "react-image-file-resizer";
 import UserAvatar from "@/components/UserAvatar";
+import { Button } from "@/components/ui/button";
 
 interface EditProfileDialogProps {
   user: UserData;
@@ -143,6 +144,8 @@ interface AvatarInputProps {
 function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
   const [imageToCrop, setImageToCrop] = useState<File>();
 
+  const mutation =  useDeleteAvatarMutation();
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function onImageSelected(image: File | undefined) {
@@ -158,6 +161,10 @@ function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
       (uri) => setImageToCrop(uri as File),
       "file",
     );
+  }
+
+  function deleteAvatar() {
+    mutation.mutate();
   }
 
   return (
@@ -181,6 +188,11 @@ function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
           <Camera size={24} />
         </span>
       </button>
+      {!!src && (
+        <LoadingButton variant="destructive" loading={mutation.isPending} onClick={deleteAvatar}>
+          <Trash2 size={20} /> Supprimer la photo
+        </LoadingButton>
+      )}
       {imageToCrop && (
         <CropImageDialog
           src={URL.createObjectURL(imageToCrop)}
