@@ -231,7 +231,7 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                     )}
                   </>
                 ) : (
-                  <Link href={`/users/${otherUser?.username}`}>
+                  <Link href={`/users/${otherUser?.username || "-"}`}>
                     <Button variant="outline" className="space-x-2">
                       <UserCircle2 /> afficher le profil
                     </Button>

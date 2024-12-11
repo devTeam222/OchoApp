@@ -2,6 +2,7 @@ import { channel } from "diagnostics_channel";
 import { z } from "zod";
 
 const requiredString = z.string().trim().min(1, "Champ obligatoire");
+const requiredThreeChars = requiredString.min(3, "Ce champ doit contenir au moins trois caractères")
 export const singleEmojiSchema = z
   .string()
   .trim()
@@ -15,7 +16,7 @@ export const singleEmojiSchema = z
 
 export const signupSchema = z.object({
   email: requiredString.email("Adresse email invalide"),
-  username: requiredString.regex(
+  username: requiredThreeChars.regex(
     /^[a-zA-Z0-9_-]+$/,
     "Nom d'utilisateur doit contenir uniquement des lettres, des chiffres, des tirets ou des tirets bas",
   ),
