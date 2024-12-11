@@ -23,7 +23,7 @@ export default function Comments({ post, onClose }: CommentsProps) {
 
   const searchParams = useSearchParams();
   const comment = searchParams.get("comment");
-  
+
   const { toast } = useToast();
   const {
     data,
@@ -53,7 +53,6 @@ export default function Comments({ post, onClose }: CommentsProps) {
 
   const comments = data?.pages.flatMap((page) => page.comments) || [];
 
-  
   useEffect(() => {
     if (
       status === "success" &&
@@ -78,7 +77,7 @@ export default function Comments({ post, onClose }: CommentsProps) {
   }, [status, comment, data, comments]);
 
   return (
-    <div className="bottom-0 left-0 sm:space-y-3 max-sm:fixed max-sm:z-10 max-sm:flex max-sm:w-full max-sm:animate-appear-b max-sm:flex-col-reverse max-sm:rounded-e-sm max-sm:rounded-s-sm max-sm:bg-card max-sm:pt-2">
+    <div className="bottom-0 left-0 z-20 max-sm:fixed max-sm:z-10 max-sm:flex max-sm:w-full max-sm:animate-appear-b max-sm:flex-col-reverse max-sm:rounded-e-sm max-sm:rounded-s-sm max-sm:bg-card max-sm:pt-2 sm:space-y-3">
       <CommentInput post={post} />
       {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
       {hasNextPage && (
@@ -119,7 +118,7 @@ export default function Comments({ post, onClose }: CommentsProps) {
             <X />
           </div>
         </div>
-        <div className="overflow-y-auto max-sm:h-[50vh] max-sm:bg-card/50 space-y-1 py-1">
+        <div className="space-y-1 overflow-y-auto py-1 max-sm:h-[50vh] max-sm:bg-card/50">
           {comments.map((comment) => (
             <Comment
               key={comment.id}

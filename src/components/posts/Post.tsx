@@ -152,7 +152,7 @@ export default function Post({ post }: PostProps) {
       {showComment && (
         <>
           <div
-            className="fixed inset-0 z-10 sm:hidden"
+            className="fixed inset-0 z-20 sm:hidden"
             onClick={() => setShowComment(false)}
           ></div>
           <Comments post={post} onClose={() => setShowComment(false)} />
