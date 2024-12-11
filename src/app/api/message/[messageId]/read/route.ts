@@ -59,26 +59,10 @@ export async function POST(
 
     const message = await prisma.message.findUnique({
       where: { id: messageId },
-      select: {
-        reads: {
-          where: {
-            userId: loggedInUser.id,
-          },
-          select: {
-            user: {
-              select: {
-                id: true,
-                displayName: true,
-                username: true,
-              },
-            },
-          },
-        },
-      },
     });
 
     if (!message) {
-      return Response.json({ error: "Post non trouvé" }, { status: 404 });
+      return Response.json({ error: "Message non trouvé" }, { status: 404 });
     }
 
     await prisma.read.upsert({

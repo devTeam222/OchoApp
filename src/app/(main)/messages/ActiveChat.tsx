@@ -47,7 +47,7 @@ export default function ActiveChat({
         .get(`/api/messages/${channelId}/chat-data`)
         .json<ChannelData>(),
     initialData, // Using initialData as the first cache data
-    staleTime: 1000 * 60 * 10, // Cache data for 10 minutes
+    staleTime: 600_000, // Cache data for 10 minutes
   });
 
   if (isChannelError) {
@@ -83,6 +83,7 @@ export default function ActiveChat({
     setActiveChannelId(null);
     onClose();
   }
+  kyInstance.post(`/api/messages/${channelId}/mark-all-as-read/`, {throwHttpErrors: false})
 
   const loggedMember = channel.members.find(
     (member) => member.userId === loggedUser.id,
@@ -121,7 +122,7 @@ export default function ActiveChat({
       </div>
 
       <InfiniteScrollContainer
-        className="relative flex flex-1 flex-col-reverse space-y-4 overflow-x-hidden overflow-y-auto px-2 pb-4 shadow-inner scrollbar-track-primary scrollbar-track-rounded-full sm:bg-background/50"
+        className="relative flex flex-1 flex-col-reverse space-y-4 overflow-x-hidden overflow-y-auto px-2 py-4 shadow-inner scrollbar-track-primary scrollbar-track-rounded-full sm:bg-background/50"
         onBottomReached={() =>
           hasNextPage && !isFetchingNextPage && fetchNextPage()
         }
