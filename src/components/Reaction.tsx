@@ -27,6 +27,7 @@ interface ReactionProps {
   open?: boolean;
   size?: number;
   className?: string;
+  position?: "top" | "bottom";
   isOwner?: boolean;
 }
 
@@ -36,12 +37,19 @@ export default function Reaction({
   open = false,
   size = 24,
   className,
+  position = "bottom",
   isOwner = false,
   onOpenChange = () => {},
 }: ReactionProps) {
   const [showReaction, setShowReaction] = useState(open);
   const [showPicker, setShowPicker] = useState(false);
   const { user: loggedInUser } = useSession();
+  const [reactionPosition, setReactionPosition] = useState<"top" | "bottom">(position);
+
+  useEffect(()=>{
+    setReactionPosition(position);
+    return ()=> setReactionPosition("bottom")
+  }, [position, setReactionPosition]);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -229,6 +237,7 @@ export default function Reaction({
           className={cn(
             "h-fit w-fit cursor-pointer",
             className,
+            "-bottom-2",
             !!allReactions?.length &&
               !children &&
               "-bottom-[40%] flex items-center gap-1 p-0.5 px-2",
@@ -267,16 +276,18 @@ export default function Reaction({
       )}
       <div
         className={cn(
-          "absolute bottom-0 z-30 flex flex-col",
+          "absolute z-30 flex flex-col",
           isOwner ? "right-0" : "left-0",
           (showReaction || showPicker) && "z-40",
+          reactionPosition === "top" ? "sm:top-0" : "sm:bottom-0"
         )}
       >
         {showPicker && (
           <div
             className={cn(
-              "absolute bottom-0 h-fit w-fit bg-background max-sm:fixed max-sm:left-full max-sm:flex max-sm:w-full max-sm:justify-center max-sm:bg-transparent",
+              "absolute h-fit w-fit bg-background max-sm:fixed max-sm:left-full max-sm:flex max-sm:w-full max-sm:justify-center max-sm:bg-transparent",
               !isOwner ? "left-0" : "right-0",
+              reactionPosition === "top" ? "sm:top-0" : "sm:bottom-0",
             )}
           >
             <div className="absolute flex h-full w-full items-center justify-center">
@@ -304,6 +315,7 @@ export default function Reaction({
               onReact={onReact}
               loading={reactionLoading}
               quickClassName={cn("z-10", showPicker && "invisible")}
+              className={cn(reactionPosition === "top" ? "sm:top-0" : "sm:bottom-0")}
             />
           ))}
       </div>

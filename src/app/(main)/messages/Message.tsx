@@ -32,7 +32,7 @@ export default function Message({
   const [isChecked, setIsChecked] = useState(showTime);
   const [isMessageMoreOpen, setIsMessageMoreOpen] = useState(false);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
-  const [reactionPosition, setReactionPosition] = useState("-bottom-2");
+  const [reactionPosition, setReactionPosition] = useState<"top" | "bottom">("bottom");
   const messageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -50,18 +50,20 @@ export default function Message({
       console.log(parentRect.bottom - messageRect.bottom);
 
       // Détecte si le message est proche du haut ou du bas du conteneur
-      const isNearTop = messageRect.top - parentRect.top < 320; // marge de 50px
-      const isNearBottom = parentRect.bottom - messageRect.bottom < 320; // marge de 50px
+      const isNearTop = messageRect.bottom - parentRect.top < 320; // marge de 200px
+      const isNearBottom = parentRect.bottom - messageRect.top < 320; // marge de 320px
 
-      console.log(isNearTop);
+      console.log("top:",isNearTop);
+      console.log("bottom:",isNearBottom);
       if (isNearTop) {
-        setReactionPosition("-top-2");
-        
-      } else if (isNearBottom) {
-        setReactionPosition("-top-2");
-      } else {
-        setReactionPosition("-bottom-2"); // Position par défaut
+        setReactionPosition("top");
+        return;
       }
+      if (isNearBottom) {
+        setReactionPosition("bottom");
+        return;
+      }
+      setReactionPosition("bottom"); // Position par défaut
     };
 
     handleScroll(); // Initial call
@@ -70,7 +72,7 @@ export default function Message({
     return () => {
       parentElement?.removeEventListener("scroll", handleScroll);
     };
-  }, []);
+  }, [message.content]);
 
   const queryKey: QueryKey = ["reads-info", message.id];
 
@@ -355,12 +357,12 @@ export default function Message({
                   className={cn(
                     "absolute rounded-2xl border-2 border-solid border-background bg-card px-1",
                     isOwner ? "right-0" : "left-0",
-                    reactionPosition,
                   )}
                   isOwner={isOwner}
                   open={isPickerOpen}
                   onOpenChange={setIsPickerOpen}
                   size={12}
+                  position={reactionPosition}
                 />
               )}
             </div>
