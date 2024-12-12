@@ -2,26 +2,26 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 
-interface ActiveChatContextType {
+interface ChatContextType {
   activeChannelId: string | null;
   setActiveChannelId: (id: string | null) => void;
 }
 
-const ActiveChatContext = createContext<ActiveChatContextType | undefined>(
+const ChatContext = createContext<ChatContextType | undefined>(
   undefined,
 );
 
 export const useActiveChannel = () => {
-  const context = useContext(ActiveChatContext);
+  const context = useContext(ChatContext);
   if (!context) {
     throw new Error(
-      "useActiveChannel must be used within an ActiveChatProvider",
+      "useActiveChannel must be used within an ChatProvider",
     );
   }
   return context;
 };
 
-export const ActiveChatProvider = ({
+export const ChatProvider = ({
   children,
 }: {
   children: React.ReactNode;
@@ -41,8 +41,8 @@ export const ActiveChatProvider = ({
   }, [activeChannelId]);
 
   return (
-    <ActiveChatContext.Provider value={{ activeChannelId, setActiveChannelId }}>
+    <ChatContext.Provider value={{ activeChannelId, setActiveChannelId }}>
       {children}
-    </ActiveChatContext.Provider>
+    </ChatContext.Provider>
   );
 };

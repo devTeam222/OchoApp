@@ -7,7 +7,7 @@ import { useSession } from "../SessionProvider";
 import ChannelsLoadingSkeleton from "./ChannelsLoadingSkeleton";
 import { useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
-import { useActiveChannel } from "@/context/ActiveChatContext";
+import { useActiveChannel } from "@/context/ChatContext";
 import { Frown, MessageSquare, SquarePen } from "lucide-react";
 
 interface SidebarProps {

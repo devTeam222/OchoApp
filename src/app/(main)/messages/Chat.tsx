@@ -13,31 +13,37 @@ import { toast } from "@/components/ui/use-toast";
 import ChatHeader from "./ChatHeader";
 import { useMenuBar } from "@/context/MenuBarContext";
 import { useEffect } from "react";
-import { useActiveChannel } from "@/context/ActiveChatContext";
+import { useActiveChannel } from "@/context/ChatContext";
+import { usePathname, useRouter } from "next/navigation";
 
-interface ActiveChatProps {
+interface ChatProps {
   channelId: string | null;
   initialData: ChannelData;
   onClose: () => void;
 }
 
-export default function ActiveChat({
+export default function Chat({
   channelId,
   initialData,
   onClose,
-}: ActiveChatProps) {
+}: ChatProps) {
   const { setActiveChannelId } = useActiveChannel();
   const isProduction = process.env.NODE_ENV === "production";
   const { isVisible, setIsVisible } = useMenuBar();
+  const pathname = usePathname();
+  const router = useRouter();
 
+  if (pathname !== "/messages/chat") {
+    router.push("/messages/chat");
+  }
   useEffect(() => {
     setIsVisible(false);
-
     // Show the menu bar when ActiveChat unmounts
     return () => {
       setIsVisible(true);
+      router.push("/messages");
     };
-  }, [isVisible, setIsVisible]);
+  }, [isVisible, setIsVisible, router, pathname]);
 
   // Fetching ChannelData using useQuery with initialData for caching
   const { data: channel, isError: isChannelError } = useQuery({
@@ -48,12 +54,13 @@ export default function ActiveChat({
         .json<ChannelData>(),
     initialData, // Using initialData as the first cache data
     staleTime: 600_000, // Cache data for 10 minutes
+    throwOnError: false,
   });
 
   if (isChannelError) {
     toast({
       variant: "destructive",
-      description: `Impossible de charger les données la conversation ${channelId}`,
+      description: `Impossible de charger la conversation ${channel.name || channelId}`,
     });
     onClose();
   }
@@ -72,6 +79,7 @@ export default function ActiveChat({
       getNextPageParam: (lastPage) => lastPage.nextCursor,
       refetchInterval: isProduction ? 5000 : 10000,
       staleTime: Infinity,
+      throwOnError: false,
     });
   const { user: loggedUser } = useSession();
 
@@ -83,7 +91,24 @@ export default function ActiveChat({
     setActiveChannelId(null);
     onClose();
   }
-  kyInstance.post(`/api/messages/${channelId}/mark-all-as-read/`, {throwHttpErrors: false})
+
+  useEffect(() => {
+    if (status === "success" && pathname !== "/messages/chat") {
+      setActiveChannelId(null);
+      onClose();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, router]);
+
+  useQuery({
+    queryKey: ["mark-as-read", channelId],
+    queryFn: () =>
+      kyInstance.post(`/api/messages/${channelId}/mark-all-as-read/`, {
+        throwHttpErrors: false,
+      }),
+    staleTime: Infinity,
+    throwOnError: false,
+  });
 
   const loggedMember = channel.members.find(
     (member) => member.userId === loggedUser.id,
@@ -122,11 +147,11 @@ export default function ActiveChat({
       </div>
 
       <InfiniteScrollContainer
-        className="relative flex flex-1 flex-col-reverse space-y-4 overflow-x-hidden overflow-y-auto px-2 py-4 shadow-inner scrollbar-track-primary scrollbar-track-rounded-full sm:bg-background/50"
+        className="relative flex flex-1 flex-col-reverse space-y-4 overflow-y-auto overflow-x-hidden px-2 py-4 shadow-inner scrollbar-track-primary scrollbar-track-rounded-full sm:bg-background/50"
         onBottomReached={() =>
           hasNextPage && !isFetchingNextPage && fetchNextPage()
         }
-        >
+      >
         {status === "pending" && <MessagesLoadingSkeleton />}
         {status === "success" && !messages.length && (
           <p className="my-auto flex w-full flex-1 select-none items-center justify-center px-2 text-center italic text-muted-foreground">

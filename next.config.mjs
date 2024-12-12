@@ -34,6 +34,10 @@ const nextConfig = {
                 source: "/explore",
                 destination: "/search"
             },
+            {
+                source: "/messages/chat",
+                destination: "/messages"
+            },
         ]
     },
 };

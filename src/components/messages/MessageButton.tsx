@@ -6,7 +6,7 @@ import {
 import LoadingButton from "../LoadingButton";
 import { Send } from "lucide-react";
 import { useToast } from "../ui/use-toast";
-import { useActiveChannel } from "@/context/ActiveChatContext";
+import { useActiveChannel } from "@/context/ChatContext";
 import { useRouter } from "next/navigation";  // Importation de useRouter
 import { ButtonProps } from "../ui/button";
 import { cn } from "@/lib/utils";

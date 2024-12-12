@@ -10,7 +10,7 @@ import Time from "@/components/Time";
 import Link from "next/link";
 import AddMemberDialog from "@/components/messages/AddMemberDialog";
 import GroupUserPopover from "@/components/messages/GroupUserPopover";
-import { useActiveChannel } from "@/context/ActiveChatContext";
+import { useActiveChannel } from "@/context/ChatContext";
 import LeaveGroupDialog from "@/components/messages/LeaveGroupDialog";
 
 interface ChatHeaderProps {

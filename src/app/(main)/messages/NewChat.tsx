@@ -11,7 +11,7 @@ import {
   useCreateChatChannelMutation,
   useSaveMessageMutation,
 } from "@/components/messages/mutations";
-import { useActiveChannel } from "@/context/ActiveChatContext";
+import { useActiveChannel } from "@/context/ChatContext";
 import { useToast } from "@/components/ui/use-toast";
 import LoadingButton from "@/components/LoadingButton";
 import UsersList from "@/components/messages/UsersList";

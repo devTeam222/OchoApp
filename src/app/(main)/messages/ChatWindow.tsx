@@ -4,11 +4,12 @@ import { useState } from "react";
 import { useSession } from "../SessionProvider";
 import SideBar from "./SideBar";
 import { ChannelData } from "@/lib/types";
-import ActiveChat from "./ActiveChat";
-import { useActiveChannel } from "@/context/ActiveChatContext";
+import Chat from "./Chat";
+import { useActiveChannel } from "@/context/ChatContext";
 import NewChat from "./NewChat";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 export default function ChatWindow() {
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(
@@ -19,6 +20,7 @@ export default function ChatWindow() {
   const { user } = useSession();
   const { setActiveChannelId } = useActiveChannel();
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   if (!user) {
     return null;
@@ -54,10 +56,11 @@ export default function ChatWindow() {
         className={`relative flex h-full w-screen flex-col max-sm:min-w-[100vw] sm:w-3/4 ${!(selectedChannelId && selectedChannel || newChat) && "max-sm:hidden"}`}
       >
         {selectedChannelId && selectedChannel ? (
-          <ActiveChat
+          <Chat
             channelId={selectedChannelId}
             initialData={selectedChannel}
             onClose={() => {
+              router.push(`/messages`);
               setSelectedChannelId(null);
               setSelectedChannel(undefined);
               setActiveChannelId(null);

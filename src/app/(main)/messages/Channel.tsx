@@ -1,8 +1,7 @@
 "use client";
 
 import UserAvatar from "@/components/UserAvatar";
-import { ChannelData, MessageData, NotificationCountInfo } from "@/lib/types";
-import { UsersRound } from "lucide-react";
+import { ChannelData, NotificationCountInfo } from "@/lib/types";
 import { useSession } from "../SessionProvider";
 import GroupAvatar from "@/components/GroupAvatar";
 import { MessageType } from "@prisma/client";
@@ -11,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { QueryKey, useQuery, useQueryClient } from "@tanstack/react-query";
 import kyInstance from "@/lib/ky";
 import FormattedInt from "@/components/FormattedInt";
+import { usePathname, useRouter } from "next/navigation";
 
 interface ChannelProps {
   channel: ChannelData;
@@ -20,6 +20,8 @@ interface ChannelProps {
 
 export default function Channel({ channel, active, onSelect }: ChannelProps) {
   const { user: loggedinUser } = useSession();
+  const pathname = usePathname();
+  const router = useRouter();
 
   const queryKey: QueryKey = ["unread-chat-messages", channel.id];
   const queryClient = useQueryClient();
@@ -126,11 +128,12 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
     (!!otherUser?.lastSeen &&
       new Date(otherUser.lastSeen).getTime() - 40 * 1000 > now);
 
-  const select = () => {
+  const select = async () => {
+    onSelect();
     queryClient.setQueryData(["unread-chat-messages", channel.id], {
       unreadCount: 0,
     });
-    onSelect();
+    router.push("/messages/chat");
   };
 
   return (

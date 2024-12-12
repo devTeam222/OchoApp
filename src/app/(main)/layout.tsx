@@ -5,7 +5,7 @@ import { MenuBarProvider } from "@/context/MenuBarContext";
 import Navbar from "./Navbar";
 import MenuBar from "./MenuBar";
 import BottomMenuBar from "@/components/BottomMenuBar";
-import { ActiveChatProvider } from "@/context/ActiveChatContext";
+import { ChatProvider } from "@/context/ChatContext";
 import { SearchProvider } from "@/context/SearchContext";
 import { NavigationProvider } from "@/context/NavigationContext";
 
@@ -27,7 +27,7 @@ export default async function Layout({
       <NavigationProvider>
         <MenuBarProvider>
           <SearchProvider>
-            <ActiveChatProvider>
+            <ChatProvider>
               <div className="relative flex h-screen max-h-dvh min-h-dvh w-full flex-col">
                 <Navbar />
                 <div className="relative h-full max-h-full w-full overflow-hidden">
@@ -38,7 +38,7 @@ export default async function Layout({
                 </div>
                 <BottomMenuBar />
               </div>
-            </ActiveChatProvider>
+            </ChatProvider>
           </SearchProvider>
         </MenuBarProvider>
       </NavigationProvider>

@@ -38,9 +38,10 @@ export default function Message({
   const { data } = useQuery({
     queryKey,
     queryFn: () =>
-      kyInstance.get(`/api/message/${messageId}/read`).json<ReadInfo>(),
+      kyInstance.get(`/api/message/${messageId}/read`, {throwHttpErrors: false}).json<ReadInfo>(),
     staleTime: Infinity,
     refetchInterval: 5000,
+    throwOnError: false,
   });
 
   const reads = data?.reads ?? [];
@@ -331,8 +332,7 @@ export default function Message({
       >
         <p
           className={cn(
-            showTime && "rounded-sm bg-primary/30 p-0.5 px-2",
-            showDetail ? "animate-scale" : "hidden",
+            showDetail ? "animate-appear-b" : "hidden",
             "max-h-40 w-fit max-w-[50%] text-ellipsis text-start *:font-bold",
           )}
         >
