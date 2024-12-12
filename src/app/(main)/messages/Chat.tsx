@@ -55,6 +55,8 @@ export default function Chat({
     initialData, // Using initialData as the first cache data
     staleTime: 600_000, // Cache data for 10 minutes
     throwOnError: false,
+    refetchInterval: 500_000,
+    refetchOnWindowFocus: false,
   });
 
   if (isChannelError) {
@@ -91,14 +93,6 @@ export default function Chat({
     setActiveChannelId(null);
     onClose();
   }
-
-  useEffect(() => {
-    if (status === "success" && pathname !== "/messages/chat") {
-      setActiveChannelId(null);
-      onClose();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, router]);
 
   useQuery({
     queryKey: ["mark-as-read", channelId],

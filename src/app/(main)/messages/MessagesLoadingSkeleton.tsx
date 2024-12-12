@@ -22,10 +22,10 @@ function MessageLoadingSkeleton({
   size = "md",
 }: MessageLoadingSkeletonProps) {
   const sizes = {
-    sm: "h-16 w-[35%]",
-    md: "h-20 w-[45%]",
-    lg: "h-24 w-[65%]",
-    xl: "h-28 w-[75%]",
+    sm: "h-10 w-[15%]",
+    md: "h-12 w-[25%]",
+    lg: "h-16 w-[45%]",
+    xl: "h-20 w-[55%]",
   };
   const sizeClass = sizes[size];
 

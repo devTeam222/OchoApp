@@ -7,7 +7,7 @@ import Linkify from "@/components/Linkify";
 import { MessageType } from "@prisma/client";
 import { QueryKey, useQuery, useQueryClient } from "@tanstack/react-query";
 import Time from "@/components/Time";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import UserTooltip from "@/components/UserTooltip";
 import kyInstance from "@/lib/ky";
@@ -32,13 +32,54 @@ export default function Message({
   const [isChecked, setIsChecked] = useState(showTime);
   const [isMessageMoreOpen, setIsMessageMoreOpen] = useState(false);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [reactionPosition, setReactionPosition] = useState("-bottom-2");
+  const messageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!messageRef.current) return;
+
+    const messageElement = messageRef.current;
+    const parentElement = messageElement.parentElement;
+    const handleScroll = () => {
+      if (!parentElement) return;
+
+      const messageRect = messageElement.getBoundingClientRect();
+      const parentRect = parentElement.getBoundingClientRect();
+
+      console.log(messageRect.top - parentRect.top, message.content);
+      console.log(parentRect.bottom - messageRect.bottom);
+
+      // Détecte si le message est proche du haut ou du bas du conteneur
+      const isNearTop = messageRect.top - parentRect.top < 320; // marge de 50px
+      const isNearBottom = parentRect.bottom - messageRect.bottom < 320; // marge de 50px
+
+      console.log(isNearTop);
+      if (isNearTop) {
+        setReactionPosition("-top-2");
+        
+      } else if (isNearBottom) {
+        setReactionPosition("-top-2");
+      } else {
+        setReactionPosition("-bottom-2"); // Position par défaut
+      }
+    };
+
+    handleScroll(); // Initial call
+    parentElement?.addEventListener("scroll", handleScroll);
+
+    return () => {
+      parentElement?.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   const queryKey: QueryKey = ["reads-info", message.id];
 
   const { data } = useQuery({
     queryKey,
     queryFn: () =>
-      kyInstance.get(`/api/message/${messageId}/read`, {throwHttpErrors: false}).json<ReadInfo>(),
+      kyInstance
+        .get(`/api/message/${messageId}/read`, { throwHttpErrors: false })
+        .json<ReadInfo>(),
     staleTime: Infinity,
     refetchInterval: 5000,
     throwOnError: false,
@@ -224,6 +265,7 @@ export default function Message({
         "relative flex w-full flex-col gap-2",
         isPickerOpen && "z-10",
       )}
+      ref={messageRef}
     >
       <div
         className={cn(
@@ -307,17 +349,20 @@ export default function Message({
                   )}
                 </p>
               </Linkify>
-              {canReact && <Reaction
-                message={message}
-                className={cn(
-                  "absolute -bottom-2 rounded-2xl border-2 border-solid border-background bg-card px-1",
-                  isOwner ? "right-0" : "left-0",
-                )}
-                isOwner={isOwner}
-                open={isPickerOpen}
-                onOpenChange={setIsPickerOpen}
-                size={12}
-              />}
+              {canReact && (
+                <Reaction
+                  message={message}
+                  className={cn(
+                    "absolute rounded-2xl border-2 border-solid border-background bg-card px-1",
+                    isOwner ? "right-0" : "left-0",
+                    reactionPosition,
+                  )}
+                  isOwner={isOwner}
+                  open={isPickerOpen}
+                  onOpenChange={setIsPickerOpen}
+                  size={12}
+                />
+              )}
             </div>
           </div>
         </div>
