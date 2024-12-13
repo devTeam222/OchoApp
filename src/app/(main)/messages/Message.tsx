@@ -46,15 +46,10 @@ export default function Message({
       const messageRect = messageElement.getBoundingClientRect();
       const parentRect = parentElement.getBoundingClientRect();
 
-      // console.log(messageRect.top - parentRect.top, message.content);
-      // console.log(parentRect.bottom - messageRect.bottom);
-
       // Détecte si le message est proche du haut ou du bas du conteneur
       const isNearTop = messageRect.bottom - parentRect.top < 320; // marge de 200px
       const isNearBottom = parentRect.bottom - messageRect.top < 320; // marge de 320px
 
-      // console.log("top:",isNearTop);
-      // console.log("bottom:",isNearBottom);
       if (isNearTop) {
         setReactionPosition("top");
         return;

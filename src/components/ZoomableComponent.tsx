@@ -17,16 +17,21 @@ export default function ZoomableComponent({
   const [scale, setScale] = useState(1);
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
+  const [zoomToggleCount, setZoomToggleCount] = useState(0);
   const startPoint = useRef({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const initialDistance = useRef(0); // To store initial distance between touches
+  const lastTap = useRef(0);
 
   const handleWheelZoom = (e: WheelEvent) => {
     if (!zoomable) return;
     e.preventDefault(); // Prevent page scrolling
     const zoomStep = 0.1;
     setScale((prevScale) =>
-      Math.max(1, Math.min(5, prevScale + (e.deltaY > 0 ? -zoomStep : zoomStep)))
+      Math.max(
+        1,
+        Math.min(5, prevScale + (e.deltaY > 0 ? -zoomStep : zoomStep)),
+      ),
     );
   };
 
@@ -52,8 +57,9 @@ export default function ZoomableComponent({
 
       const zoomFactor = 0.01; // Adjust this factor for sensitivity
       const scaleChange = dist - initialDistance.current; // Change in distance
-      setScale((prevScale) =>
-        Math.max(1, Math.min(5, prevScale + scaleChange * zoomFactor)) // Limit to 10
+      setScale(
+        (prevScale) =>
+          Math.max(1, Math.min(5, prevScale + scaleChange * zoomFactor)), // Limit to 10
       );
 
       initialDistance.current = dist;
@@ -66,7 +72,6 @@ export default function ZoomableComponent({
     handleStartDrag(e.clientX, e.clientY);
   const handleMouseMove = (e: React.MouseEvent) =>
     handleDrag(e.clientX, e.clientY);
-  const handleMouseUp = () => setDragging(false);
 
   const handleStartDrag = (x: number, y: number) => {
     if (!zoomable || scale <= 1) return;
@@ -82,32 +87,79 @@ export default function ZoomableComponent({
       containerRef.current.firstElementChild?.getBoundingClientRect();
 
     if (element) {
+      const topGap = element.top - container.top;
+      const bottomGap = container.bottom - element.bottom;
+      const rightGap = element.right - container.right;
+      const leftGap = container.left - element.left;
+
+      const gaps = {
+        top: topGap,
+        right: rightGap,
+        bottom: bottomGap,
+        left: leftGap,
+      };
+      console.table(gaps);
+
       const newX = x - startPoint.current.x;
       const newY = y - startPoint.current.y;
 
-      // Calculate the visible boundaries based on the current scale
-      const visibleWidth = container.width;
-      const visibleHeight = container.height;
+      let constrainedX = translate.x;
+      let constrainedY = translate.y;
 
-      // Calculate the effective dimensions of the element considering the scale
-      const effectiveWidth = element.width * scale;
-      const effectiveHeight = element.height * scale;
+      // Vérification des limites par direction
+      if (leftGap > 0 || rightGap > 0) {
+        constrainedX = newX; // Ajuster X uniquement si les gaps horizontaux le permettent
+      }
+      if (topGap < 0 || bottomGap < 0) {
+        constrainedY = newY; // Ajuster Y uniquement si les gaps verticaux le permettent
+      }
 
-      // Calculate the limits for translation
-      const minX = Math.min(0, visibleWidth - effectiveWidth); // Right edge
-      const maxX = effectiveWidth; // Left edge
-      const minY = Math.min(0, visibleHeight - effectiveHeight); // Bottom edge
-      const maxY = effectiveHeight; // Top edge
+      // Stopper les déplacements lorsque les gaps sont <= 0
+      if (leftGap <= 0 && newX > translate.x) {
+        constrainedX = translate.x; // Stopper déplacement gauche -> droite
+      }
+      if (rightGap <= 0 && newX < translate.x) {
+        constrainedX = translate.x; // Stopper déplacement droite -> gauche
+      }
+      if (topGap >= 0 && newY > translate.y) {
+        constrainedY = translate.y; // Stopper déplacement haut -> bas
+      }
+      if (bottomGap >= 0 && newY < translate.y) {
+        constrainedY = translate.y; // Stopper déplacement bas -> haut
+      }
 
-      // Constrain new translate values within the limits
-      const constrainedX = Math.min(maxX, Math.max(minX, newX));
-      const constrainedY = Math.min(maxY, Math.max(minY, newY));
-
+      // Appliquer les nouvelles valeurs
       setTranslate({ x: constrainedX, y: constrainedY });
     }
   };
 
-  const handleTouchEnd = () => setDragging(false);
+  const correctPosition = () => {
+    if (!containerRef.current) return;
+
+    const container = containerRef.current.getBoundingClientRect();
+    const element =
+      containerRef.current.firstElementChild?.getBoundingClientRect();
+
+    if (element) {
+      const topGap = element.top - container.top;
+      const bottomGap = container.bottom - element.bottom;
+      const rightGap = element.right - container.right;
+      const leftGap = container.left - element.left;
+
+      let correctedX = translate.x;
+      let correctedY = translate.y;
+
+      // Corriger les gaps horizontaux
+      if (leftGap < 0) correctedX += leftGap; // Ramener le bord gauche à zéro
+      if (rightGap < 0) correctedX -= rightGap; // Ramener le bord droit à zéro
+
+      // Corriger les gaps verticaux
+      if (topGap > 0) correctedY -= topGap; // Ramener le bord supérieur à zéro
+      if (bottomGap > 0) correctedY += bottomGap; // Ramener le bord inférieur à zéro
+
+      setTranslate({ x: correctedX, y: correctedY });
+    }
+  };
 
   const zoomIn = () => {
     if (zoomable) setScale((prevScale) => Math.min(5, prevScale + 0.5));
@@ -118,7 +170,46 @@ export default function ZoomableComponent({
       setScale((prevScale) => Math.max(1, prevScale - 0.5));
   };
 
-  const resetZoom = ()=>scale !== 1 && setScale(1);
+  const resetZoom = () => scale !== 1 && setScale(1);
+  const toggleZoom = () => {
+    if (zoomable) {
+      const zoomLevels = [
+        { count: 0, scale: 2 },
+        { count: 1, scale: 4 },
+        { count: 2, scale: 1 }, // Remet à 1 après le reset
+      ];
+      const currentLevel = zoomLevels.find(
+        (level) => level.count === zoomToggleCount,
+      );
+
+      if (currentLevel) {
+        if (zoomToggleCount === 2 || scale >= 4) {
+          setZoomToggleCount(0);
+          resetZoom();
+        } else {
+          setZoomToggleCount(currentLevel.count + 1);
+          setScale(currentLevel.scale);
+        }
+      }
+    }
+  };
+
+  const handleMouseUp = () => {
+    setDragging(false);
+    correctPosition();
+  };
+  const handleTouchEnd = () => {
+    setDragging(false);
+    correctPosition();
+
+    // Gestion du double tap
+    const currentTime = new Date().getTime();
+    const timeSinceLastTap = currentTime - lastTap.current;
+    if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
+      toggleZoom(); // Zoom avant/arrière
+    }
+    lastTap.current = currentTime;
+  };
 
   useEffect(() => {
     if (!zoomable || scale <= 1) {
@@ -163,6 +254,7 @@ export default function ZoomableComponent({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onDoubleClick={toggleZoom}
         style={{
           transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
           transition: "transform 0.1s ease-out",
