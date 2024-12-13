@@ -22,18 +22,14 @@ interface ChatProps {
   onClose: () => void;
 }
 
-export default function Chat({
-  channelId,
-  initialData,
-  onClose,
-}: ChatProps) {
+export default function Chat({ channelId, initialData, onClose }: ChatProps) {
   const { setActiveChannelId } = useActiveChannel();
   const isProduction = process.env.NODE_ENV === "production";
   const { isVisible, setIsVisible } = useMenuBar();
   const pathname = usePathname();
   const router = useRouter();
-  const [isNavigating, setIsNavigating] = useState(false);
-  
+  const [prevPathname, setPrevPathname] = useState(pathname);
+
   useEffect(() => {
     setIsVisible(false);
     router.push("/messages/chat");
@@ -42,6 +38,33 @@ export default function Chat({
       setIsVisible(true);
     };
   }, [isVisible, setIsVisible, router, pathname]);
+
+  const handlePopState = () => {
+    const currentPathname = window.location.pathname;
+    console.log(prevPathname, currentPathname);
+
+    if (prevPathname === "/messages/chat" && currentPathname === "/messages") {
+      onClose();
+    }
+    setPrevPathname(currentPathname);
+  };
+
+  // Ajouter un écouteur d'événement popstate
+  window.addEventListener("popstate", handlePopState);
+  useEffect(() => {
+    // Ajouter un écouteur d'événement popstate
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      // Nettoyer l'écouteur à la désactivation du composant
+      window.removeEventListener("popstate", handlePopState);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prevPathname]);
+
+  useEffect(() => {
+    setPrevPathname(pathname);
+  }, [pathname]);
 
   // Fetching ChannelData using useQuery with initialData for caching
   const { data: channel, isError: isChannelError } = useQuery({

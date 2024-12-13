@@ -276,7 +276,7 @@ export default function Reaction({
       )}
       <div
         className={cn(
-          "absolute z-30 flex flex-col",
+          "absolute z-30 flex flex-col max-sm:bottom-0",
           isOwner ? "right-0" : "left-0",
           (showReaction || showPicker) && "z-40",
           reactionPosition === "top" ? "sm:top-0" : "sm:bottom-0"

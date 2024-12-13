@@ -1,5 +1,6 @@
 "use client"
 
+import { useSession } from "@/app/(main)/SessionProvider";
 import { createContext, useContext, useEffect, useState } from "react";
 
 interface ChatContextType {
@@ -26,9 +27,11 @@ export const ChatProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
+  const {user} = useSession();
+  const userId = user.id
   const [activeChannelId, setActiveChannelId] = useState<string | null>(() => {
     if (typeof window !== "undefined") {
-      return sessionStorage.getItem("activeChannelId") || null;
+      return sessionStorage.getItem(userId) || null;
     }
     return null;
   });
@@ -36,9 +39,9 @@ export const ChatProvider = ({
   useEffect(() => {
     // Mettre à jour sessionStorage lorsque activeChannelId change
     activeChannelId
-      ? sessionStorage.setItem("activeChannelId", activeChannelId)
-      : sessionStorage.removeItem("activeChannelId");
-  }, [activeChannelId]);
+      ? sessionStorage.setItem(userId, activeChannelId)
+      : sessionStorage.removeItem(userId);
+  }, [activeChannelId, userId]);
 
   return (
     <ChatContext.Provider value={{ activeChannelId, setActiveChannelId }}>

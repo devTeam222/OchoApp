@@ -25,7 +25,7 @@ export default function QuickReaction({
       {reactions.map((reaction, index) => (
         <Button
           variant="ghost"
-          className="animate-scale rounded-full max-sm:bg-accent"
+          className="animate-scale rounded-full hover:bg-accent"
           size="icon"
           onClick={() => onReact(reaction)}
           key={index}
@@ -35,7 +35,7 @@ export default function QuickReaction({
       ))}
       <Button
         variant="ghost"
-        className="animate-scale rounded-full max-sm:bg-accent"
+        className="animate-scale rounded-full hover:bg-accent"
         size="icon"
         onClick={onPickerOpen}
       >

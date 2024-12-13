@@ -2,6 +2,7 @@
 
 import { NavigationType } from "@/lib/types";
 import { useNavigation } from "@/context/NavigationContext";
+import { useEffect } from "react";
 
 
 
@@ -11,6 +12,9 @@ interface SetNavigationProps{
 
 export default function SetNavigation({navPage} : SetNavigationProps) {
     const {setCurrentNavigation} = useNavigation();
-    setCurrentNavigation(navPage)
+    useEffect(()=>{
+        setCurrentNavigation(navPage)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    },[])
    return <span className="hidden"></span>
 };
