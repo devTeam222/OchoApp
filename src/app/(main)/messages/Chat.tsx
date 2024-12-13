@@ -12,7 +12,7 @@ import MessagesLoadingSkeleton from "./MessagesLoadingSkeleton";
 import { toast } from "@/components/ui/use-toast";
 import ChatHeader from "./ChatHeader";
 import { useMenuBar } from "@/context/MenuBarContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useActiveChannel } from "@/context/ChatContext";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -32,16 +32,14 @@ export default function Chat({
   const { isVisible, setIsVisible } = useMenuBar();
   const pathname = usePathname();
   const router = useRouter();
-
-  if (pathname !== "/messages/chat") {
-    router.push("/messages/chat");
-  }
+  const [isNavigating, setIsNavigating] = useState(false);
+  
   useEffect(() => {
     setIsVisible(false);
+    router.push("/messages/chat");
     // Show the menu bar when ActiveChat unmounts
     return () => {
       setIsVisible(true);
-      router.push("/messages");
     };
   }, [isVisible, setIsVisible, router, pathname]);
 
