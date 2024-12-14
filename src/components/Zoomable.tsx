@@ -3,17 +3,17 @@ import React, { useState, useRef, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Minus, Plus, RotateCcw } from "lucide-react";
 
-interface ZoomableComponentProps {
+interface ZoomableProps {
   children: React.ReactNode;
   zoomable?: boolean;
   clasName?: string;
 }
 
-export default function ZoomableComponent({
+export default function Zoomable({
   children,
   zoomable = true,
   clasName,
-}: ZoomableComponentProps) {
+}: ZoomableProps) {
   const [scale, setScale] = useState(1);
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);

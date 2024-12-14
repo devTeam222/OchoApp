@@ -25,7 +25,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "../ui/carousel";
-import ZoomableComponent from "../ZoomableComponent";
+import Zoomable from "../Zoomable";
 
 interface PostProps {
   post: PostData;
@@ -390,7 +390,7 @@ function MediaPreview({
 
   if (media.type === "IMAGE") {
     return (
-      <ZoomableComponent
+      <Zoomable
         clasName="mx-auto h-full w-full"
         zoomable={isFullscreen}
       >
@@ -407,12 +407,12 @@ function MediaPreview({
             className,
           )}
         />
-      </ZoomableComponent>
+      </Zoomable>
     );
   }
   if (media.type === "VIDEO") {
     return (
-      <ZoomableComponent
+      <Zoomable
         clasName="mx-auto h-full w-full"
         zoomable={isFullscreen}
       >
@@ -443,7 +443,7 @@ function MediaPreview({
             <source src={media.url} />
           </video>
         </div>
-      </ZoomableComponent>
+      </Zoomable>
     );
   }
   return <p className="text-destructive">Format media non supporté</p>;
