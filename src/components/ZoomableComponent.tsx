@@ -254,6 +254,7 @@ export default function ZoomableComponent({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
         onDoubleClick={toggleZoom}
         style={{
           transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
