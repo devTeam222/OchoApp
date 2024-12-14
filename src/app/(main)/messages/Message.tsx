@@ -32,6 +32,7 @@ export default function Message({
   const [isChecked, setIsChecked] = useState(showTime);
   const [isMessageMoreOpen, setIsMessageMoreOpen] = useState(false);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [isQuickReactionOpen, setIsQuickReactionOpen] = useState(false);
   const [reactionPosition, setReactionPosition] = useState<"top" | "bottom">("bottom");
   const messageRef = useRef<HTMLDivElement>(null);
 
@@ -323,8 +324,13 @@ export default function Message({
                 showDetail && "opacity-100",
               )}
               open={isMessageMoreOpen}
-              onOpenChange={toggleContextOpenChange}
-              onReactOpen={() => setIsPickerOpen(true)}
+              onOpenChange={(open)=>{
+                toggleContextOpenChange(open);
+              }}
+              onReactOpen={() => {
+                setIsPickerOpen(true)
+                setIsQuickReactionOpen(true)
+              }}
               canReact={canReact}
             />
             <div className="relative h-fit w-fit">
@@ -350,14 +356,18 @@ export default function Message({
                 <Reaction
                   message={message}
                   className={cn(
-                    "absolute rounded-2xl border-2 border-solid border-background bg-card px-1",
+                    "absolute rounded-2xl border-2 border-solid border-background bg-card p-1 px-2",
                     isOwner ? "right-0" : "left-0",
                   )}
                   isOwner={isOwner}
                   open={isPickerOpen}
-                  onOpenChange={setIsPickerOpen}
+                  onOpenChange={open=>{
+                    setIsPickerOpen(open);
+                    setIsQuickReactionOpen(false);
+                  }}
                   size={12}
                   position={reactionPosition}
+                  quickReaction={isQuickReactionOpen}
                 />
               )}
             </div>
@@ -366,7 +376,7 @@ export default function Message({
       </div>
       <div
         className={cn(
-          "flex w-full select-none overflow-hidden px-4 py-2 text-justify text-xs transition-all",
+          "flex w-full select-none overflow-hidden px-4 py-2 pt-3 text-justify text-xs transition-all",
           !showDetail ? "h-0 opacity-0" : "opacity-100",
           message.senderId === loggedUser.id ? "flex-row-reverse" : "ps-10",
         )}

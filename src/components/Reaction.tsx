@@ -25,6 +25,7 @@ interface ReactionProps {
   onOpenChange?: (open: boolean) => void;
   children?: React.ReactNode;
   open?: boolean;
+  quickReaction?: boolean;
   size?: number;
   className?: string;
   position?: "top" | "bottom";
@@ -35,6 +36,7 @@ export default function Reaction({
   message,
   children,
   open = false,
+  quickReaction = false,
   size = 24,
   className,
   position = "bottom",
@@ -44,11 +46,13 @@ export default function Reaction({
   const [showReaction, setShowReaction] = useState(open);
   const [showPicker, setShowPicker] = useState(false);
   const { user: loggedInUser } = useSession();
-  const [reactionPosition, setReactionPosition] = useState<"top" | "bottom">(position);
+  const [reactionPosition, setReactionPosition] = useState<"top" | "bottom">(
+    position,
+  );
 
-  useEffect(()=>{
+  useEffect(() => {
     setReactionPosition(position);
-    return ()=> setReactionPosition("bottom")
+    return () => setReactionPosition("bottom");
   }, [position, setReactionPosition]);
 
   const queryClient = useQueryClient();
@@ -226,6 +230,8 @@ export default function Reaction({
     // Tri principal par `count`
     return b[1].count - a[1].count;
   });
+  /* console.log("Quick reaction", quickReaction);
+  console.log(!reactionData.hasUserReacted); */
 
   const MAX_VISIBLE_REACTIONS = 2; // Nombre maximum de réactions visibles dans les onglets principaux
 
@@ -237,10 +243,10 @@ export default function Reaction({
           className={cn(
             "h-fit w-fit cursor-pointer",
             className,
-            "-bottom-2",
+            "top-[calc(100%-4px)]",
             !!allReactions?.length &&
               !children &&
-              "-bottom-[40%] flex items-center gap-1 p-0.5 px-2",
+              "-bottom-[40%] flex items-center gap-1 p-1 px-2",
             reactionsStatus !== "success" && !children && "hidden",
           )}
           title="Ajouter une reaction"
@@ -279,7 +285,7 @@ export default function Reaction({
           "absolute z-30 flex flex-col max-sm:bottom-0",
           isOwner ? "right-0" : "left-0",
           (showReaction || showPicker) && "z-40",
-          reactionPosition === "top" ? "sm:top-0" : "sm:bottom-0"
+          reactionPosition === "top" ? "sm:top-0" : "sm:bottom-0",
         )}
       >
         {showPicker && (
@@ -302,7 +308,9 @@ export default function Reaction({
           </div>
         )}
         {showReaction &&
-          (reactionsStatus === "success" && !allReactions?.length ? (
+          (reactionsStatus === "success" &&
+          (!allReactions?.length ||
+            (!reactionData.hasUserReacted && quickReaction)) ? (
             <QuickReaction
               onReact={onReact}
               onPickerOpen={togglePicker}
@@ -315,7 +323,9 @@ export default function Reaction({
               onReact={onReact}
               loading={reactionLoading}
               quickClassName={cn("z-10", showPicker && "invisible")}
-              className={cn(reactionPosition === "top" ? "sm:top-0" : "sm:bottom-0")}
+              className={cn(
+                reactionPosition === "top" ? "sm:top-0" : "sm:bottom-0",
+              )}
             />
           ))}
       </div>
@@ -472,12 +482,17 @@ function AllReactions({
             </div>
           ))}
         </TabsContent>
-        {visibleReactions.map(([content, { users }]) => (
-          <TabsContent key={content} value={content} className="flex-1">
-            <ReactionUsers users={users} onReact={onReact} content={content} />
-          </TabsContent>
-        ))}
-        {remainingReactions.length > 0 && (
+        {reactions.length > 1 &&
+          visibleReactions.map(([content, { users }]) => (
+            <TabsContent key={content} value={content} className="flex-1">
+              <ReactionUsers
+                users={users}
+                onReact={onReact}
+                content={content}
+              />
+            </TabsContent>
+          ))}
+        {!!remainingReactions.length && (
           <TabsContent value="more" className="flex-1">
             {remainingReactions.map(([content, { users }]) => (
               <div key={content}>
@@ -502,14 +517,16 @@ function AllReactions({
           <TabsTrigger value="all">
             <span className="text-xs">Tout</span>
           </TabsTrigger>
-          {visibleReactions.map(([content, { count }]) => (
-            <TabsTrigger key={content} value={content}>
-              <span className="text-xs">
-                {content} <span className="text-muted-foreground">{count}</span>
-              </span>
-            </TabsTrigger>
-          ))}
-          {remainingReactions.length > 0 && (
+          {reactions.length > 1 &&
+            visibleReactions.map(([content, { count }]) => (
+              <TabsTrigger key={content} value={content}>
+                <span className="text-xs">
+                  {content}{" "}
+                  <span className="text-muted-foreground">{count}</span>
+                </span>
+              </TabsTrigger>
+            ))}
+          {reactions.length > 1 && remainingReactions.length > 0 && (
             <TabsTrigger value="more">
               <span className="text-xs">Plus</span>
             </TabsTrigger>
