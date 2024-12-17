@@ -138,7 +138,7 @@ export default function ChatList({
         )}
       </InfiniteScrollContainer>
       <div
-        className="fixed bottom-16 right-7 aspect-square h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary max-sm:flex sm:hidden"
+        className="fixed bottom-20 right-5 aspect-square h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary max-sm:flex sm:hidden"
         onClick={onNewChat}
       >
         <SquarePen />

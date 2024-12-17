@@ -41,7 +41,7 @@ export default function UsersList({
         </li>
       )}
       {isFetching && !isFetchingNextPage && (
-        <li className="w-full py-5">
+        <li className="w-full py-5 flex justify-center">
           <Loader2 className="animate-spin" />
         </li>
       )}
@@ -64,7 +64,7 @@ export default function UsersList({
             }}
           >
             <div className="flex flex-shrink-0 items-center gap-2">
-              <div className="relative">
+              <div className="relative flex-shrink-0">
                 <UserAvatar avatarUrl={user.avatarUrl} size={40} />
                 {!!selectedUsers.find(
                   (selected) => selected.id === user.id,
@@ -74,7 +74,7 @@ export default function UsersList({
                   </div>
                 )}
               </div>
-              <div>
+              <div className="flex-1">
                 <p>{user.displayName}</p>
                 {user.bio && (
                   <p className="line-clamp-2 w-full overflow-hidden text-ellipsis text-sm text-muted-foreground">
@@ -87,13 +87,13 @@ export default function UsersList({
         )),
       )}
       {isFetchingNextPage && (
-        <li className="w-full py-5">
+        <li className="w-full flex justify-center py-5">
           <Loader2 className="animate-spin" />
         </li>
       )}
       {hasNextPage && !isFetchingNextPage && (
         <li
-          className="w-full cursor-pointer pb-2 text-primary hover:underline max-sm:underline"
+          className="w-full flex justify-center cursor-pointer pb-2 text-primary hover:underline max-sm:underline"
           onClick={fetchNextPage}
         >
           Afficher plus
