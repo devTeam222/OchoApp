@@ -284,14 +284,14 @@ export default function Reaction({
         className={cn(
           "absolute z-30 flex flex-col max-sm:bottom-0",
           isOwner ? "right-0" : "left-0",
-          (showReaction || showPicker) && "z-40",
+          (showReaction || showPicker) && "z-50",
           reactionPosition === "top" ? "sm:top-0" : "sm:bottom-0",
         )}
       >
         {showPicker && (
           <div
             className={cn(
-              "absolute h-fit w-fit bg-background max-sm:fixed max-sm:left-full max-sm:flex max-sm:w-full max-sm:justify-center max-sm:bg-transparent",
+              "absolute h-fit w-fit bg-background max-sm:fixed max-sm:bottom-2 max-sm:left-full max-sm:flex max-sm:w-full max-sm:justify-center max-sm:bg-transparent z-50",
               !isOwner ? "left-0" : "right-0",
               reactionPosition === "top" ? "sm:top-0" : "sm:bottom-0",
             )}
