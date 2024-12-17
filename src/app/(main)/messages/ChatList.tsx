@@ -18,7 +18,7 @@ interface SidebarProps {
   onCloseChat: () => void;
 }
 
-export default function SideBar({
+export default function ChatList({
   activeChannel,
   selectedChannelId,
   onChannelSelect,

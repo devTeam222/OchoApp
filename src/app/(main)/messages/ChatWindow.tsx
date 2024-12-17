@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useSession } from "../SessionProvider";
-import SideBar from "./SideBar";
+import ChatList from "./ChatList";
 import { ChannelData } from "@/lib/types";
 import Chat from "./Chat";
 import { useActiveChannel } from "@/context/ChatContext";
@@ -40,7 +40,7 @@ export default function ChatWindow() {
       className={`flex h-full rounded-2xl bg-card shadow-sm transition-all max-sm:relative max-sm:h-full max-sm:w-screen max-sm:bg-transparent ${(selectedChannelId && selectedChannel || newChat) && "max-sm:translate-x-[-100vw]"}`}
     >
       <div className="h-full w-screen min-w-60 max-sm:min-w-[100vw] sm:w-1/4 sm:border-r-2">
-        <SideBar
+        <ChatList
           onChannelSelect={handleChannelSelect}
           activeChannel={(channel) => setSelectedChannel(channel)}
           selectedChannelId={selectedChannelId}

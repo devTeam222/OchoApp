@@ -75,16 +75,15 @@ model Channel {
   members        ChannelMember[]
   maxMembers     Int             @default(300)
   messages       Message[]
-  privilege      Privilege       @default(MESSAGE)
+  privilege      Privilege       @default(DEFAULT)
   createdAt      DateTime        @default(now())
 
   @@map("channels")
 }
 
 enum Privilege {
-  EDIT
+  DEFAULT
   MANAGE
-  MESSAGE
 }
 
 model ChannelMember {

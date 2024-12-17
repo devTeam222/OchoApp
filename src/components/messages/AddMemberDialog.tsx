@@ -5,10 +5,12 @@ import {
   DialogTrigger,
   DialogContent,
   DialogTitle,
+  DialogHeader,
 } from "../ui/dialog";
-import { ChannelData, UserData } from "@/lib/types";
+import { ChannelData } from "@/lib/types";
 import { useState } from "react";
 import AddMemberForm from "./AddMemberForm";
+import { cn } from "@/lib/utils";
 
 interface AddMemberDialogProps {
   channel: ChannelData;
@@ -25,20 +27,18 @@ export default function AddMemberDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <span
-          className={`cursor-pointer ${className}`}
-          title="Ajouter un membre"
-        >
-          {children}
-        </span>
+      <DialogTrigger
+        asChild
+        className={cn("cursor-pointer", className)}
+        title="Ajouter un membre"
+      >
+        {children}
       </DialogTrigger>
       <DialogContent>
-        <DialogTitle>Ajouter un membre</DialogTitle>
-        <AddMemberForm
-          onAdd={() => setIsOpen(false)}
-          channel={channel}
-        />
+        <DialogHeader>
+          <DialogTitle>Ajouter un membre</DialogTitle>
+        </DialogHeader>
+        <AddMemberForm onAdd={() => setIsOpen(false)} channel={channel} />
       </DialogContent>
     </Dialog>
   );

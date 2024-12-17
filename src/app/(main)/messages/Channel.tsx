@@ -145,7 +145,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
     >
       <div className="flex items-center space-x-2">
         {channel.isGroup ? (
-          <GroupAvatar size={45} />
+          <GroupAvatar size={45} avatarUrl={channel.groupAvatarUrl} />
         ) : (
           <UserAvatar
             avatarUrl={otherUser?.avatarUrl}

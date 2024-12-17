@@ -1,18 +1,15 @@
+import { cn } from "@/lib/utils";
+import { useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { UserData } from "@/lib/types";
-import {
-  updateUserProfileSchema,
-  UpdateUserProfileValues,
-} from "@/lib/validation";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { useDeleteAvatarMutation, useUpdateProfileMutation } from "./mutations";
+  DialogTrigger,
+} from "../ui/dialog";
+import { ChannelData } from "@/lib/types";
+import { Label } from "../ui/label";
 import {
   Form,
   FormControl,
@@ -20,43 +17,62 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import LoadingButton from "@/components/LoadingButton";
-import { StaticImageData } from "next/image";
-import { useRef, useState } from "react";
-import { Label } from "@/components/ui/label";
-import { Camera, Trash2 } from "lucide-react";
-import CropImageDialog from "@/components/CropImageDialog";
+} from "../ui/form";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
+import LoadingButton from "../LoadingButton";
 import Resizer from "react-image-file-resizer";
-import UserAvatar from "@/components/UserAvatar";
+import {
+  updateGroupChatProfileSchema,
+  UpdateGroupChatProfileValues,
+} from "@/lib/validation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  useDeleteGroupChatAvatarMutation,
+  useUpdateGroupChatMutation,
+} from "@/app/(main)/users/[username]/mutations";
+import { StaticImageData } from "next/image";
+import GroupAvatar from "../GroupAvatar";
+import { Camera, Trash2 } from "lucide-react";
+import CropImageDialog from "../CropImageDialog";
+import { useToast } from "../ui/use-toast";
 
-interface EditProfileDialogProps {
-  user: UserData;
+interface GroupChatSettingsDialogProps {
+  channel: ChannelData;
+  className?: string;
+  children: React.ReactNode;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export default function EditProfileDialog({
-  user,
-  open,
+export default function GroupChatSettingsDialog({
+  channel,
+  className,
+  children,
+  open = false,
   onOpenChange,
-}: EditProfileDialogProps) {
-  const form = useForm<UpdateUserProfileValues>({
-    resolver: zodResolver(updateUserProfileSchema),
+}: GroupChatSettingsDialogProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [croppedAvatar, setCroppedAvatar] = useState<Blob | null>(null);
+  const {toast} = useToast();
+
+  const mutation = useUpdateGroupChatMutation({channelId: channel.id});
+
+  const form = useForm<UpdateGroupChatProfileValues>({
+    resolver: zodResolver(updateGroupChatProfileSchema),
     defaultValues: {
-      displayName: user.displayName,
-      bio: user.bio || "",
+      id: channel.id,
+      name: channel?.name || undefined,
+      description: channel.description || "",
     },
   });
 
-  const mutation = useUpdateProfileMutation();
-  const [croppedAvatar, setCroppedAvatar] = useState<Blob | null>(null);
+  async function onSubmit(values: UpdateGroupChatProfileValues) {
+    console.log(values);
 
-  async function onSubmit(values: UpdateUserProfileValues) {
     const newAvatarFile = croppedAvatar
-      ? new File([croppedAvatar], `avatar_${user.id}.webp`)
+      ? new File([croppedAvatar], `avatar_${channel.id}.webp`)
       : undefined;
 
     mutation.mutate(
@@ -69,23 +85,36 @@ export default function EditProfileDialog({
           setCroppedAvatar(null);
           onOpenChange(false);
         },
+        onError(error, variables, context) {
+            toast({
+                variant: "destructive",
+                description: "Quelque chose s'est mal passé"
+            })
+        },
       },
     );
   }
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger
+        asChild
+        className={cn("cursor-pointer", className)}
+        title="Modifier les parametres du groupe"
+      >
+        {children}
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Modifier le profil</DialogTitle>
+          <DialogTitle>Modifier les parametres du groupe</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center gap-1.5">
-          <Label>Photo de profil</Label>
+          <Label>Icône de groupe</Label>
           <AvatarInput
+            channelId={channel.id}
             src={
               croppedAvatar
                 ? URL.createObjectURL(croppedAvatar)
-                : user.avatarUrl
+                : channel.groupAvatarUrl
             }
             onImageCropped={setCroppedAvatar}
           />
@@ -94,12 +123,12 @@ export default function EditProfileDialog({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
             <FormField
               control={form.control}
-              name="displayName"
+              name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nom Complet</FormLabel>
+                  <FormLabel>Nom du groupe</FormLabel>
                   <FormControl>
-                    <Input placeholder="Votre nom complet" {...field} />
+                    <Input placeholder="Changer le nom du groupe" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -107,13 +136,13 @@ export default function EditProfileDialog({
             />
             <FormField
               control={form.control}
-              name="bio"
+              name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Bio</FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Parlez nous un peu de vous..."
+                      placeholder="Decrivez ce groupe..."
                       {...field}
                       className="resize-none"
                     />
@@ -135,14 +164,15 @@ export default function EditProfileDialog({
 }
 
 interface AvatarInputProps {
+  channelId: string;
   src: string | StaticImageData | null;
   onImageCropped: (blob: Blob | null) => void;
 }
 
-function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
+function AvatarInput({ channelId, src, onImageCropped }: AvatarInputProps) {
   const [imageToCrop, setImageToCrop] = useState<File>();
 
-  const mutation = useDeleteAvatarMutation();
+  const mutation = useDeleteGroupChatAvatarMutation();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -162,7 +192,7 @@ function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
   }
 
   function deleteAvatar() {
-    mutation.mutate();
+    mutation.mutate({ channelId });
   }
 
   return (
@@ -181,7 +211,7 @@ function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
         className="group relative block"
         title="Cliquez pour selectioner une image"
       >
-        <UserAvatar avatarUrl={src} size={150} className="flex-none" />
+        <GroupAvatar avatarUrl={src} size={150} className="flex-none" />
         <span className="absolute inset-0 m-auto flex size-12 items-center justify-center rounded-full bg-black bg-opacity-30 text-white transition-colors duration-200 group-hover:bg-opacity-25">
           <Camera size={24} />
         </span>

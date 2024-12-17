@@ -3,7 +3,13 @@ import { useSession } from "../SessionProvider";
 import GroupAvatar from "@/components/GroupAvatar";
 import UserAvatar from "@/components/UserAvatar";
 import { useEffect, useState } from "react";
-import { ArrowLeft, UserCircle2, UserRoundPlus, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Settings2,
+  UserCircle2,
+  UserRoundPlus,
+  X,
+} from "lucide-react";
 import Linkify from "@/components/Linkify";
 import { Button } from "@/components/ui/button";
 import Time from "@/components/Time";
@@ -12,6 +18,7 @@ import AddMemberDialog from "@/components/messages/AddMemberDialog";
 import GroupUserPopover from "@/components/messages/GroupUserPopover";
 import { useActiveChannel } from "@/context/ChatContext";
 import LeaveGroupDialog from "@/components/messages/LeaveGroupDialog";
+import GroupChatSettingsDialog from "@/components/messages/GroupChatSettingsDialog";
 
 interface ChatHeaderProps {
   channel: ChannelData;
@@ -20,6 +27,7 @@ interface ChatHeaderProps {
 export default function ChatHeader({ channel }: ChatHeaderProps) {
   const [active, setActive] = useState(false);
   const [expandMembers, setExpandMembers] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
   const { activeChannelId } = useActiveChannel();
 
   const { user: loggedUser } = useSession();
@@ -107,7 +115,9 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
       (!!otherUser?.lastSeen &&
         new Date(otherUser.lastSeen).getTime() - 40 * 1000 > now));
 
-        const lastSeenTimeStamp = otherUser?.lastSeen ? new Date(new Date(otherUser.lastSeen).getTime() - 40 * 1000).getTime() : null;
+  const lastSeenTimeStamp = otherUser?.lastSeen
+    ? new Date(new Date(otherUser.lastSeen).getTime() - 40 * 1000).getTime()
+    : null;
 
   return (
     <div
@@ -136,13 +146,14 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
         className={`flex w-full flex-1 flex-col transition-all ${active ? "absolute inset-0 h-fit min-h-full bg-card max-sm:bg-background sm:rounded-e-3xl" : "relative"}`}
       >
         <div
-          className={`group/head transition-all flex flex-1 items-center gap-2 ${active ? "cursor-default flex-col p-3" : "cursor-pointer"}`}
+          className={`group/head flex flex-1 items-center gap-2 transition-all ${active ? "cursor-default flex-col p-3" : "cursor-pointer"}`}
           onClick={() => !active && setActive(true)}
         >
           {channel.isGroup ? (
             <GroupAvatar
               size={size}
               className="transition-all *:transition-all"
+              avatarUrl={channel.groupAvatarUrl}
             />
           ) : (
             <UserAvatar
@@ -171,11 +182,14 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                 <span className="">
                   {isUserOnline ? (
                     "En ligne"
-                  ) : lastSeenTimeStamp &&
-                    lastSeenTimeStamp - 40_000 < now ? (
+                  ) : lastSeenTimeStamp && lastSeenTimeStamp - 40_000 < now ? (
                     <>
                       Actif{" "}
-                      <Time time={new Date(lastSeenTimeStamp - 30_000)} relative long={false} />
+                      <Time
+                        time={new Date(lastSeenTimeStamp - 30_000)}
+                        relative
+                        long={false}
+                      />
                     </>
                   ) : (
                     `@${otherUser?.username || "ochoapp-user"}`
@@ -195,7 +209,7 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                     {isUserOnline
                       ? "En ligne"
                       : lastSeenTimeStamp &&
-                      lastSeenTimeStamp - 40_000 < now && (
+                        lastSeenTimeStamp - 40_000 < now && (
                           <>
                             Actif{" "}
                             <Time
@@ -214,12 +228,15 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
             <div className="flex w-full flex-col items-center gap-3">
               <div className="flex w-full justify-center">
                 {channel.isGroup ? (
-                  <>
+                  <div className="flex w-full justify-center gap-2">
                     {loggedinMember?.type !== "OLD" && (
-                      <AddMemberDialog channel={channel}>
+                      <AddMemberDialog
+                        channel={channel}
+                        className="max-w-44 flex-1"
+                      >
                         <Button
                           variant="outline"
-                          className="flex h-fit flex-col gap-2"
+                          className="flex h-fit w-full flex-col gap-2"
                         >
                           <UserRoundPlus size={35} />
                           <span>
@@ -229,7 +246,27 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                         </Button>
                       </AddMemberDialog>
                     )}
-                  </>
+                    {(loggedinMember?.type === "ADMIN" ||
+                      loggedinMember?.type === "OWNER") && (
+                      <GroupChatSettingsDialog
+                        channel={channel}
+                        open={showDialog}
+                        onOpenChange={setShowDialog}
+                        className="max-w-44 flex-1"
+                      >
+                        <Button
+                          variant="outline"
+                          className="flex h-fit w-full flex-col gap-2"
+                        >
+                          <Settings2 size={35} />
+                          <span>
+                            Parametres{" "}
+                            <span className="max-sm:hidden">du groupe</span>
+                          </span>
+                        </Button>
+                      </GroupChatSettingsDialog>
+                    )}
+                  </div>
                 ) : (
                   <Link href={`/users/${otherUser?.username || "-"}`}>
                     <Button variant="outline" className="space-x-2">
@@ -238,17 +275,25 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                   </Link>
                 )}
               </div>
-              <div className="">
+              <hr className="w-full" />
+              <div className="px-2">
                 <Linkify>
                   {channel.isGroup ? (
-                    <span className="cursor-pointer text-primary hover:underline">
-                      Ajouter une description
-                    </span>
+                    <>
+                      {channel.description ? (
+                        <p>{channel.description}</p>
+                      ) : (
+                        <span className="cursor-pointer text-primary hover:underline">
+                          Aucune description
+                        </span>
+                      )}
+                    </>
                   ) : (
-                    <span>{!!otherUser?.bio && otherUser.bio}</span>
+                    <p>{!!otherUser?.bio && otherUser.bio}</p>
                   )}
                 </Linkify>
               </div>
+              <hr className="w-full" />
               <span className="text-muted-foreground">
                 {channel.isGroup ? (
                   <span>
@@ -257,15 +302,20 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                   </span>
                 ) : (
                   <span>
-                    {otherUser?.id ? (<>
-                      Membre depuis{" "}
-                      {!!otherUser?.createdAt && (
-                        <Time time={otherUser.createdAt} long />
-                      )}
-                    </>) : (<>Ce compte a été supprimé</>)}
+                    {otherUser?.id ? (
+                      <>
+                        Membre depuis{" "}
+                        {!!otherUser?.createdAt && (
+                          <Time time={otherUser.createdAt} long />
+                        )}
+                      </>
+                    ) : (
+                      <>Ce compte a été supprimé</>
+                    )}
                   </span>
                 )}
               </span>
+              {channel.isGroup && <hr className="w-full" />}
             </div>
           )}
         </div>

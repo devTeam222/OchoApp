@@ -83,6 +83,14 @@ export const updateUserProfileSchema = z.object({
 
 export type UpdateUserProfileValues = z.infer<typeof updateUserProfileSchema>;
 
+export const updateGroupChatProfileSchema = z.object({
+  id: requiredString,
+  name: z.string(),
+  description: z.string().max(2000, "La description ne peut pas depasser 2000 caractères."),
+});
+
+export type UpdateGroupChatProfileValues = z.infer<typeof updateGroupChatProfileSchema>;
+
 export const createCommentSchema = z.object({
   content: requiredString,
 });

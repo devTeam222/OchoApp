@@ -6,8 +6,8 @@ const nextConfig = {
         },
     },
     serverExternalPackages: ["@node-rs/argon2"],
-    images:{
-        remotePatterns:[
+    images: {
+        remotePatterns: [
             {
                 protocol: "https",
                 hostname: "utfs.io",
@@ -24,7 +24,7 @@ const nextConfig = {
             },
         ],
     },
-    rewrites: ()=>{
+    rewrites: () => {
         return [
             {
                 source: "/hashtag/:tag",
