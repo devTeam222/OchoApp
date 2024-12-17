@@ -1,8 +1,8 @@
 import { UsersPage, UserData } from "@/lib/types";
 import { Loader2, Check } from "lucide-react";
 import UserAvatar from "../UserAvatar";
-
-
+import { useToast } from "../ui/use-toast";
+import { cn } from "@/lib/utils";
 
 type UsersQuery = {
   data: { pages: UsersPage[] } | undefined;
@@ -17,6 +17,7 @@ interface UsersListProps {
   query: UsersQuery;
   title: string;
   isGroup?: boolean;
+  canSelect?: boolean;
   selectedUsers?: UserData[];
   onSelect: (user: UserData) => void;
 }
@@ -26,19 +27,21 @@ export default function UsersList({
   title,
   isGroup,
   selectedUsers = [],
+  canSelect = true,
   onSelect,
 }: UsersListProps) {
+  const { toast } = useToast();
   if (!data?.pages?.length) return null;
 
   return (
     <>
       {!!data?.pages[0].users.length && (
-        <li className="px-4 text-xs font-bold text-muted-foreground">
+        <li className="w-full px-4 text-xs font-bold text-muted-foreground">
           {title}
         </li>
       )}
       {isFetching && !isFetchingNextPage && (
-        <li className="mx-auto py-5">
+        <li className="w-full py-5">
           <Loader2 className="animate-spin" />
         </li>
       )}
@@ -46,12 +49,21 @@ export default function UsersList({
         page.users.map((user) => (
           <li
             key={`${pageIndex}-${user.id}`}
-            className="cursor-pointer p-3 px-4 hover:bg-primary/5 active:bg-primary/5"
+            className={cn(
+              "w-full cursor-pointer p-3 px-4 hover:bg-primary/5 active:bg-primary/5",
+              !canSelect && "opacity-70",
+            )}
             onClick={() => {
+              if (!canSelect) {
+                toast({
+                  description:
+                    "Vous ne pouvez pas selectionner d'autres utilisateurs",
+                });
+              }
               onSelect(user);
             }}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex flex-shrink-0 items-center gap-2">
               <div className="relative">
                 <UserAvatar avatarUrl={user.avatarUrl} size={40} />
                 {!!selectedUsers.find(
@@ -65,7 +77,7 @@ export default function UsersList({
               <div>
                 <p>{user.displayName}</p>
                 {user.bio && (
-                  <p className="line-clamp-2 text-ellipsis text-sm text-muted-foreground">
+                  <p className="line-clamp-2 w-full overflow-hidden text-ellipsis text-sm text-muted-foreground">
                     {user.bio}
                   </p>
                 )}
@@ -75,13 +87,13 @@ export default function UsersList({
         )),
       )}
       {isFetchingNextPage && (
-        <li className="mx-auto py-5">
+        <li className="w-full py-5">
           <Loader2 className="animate-spin" />
         </li>
       )}
       {hasNextPage && !isFetchingNextPage && (
         <li
-          className="mx-auto cursor-pointer pb-2 text-primary hover:underline max-sm:underline"
+          className="w-full cursor-pointer pb-2 text-primary hover:underline max-sm:underline"
           onClick={fetchNextPage}
         >
           Afficher plus

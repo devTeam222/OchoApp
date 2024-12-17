@@ -13,7 +13,7 @@ export default function QuickReaction({
   onPickerOpen,
   className,
 }: QuickReactionProps) {
-  const reactions = ["❤️", "😆", "😮", "😢", "😡", "👎"];
+  const reactions = ["❤️", "😆", "😮", "😢", "😡", "👍", "👎"];
 
   return (
     <div

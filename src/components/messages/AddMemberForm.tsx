@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import kyInstance from "@/lib/ky";
-import { Loader2, SearchIcon, XIcon } from "lucide-react";
+import { Frown, Loader2, Meh, SearchIcon, XIcon } from "lucide-react";
 import { ChannelData, UserData, UsersPage } from "@/lib/types";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { Input } from "../ui/input";
@@ -11,6 +11,7 @@ import { useAddMemberMutation } from "./mutations";
 import LoadingButton from "../LoadingButton";
 import { MemberType } from "@prisma/client";
 import UsersList from "./UsersList";
+import { Skeleton } from "../ui/skeleton";
 
 interface AddMemberFormProps {
   onAdd: () => void;
@@ -125,6 +126,8 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
     );
   };
 
+  console.log("good");
+
   return (
     <div className="space-y-4">
       {!!selectedUsers.length && (
@@ -183,38 +186,71 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
 
       <div className="space-y-2">
         {status === "error" && (
-          <p className="my-8 w-full text-center text-destructive">
-            Erreur lors de la récupération des données
-          </p>
+          <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
+            <Frown size={100} />
+            <h2 className="text-xl">Quelque chose s&apos;est mal passé.</h2>
+          </div>
         )}
-        {status === "pending" && !!query && (
-          <p className="text-weak my-8 w-full text-center">
-            Chargement en cours...
-          </p>
-        )}
+        {status === "pending" && !!query && <UsersListSkeleton />}
         {status === "success" && !users.length && !hasNextPage && (
-          <div className="flex h-full items-center">
-            <p className="w-full select-none px-3 py-10 text-center italic text-muted-foreground">
-              Aucun utilisateur disponible
-            </p>
+          <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
+            <Meh size={100} />
+            <h2 className="text-xl">Nous n&apos;avons pas trouvé d&apos;utilisateur à ajouter.</h2>
           </div>
         )}
-        {status !== "success" && !query && (
-          <div className="flex h-full items-center">
-            <p className="w-full select-none px-3 py-10 text-center text-muted-foreground">
-              Rechercher des utilisateurs...
-            </p>
-          </div>
-        )}
-        <ul className="flex-1 overflow-y-auto max-h-[60vh]">
+        {status !== "success" && !query && <UsersListSkeleton />}
+        <ul className="max-h-[60vh] flex-1 justify-center overflow-y-auto">
           <UsersList
             query={userQuery}
             onSelect={addUser}
             title="Utilisateurs disponibles"
             selectedUsers={selectedUsers}
+            canSelect={status === "success"}
           />
         </ul>
       </div>
     </div>
+  );
+}
+
+function UsersListSkeleton() {
+  return (
+    <ul className="max-h-[60vh] flex-1 overflow-y-auto animate-pulse">
+      <li className="cursor-pointer p-3 px-4 hover:bg-primary/5 active:bg-primary/5">
+        <div className="flex flex-shrink-0 items-center gap-2">
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <div className="flex-1 space-y-1">
+            <Skeleton className="h-3.5 w-20 rounded" />
+            <Skeleton className="h-3 w-[80%] rounded" />
+          </div>
+        </div>
+      </li>
+      <li className="cursor-pointer p-3 px-4 hover:bg-primary/5 active:bg-primary/5">
+        <div className="flex flex-shrink-0 items-center gap-2">
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <div className="flex-1 space-y-1">
+            <Skeleton className="h-3.5 w-24 rounded" />
+          </div>
+        </div>
+      </li>
+      <li className="cursor-pointer p-3 px-4 hover:bg-primary/5 active:bg-primary/5">
+        <div className="flex flex-shrink-0 items-center gap-2">
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <div className="flex-1 space-y-1">
+            <Skeleton className="h-3.5 w-24 rounded" />
+            <Skeleton className="h-3 w-[70%] rounded" />
+          </div>
+        </div>
+      </li>
+      <li className="cursor-pointer p-3 px-4 hover:bg-primary/5 active:bg-primary/5">
+        <div className="flex flex-shrink-0 items-center gap-2">
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <div className="flex-1 space-y-1">
+            <Skeleton className="h-3.5 w-24 rounded" />
+            <Skeleton className="h-3 w-[50%] rounded" />
+          </div>
+        </div>
+      </li>
+    </ul>
   );
 }

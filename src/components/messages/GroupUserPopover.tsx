@@ -72,7 +72,7 @@ export default function GroupUserPopover({
       </PopoverTrigger>
       <PopoverContent>
         <div className="flex flex-col gap-3">
-          <div>
+          <div className="divide-y-2">
             <div
               className={`flex max-w-80 items-center gap-3 break-words px-1 py-2.5 md:min-w-52`}
             >
@@ -92,7 +92,7 @@ export default function GroupUserPopover({
             </div>
             {user.bio && (
               <Linkify>
-                <p className="line-clamp-4 whitespace-pre-line">{user.bio}</p>
+                <p className="line-clamp-4 whitespace-pre-line px-2">{user.bio}</p>
               </Linkify>
             )}
             {joinedAt && (

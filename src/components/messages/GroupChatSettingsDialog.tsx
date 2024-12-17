@@ -42,6 +42,7 @@ interface GroupChatSettingsDialogProps {
   channel: ChannelData;
   className?: string;
   children: React.ReactNode;
+  focus?: "name" | "description" | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -51,9 +52,9 @@ export default function GroupChatSettingsDialog({
   className,
   children,
   open = false,
+  focus,
   onOpenChange,
 }: GroupChatSettingsDialogProps) {
-  const [isOpen, setIsOpen] = useState(false);
   const [croppedAvatar, setCroppedAvatar] = useState<Blob | null>(null);
   const {toast} = useToast();
 
@@ -95,7 +96,7 @@ export default function GroupChatSettingsDialog({
     );
   }
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger
         asChild
         className={cn("cursor-pointer", className)}
@@ -128,7 +129,7 @@ export default function GroupChatSettingsDialog({
                 <FormItem>
                   <FormLabel>Nom du groupe</FormLabel>
                   <FormControl>
-                    <Input placeholder="Changer le nom du groupe" {...field} />
+                    <Input placeholder="Changer le nom du groupe" {...field} autoFocus={focus=== "name"}/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -145,6 +146,7 @@ export default function GroupChatSettingsDialog({
                       placeholder="Decrivez ce groupe..."
                       {...field}
                       className="resize-none"
+                      autoFocus={focus==="description"}
                     />
                   </FormControl>
                   <FormMessage />

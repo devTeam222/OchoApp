@@ -19,6 +19,7 @@ import GroupUserPopover from "@/components/messages/GroupUserPopover";
 import { useActiveChannel } from "@/context/ChatContext";
 import LeaveGroupDialog from "@/components/messages/LeaveGroupDialog";
 import GroupChatSettingsDialog from "@/components/messages/GroupChatSettingsDialog";
+import { cn } from "@/lib/utils";
 
 interface ChatHeaderProps {
   channel: ChannelData;
@@ -28,6 +29,9 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
   const [active, setActive] = useState(false);
   const [expandMembers, setExpandMembers] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
+  const [dialogFocus, setDialogFocus] = useState<"name" | "description" | null>(
+    null,
+  );
   const { activeChannelId } = useActiveChannel();
 
   const { user: loggedUser } = useSession();
@@ -164,7 +168,23 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
             />
           )}
           <div className="">
-            <div className="text-xl font-bold">{chatName}</div>
+            {channel.isGroup &&
+            active &&
+            (loggedinMember?.type === "ADMIN" ||
+              loggedinMember?.type === "OWNER") ? (
+              <div
+                className="text-xl font-bold hover:text-primary hover:underline cursor-pointer"
+                title="Modifier le nom du groupe"
+                onClick={() => {
+                  setDialogFocus("name");
+                  setShowDialog(true);
+                }}
+              >
+                {chatName}
+              </div>
+            ) : (
+              <div className="text-xl font-bold">{chatName}</div>
+            )}
             <div
               className={"text-muted-foreground " + (active ? "hidden" : "")}
             >
@@ -251,8 +271,12 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                       <GroupChatSettingsDialog
                         channel={channel}
                         open={showDialog}
-                        onOpenChange={setShowDialog}
+                        onOpenChange={(open) => {
+                          setShowDialog(open);
+                          open === false && setDialogFocus(null);
+                        }}
                         className="max-w-44 flex-1"
+                        focus={dialogFocus}
                       >
                         <Button
                           variant="outline"
@@ -282,8 +306,21 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                     <>
                       {channel.description ? (
                         <p>{channel.description}</p>
+                      ) : loggedinMember?.type === "ADMIN" ||
+                        loggedinMember?.type === "OWNER" ? (
+                        <Button 
+                          variant="link"
+                          className="py-0"
+                          title="Ajouter une description au groupe"
+                          onClick={() => {
+                            setDialogFocus("description");
+                            setShowDialog(true);
+                          }}
+                        >
+                          Ajouter une description
+                        </Button>
                       ) : (
-                        <span className="cursor-pointer text-primary hover:underline">
+                        <span className="text-muted-foreground">
                           Aucune description
                         </span>
                       )}
