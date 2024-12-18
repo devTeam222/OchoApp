@@ -1,4 +1,5 @@
-import React, { useRef, useState } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useCallback, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface DraggableProps {
@@ -18,7 +19,7 @@ export default function Draggable({
   className,
   contentClassName,
 }: DraggableProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  // const containerRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const startPoint = useRef({ x: 0, y: 0 });
@@ -41,10 +42,12 @@ export default function Draggable({
       const newTranslate = { ...prev };
 
       if (direction === "left" || direction === "right") {
-        newTranslate.x = direction === "left" ? Math.min(deltaX, 0) : Math.max(deltaX, 0);
+        newTranslate.x =
+          direction === "left" ? Math.min(deltaX, 0) : Math.max(deltaX, 0);
         newTranslate.y = 0; // Lock vertical movement
       } else if (direction === "up" || direction === "down") {
-        newTranslate.y = direction === "up" ? Math.min(deltaY, 0) : Math.max(deltaY, 0);
+        newTranslate.y =
+          direction === "up" ? Math.min(deltaY, 0) : Math.max(deltaY, 0);
         newTranslate.x = 0; // Lock horizontal movement
       }
 
@@ -57,7 +60,7 @@ export default function Draggable({
 
     setDragging(false);
     const draggedDistance = Math.abs(
-      direction === "left" || direction === "right" ? translate.x : translate.y
+      direction === "left" || direction === "right" ? translate.x : translate.y,
     );
 
     // Trigger callback if threshold is reached
@@ -79,45 +82,90 @@ export default function Draggable({
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!dragging || !draggable) return;
 
-    e.preventDefault(); // Empêche le comportement par défaut, y compris le défilement
-
     const touch = e.touches[0];
     const deltaX = touch.clientX - startPoint.current.x;
     const deltaY = touch.clientY - startPoint.current.y;
 
-    setTranslate((prev) => {
-      const newTranslate = { ...prev };
+    // Vérification des limites de défilement de l'élément concerné
+    const container = e.currentTarget as HTMLElement;
+    const canScrollVertically = container.scrollHeight > container.clientHeight;
+    const canScrollHorizontally = container.scrollWidth > container.clientWidth;
 
-      if (direction === "left" || direction === "right") {
-        newTranslate.x = direction === "left" ? Math.min(deltaX, 0) : Math.max(deltaX, 0);
-        newTranslate.y = 0; // Lock vertical movement
-      } else if (direction === "up" || direction === "down") {
-        newTranslate.y = direction === "up" ? Math.min(deltaY, 0) : Math.max(deltaY, 0);
-        newTranslate.x = 0; // Lock horizontal movement
-      }
+    const atTop = canScrollVertically && container.scrollTop === 0;
+    const atBottom =
+      canScrollVertically &&
+      container.scrollHeight === container.scrollTop + container.clientHeight;
+    const atLeft = canScrollHorizontally && container.scrollLeft === 0;
+    const atRight =
+      canScrollHorizontally &&
+      container.scrollWidth === container.scrollLeft + container.clientWidth;
 
-      return newTranslate;
-    });
+    // Bloque le comportement par défaut si la limite est atteinte
+    if (
+      e.cancelable &&
+      ((canScrollVertically && (atTop || atBottom)) ||
+        (canScrollHorizontally && (atLeft || atRight)))
+    ) {
+      e.preventDefault(); // Empêche le comportement de défilement uniquement si la limite est atteinte
+    } else {
+      setTranslate((prev) => {
+        const newTranslate = { ...prev };
+
+        if (direction === "left" || direction === "right") {
+          newTranslate.x =
+            direction === "left" ? Math.min(deltaX, 0) : Math.max(deltaX, 0);
+          newTranslate.y = 0; // Lock vertical movement
+        } else if (direction === "up" || direction === "down") {
+          newTranslate.y =
+            direction === "up" ? Math.min(deltaY, 0) : Math.max(deltaY, 0);
+          newTranslate.x = 0; // Lock horizontal movement
+        }
+
+        return newTranslate;
+      });
+    }
   };
 
   const handleTouchEnd = () => {
     handleMouseUp(); // Use the same logic as mouse events
   };
 
+  // Add event listeners
+  const containerRef = useCallback(
+    (node: any) => {
+      if (node == null) return;
+
+      // Mouse events
+      node.addEventListener("mousedown", handleMouseDown);
+      node.addEventListener("mousemove", handleMouseMove);
+      node.addEventListener("mouseup", handleMouseUp);
+      node.addEventListener("mouseleave", handleMouseUp);
+
+      // Touch events
+      node.addEventListener("touchstart", handleTouchStart);
+      node.addEventListener("touchmove", handleTouchMove, { passive: false });
+      node.addEventListener("touchend", handleTouchEnd);
+    },
+    [
+      handleMouseDown,
+      handleMouseMove,
+      handleMouseUp,
+      handleTouchStart,
+      handleTouchMove,
+      handleTouchEnd,
+    ],
+  );
+
   return (
     <div
       ref={containerRef}
       className={cn("relative overflow-hidden", className)}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
     >
       <div
-        className={cn("transition-transform duration-200 ease-out select-none w-full h-full", contentClassName)}
+        className={cn(
+          "h-full w-full select-none transition-transform duration-200 ease-out",
+          contentClassName,
+        )}
         style={{
           transform: `translate(${translate.x}px, ${translate.y}px)`,
           cursor: draggable ? (dragging ? "grabbing" : "grab") : "default",

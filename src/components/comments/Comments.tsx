@@ -9,7 +9,7 @@ import { Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "../ui/use-toast";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Draggable from "../Draggable";
 
@@ -21,6 +21,7 @@ interface CommentsProps {
 export default function Comments({ post, onClose }: CommentsProps) {
   const [targetComment, setTargetComment] = useState<string | null>(null);
   const [isDraggable, setIsDraggable] = useState(false);
+  const previousWidth = useRef(window.innerWidth);
   const router = useRouter();
 
   const searchParams = useSearchParams();
@@ -63,10 +64,19 @@ export default function Comments({ post, onClose }: CommentsProps) {
 
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-  useEffect(() => {
-    window.addEventListener("resize", onClose);
 
-    return () => window.removeEventListener("resize", onClose);
+  useEffect(() => {
+    const handleResize = () => {
+      const currentWidth = window.innerWidth;
+      if (currentWidth !== previousWidth.current) {
+        previousWidth.current = currentWidth;
+        onClose(); // Appelle la fonction uniquement pour les redimensionnements horizontaux
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
