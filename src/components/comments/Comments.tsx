@@ -11,6 +11,7 @@ import { useToast } from "../ui/use-toast";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Draggable from "../Draggable";
 
 interface CommentsProps {
   post: PostData;
@@ -19,6 +20,7 @@ interface CommentsProps {
 
 export default function Comments({ post, onClose }: CommentsProps) {
   const [targetComment, setTargetComment] = useState<string | null>(null);
+  const [isDraggable, setIsDraggable] = useState(false);
   const router = useRouter();
 
   const searchParams = useSearchParams();
@@ -51,6 +53,22 @@ export default function Comments({ post, onClose }: CommentsProps) {
     }),
   });
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDraggable(window.innerWidth < 640); // Active draggable si largeur < 640px
+    };
+
+    handleResize(); // Vérifie la taille initiale
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+  useEffect(() => {
+    window.addEventListener("resize", onClose);
+
+    return () => window.removeEventListener("resize", onClose);
+  }, [onClose]);
+
   const comments = data?.pages.flatMap((page) => page.comments) || [];
 
   useEffect(() => {
@@ -77,7 +95,14 @@ export default function Comments({ post, onClose }: CommentsProps) {
   }, [status, comment, data, comments]);
 
   return (
-    <div className="bottom-0 left-0 z-20 max-sm:fixed max-sm:flex max-sm:w-full max-sm:animate-appear-b max-sm:flex-col-reverse max-sm:rounded-e-sm max-sm:rounded-s-sm max-sm:bg-card max-sm:pt-2 sm:space-y-3">
+    <Draggable draggable={isDraggable} direction="down" className="bottom-0 left-0 z-20 max-sm:fixed w-full  max-sm:rounded-e-sm "
+    contentClassName="max-sm:bg-card max-sm:pt-2 sm:space-y-3 max-sm:rounded-s-sm max-sm:flex max-sm:flex-col-reverse"
+    
+    onDrag={(number)=>{
+      if (number > 200) {
+        onClose();
+      }
+    }}>
       <CommentInput post={post} />
       {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
       {hasNextPage && (
@@ -128,6 +153,6 @@ export default function Comments({ post, onClose }: CommentsProps) {
           ))}
         </div>
       </div>
-    </div>
+    </Draggable>
   );
 }
