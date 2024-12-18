@@ -129,7 +129,7 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
   console.log("good");
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full max-w-full">
       {!!selectedUsers.length && (
         <>
           <div className="sticky top-0 flex w-full animate-scale gap-2 overflow-y-auto p-3 px-4">
@@ -199,7 +199,7 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
           </div>
         )}
         {status !== "success" && !query && <UsersListSkeleton />}
-        <ul className="max-h-[450px] flex-1 justify-center overflow-y-auto">
+        <ul className="max-h-[350px] flex-1 justify-center overflow-y-auto">
           <UsersList
             query={userQuery}
             onSelect={addUser}
