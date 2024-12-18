@@ -135,7 +135,7 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
           <div className="sticky top-0 flex w-full animate-scale gap-2 overflow-y-auto p-3 px-4">
             {selectedUsers.map((user, index) => (
               <div
-                className="flex flex-col items-center gap-1"
+                className="flex flex-col items-center gap-1 flex-shrink-0"
                 key={index}
                 onClick={() => removeUser(user)}
               >
@@ -199,7 +199,7 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
           </div>
         )}
         {status !== "success" && !query && <UsersListSkeleton />}
-        <ul className="max-h-[60vh] flex-1 justify-center overflow-y-auto">
+        <ul className="max-h-[450px] flex-1 justify-center overflow-y-auto">
           <UsersList
             query={userQuery}
             onSelect={addUser}

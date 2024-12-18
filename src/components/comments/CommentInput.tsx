@@ -37,26 +37,28 @@ export default function CommentInput({ post }: CommentInput) {
   }
 
   return (
-    <form className="flex w-full items-center gap-2 p-2 max-sm:outline max-sm:outline-muted" onSubmit={onSubmit}>
-      <Input
-        placeholder="Commenter..."
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        autoFocus={!post._count.comments}
-      />
-      <Button
-        type="submit"
-        variant="ghost"
-        size="icon"
-        className=""
-        disabled={!input.trim() || mutation.isPending}
-      >
-        {mutation.isPending ? (
-          <Loader2 className="animate-spin" />
-        ) : (
-          <SendIcon />
-        )}
-      </Button>
+    <form className="flex w-full items-center p-2 max-sm:outline max-sm:outline-muted" onSubmit={onSubmit}>
+      <div className="flex w-full items-center gap-2 p-1 bg-background rounded-3xl has-[input:focus]:outline outline-primary transition-all duration-75">
+        <input
+          placeholder="Commenter..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          autoFocus={!post._count.comments}
+          className="border-none outline-none flex-1 bg-transparent ps-4"
+        />
+        <Button
+          type="submit"
+          size="icon"
+          className="rounded-full flex-shrink-0"
+          disabled={!input.trim() || mutation.isPending}
+        >
+          {mutation.isPending ? (
+            <Loader2 className="animate-spin" />
+          ) : (
+            <SendIcon />
+          )}
+        </Button>
+      </div>
     </form>
   );
 }

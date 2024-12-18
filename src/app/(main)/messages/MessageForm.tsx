@@ -59,7 +59,7 @@ export default function MessageForm({ channelId }: MessageFormProps) {
   return (
     <div className="flex gap-1 p-3">
       {isEditorReady ? (
-        <div className="relative w-full rounded-3xl bg-background flex p-1 items-end gap-1">
+        <div className="relative w-full rounded-3xl bg-background flex p-1 items-end gap-1 has-[.ProseMirror-focused]:outline outline-primary transition-all duration-75">
           <EditorContent
             editor={editor}
             className="max-h-[10rem] w-full overflow-y-auto rounded-3xl bg-none px-4 py-2 pr-0.5 flex-1"

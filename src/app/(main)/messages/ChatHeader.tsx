@@ -173,7 +173,7 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
             (loggedinMember?.type === "ADMIN" ||
               loggedinMember?.type === "OWNER") ? (
               <div
-                className="text-xl font-bold hover:text-primary hover:underline cursor-pointer"
+                className="text-xl font-bold sm:hover:text-primary sm:hover:underline cursor-pointer"
                 title="Modifier le nom du groupe"
                 onClick={() => {
                   setDialogFocus("name");
