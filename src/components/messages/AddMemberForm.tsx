@@ -126,10 +126,8 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
     );
   };
 
-  console.log("good");
-
   return (
-    <div className="space-y-4 w-full max-w-full">
+    <div className="space-y-4 w-full max-w-full overflow-hidden">
       {!!selectedUsers.length && (
         <>
           <div className="sticky top-0 flex w-full animate-scale gap-2 overflow-y-auto p-3 px-4">
