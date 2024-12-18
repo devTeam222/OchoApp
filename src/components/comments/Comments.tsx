@@ -67,7 +67,8 @@ export default function Comments({ post, onClose }: CommentsProps) {
     window.addEventListener("resize", onClose);
 
     return () => window.removeEventListener("resize", onClose);
-  }, [onClose]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const comments = data?.pages.flatMap((page) => page.comments) || [];
 

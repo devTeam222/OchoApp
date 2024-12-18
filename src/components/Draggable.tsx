@@ -31,9 +31,9 @@ export default function Draggable({
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!dragging) return;
-    if (!draggable) return;
+    if (!dragging || !draggable) return;
 
+    e.preventDefault(); // Empêche le comportement par défaut
     const deltaX = e.clientX - startPoint.current.x;
     const deltaY = e.clientY - startPoint.current.y;
 
@@ -53,8 +53,9 @@ export default function Draggable({
   };
 
   const handleMouseUp = () => {
-    setDragging(false);
+    if (!dragging) return;
 
+    setDragging(false);
     const draggedDistance = Math.abs(
       direction === "left" || direction === "right" ? translate.x : translate.y
     );
@@ -76,8 +77,9 @@ export default function Draggable({
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!draggable) return;
-    if (!dragging) return;
+    if (!dragging || !draggable) return;
+
+    e.preventDefault(); // Empêche le comportement par défaut, y compris le défilement
 
     const touch = e.touches[0];
     const deltaX = touch.clientX - startPoint.current.x;
@@ -115,7 +117,7 @@ export default function Draggable({
       onTouchEnd={handleTouchEnd}
     >
       <div
-        className={cn("transition-transform duration-200 ease-out select-none overflow-auto w-full h-full", contentClassName)}
+        className={cn("transition-transform duration-200 ease-out select-none w-full h-full", contentClassName)}
         style={{
           transform: `translate(${translate.x}px, ${translate.y}px)`,
           cursor: draggable ? (dragging ? "grabbing" : "grab") : "default",
