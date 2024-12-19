@@ -74,16 +74,20 @@ export default function PostEditor() {
   }
 
   return (
-    <div className="flex flex-col gap-5 bg-card/50 sm:bg-card p-5 shadow-sm max-sm:border-t-8 max-sm:border-solid max-sm:border-background sm:rounded-2xl">
-      <div className="flex gap-5">
-        <UserAvatar avatarUrl={user.avatarUrl} className="hidden sm:inline" />
+    <div className="flex flex-col gap-5 bg-card/50 p-5 shadow-sm max-sm:border-t-8 max-sm:border-solid max-sm:border-background sm:rounded-2xl sm:bg-card">
+      <div
+        className={cn(
+          "flex gap-2 rounded-3xl border border-input bg-background p-1 transition-all duration-75",
+          isDragActive
+            ? "outline-dashed outline-primary"
+            : "items-endring-primary ring-offset-background has-[.ProseMirror-focused]:outline-none has-[.ProseMirror-focused]:ring-2 has-[.ProseMirror-focused]:ring-ring has-[.ProseMirror-focused]:ring-offset-2",
+        )}
+      >
+        <UserAvatar avatarUrl={user.avatarUrl} size={40} />
         <div {...rootProps} className="w-full">
           <EditorContent
             editor={editor}
-            className={cn(
-              "max-h-[20rem] w-full overflow-y-auto rounded-2xl bg-background px-5 py-3",
-              isDragActive && "outline-dashed",
-            )}
+            className="max-h-[20rem] min-h-10 w-full overflow-y-auto rounded-2xl bg-transparent py-2"
             onPaste={onPaste}
           />
           <input {...getInputProps()} />

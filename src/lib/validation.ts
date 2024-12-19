@@ -92,5 +92,5 @@ export const updateGroupChatProfileSchema = z.object({
 export type UpdateGroupChatProfileValues = z.infer<typeof updateGroupChatProfileSchema>;
 
 export const createCommentSchema = z.object({
-  content: requiredString,
+  content: requiredString.trim().max(3000, "Le commentaire ne peut pas depasser 3000 caractères."),
 });

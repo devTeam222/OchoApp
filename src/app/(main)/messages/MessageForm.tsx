@@ -59,16 +59,16 @@ export default function MessageForm({ channelId }: MessageFormProps) {
   return (
     <div className="flex gap-1 p-3">
       {isEditorReady ? (
-        <div className="relative w-full rounded-3xl bg-background flex p-1 items-end gap-1 has-[.ProseMirror-focused]:outline outline-primary transition-all duration-75">
+        <div className="relative flex w-full items-end gap-1 rounded-3xl border border-input bg-background p-1 ring-primary ring-offset-background transition-all duration-75 has-[.ProseMirror-focused]:outline-none has-[.ProseMirror-focused]:ring-2 has-[.ProseMirror-focused]:ring-ring has-[.ProseMirror-focused]:ring-offset-2">
           <EditorContent
             editor={editor}
-            className="max-h-[10rem] w-full overflow-y-auto rounded-3xl bg-none px-4 py-2 pr-0.5 flex-1"
+            className="max-h-[10rem] w-full flex-1 overflow-y-auto rounded-3xl bg-none px-4 py-2 pr-0.5"
           />
           <Button
             size="icon"
             disabled={mutation.isPending || !input.trim()}
             onClick={onSubmit}
-            className="p-2 rounded-full"
+            className="rounded-full p-2"
           >
             {mutation.isPending ? (
               <Loader2 className="animate-spin" />

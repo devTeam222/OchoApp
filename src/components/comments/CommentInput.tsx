@@ -5,6 +5,10 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Loader2, SendIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Textarea } from "../ui/textarea";
+import { useSession } from "@/app/(main)/SessionProvider";
+import UserAvatar from "../UserAvatar";
+import { useToast } from "../ui/use-toast";
 
 interface CommentInput {
   post: PostData;
@@ -12,20 +16,34 @@ interface CommentInput {
 
 export default function CommentInput({ post }: CommentInput) {
   const [input, setInput] = useState("");
+  const { user } = useSession();
+  const { toast } = useToast();
 
   const router = useRouter();
 
   const mutation = useSubmitCommentMutation(post.id);
 
+  if (input.trim().length >= 3000) {
+    toast({
+      description: "Vous avez atteint la limite des caractètes",
+    });
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!input) return;
+    if (!input.trim() || input.trim().length > 3000) {
+      toast({
+        variant: "destructive",
+        description: "Entée invalide. veuillez verifier vos informations",
+      });
+      return;
+    }
 
     mutation.mutate(
       {
         post,
-        content: input,
+        content: input.trim(),
       },
       {
         onSuccess: (newComment) => {
@@ -37,19 +55,25 @@ export default function CommentInput({ post }: CommentInput) {
   }
 
   return (
-    <form className="flex w-full items-center p-2 max-sm:outline max-sm:outline-muted" onSubmit={onSubmit}>
-      <div className="flex w-full items-center gap-2 p-1 bg-background rounded-3xl has-[input:focus]:outline outline-primary transition-all duration-75">
-        <input
+    <form
+      className="flex w-full items-center p-2 max-sm:outline max-sm:outline-muted"
+      onSubmit={onSubmit}
+    >
+      <div className="flex w-full items-end gap-2 rounded-3xl border border-input bg-background p-1 ring-primary ring-offset-background transition-all duration-75 has-[textarea:focus-visible]:outline-none has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring has-[textarea:focus-visible]:ring-offset-2">
+        <UserAvatar avatarUrl={user.avatarUrl} size={40} />
+        <Textarea
           placeholder="Commenter..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
           autoFocus={!post._count.comments}
-          className="border-none outline-none flex-1 bg-transparent ps-4"
+          className="max-h-40 flex-1 rounded-none border-none bg-transparent p-0 py-1.5 outline-none focus-visible:ring-transparent"
+          rows={1}
+          maxLength={3000}
         />
         <Button
           type="submit"
           size="icon"
-          className="rounded-full flex-shrink-0"
+          className="flex-shrink-0 rounded-full"
           disabled={!input.trim() || mutation.isPending}
         >
           {mutation.isPending ? (
