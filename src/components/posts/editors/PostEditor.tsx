@@ -77,7 +77,7 @@ export default function PostEditor() {
     <div className="flex flex-col gap-5 bg-card/50 p-5 shadow-sm max-sm:border-t-8 max-sm:border-solid max-sm:border-background sm:rounded-2xl sm:bg-card">
       <div
         className={cn(
-          "flex gap-2 rounded-3xl border border-input bg-background p-1 transition-all duration-75",
+          "flex gap-2 rounded-3xl items-end border border-input bg-background p-1 transition-all duration-75",
           isDragActive
             ? "outline-dashed outline-primary"
             : "items-endring-primary ring-offset-background has-[.ProseMirror-focused]:outline-none has-[.ProseMirror-focused]:ring-2 has-[.ProseMirror-focused]:ring-ring has-[.ProseMirror-focused]:ring-offset-2",
