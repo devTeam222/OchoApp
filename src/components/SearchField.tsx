@@ -55,7 +55,7 @@ export default function SearchField() {
           name="q"
           placeholder="Rechercher"
           className={cn(
-            "max-w-full pe-16 transition-all",
+            "max-w-full pe-16 transition-all rounded-3xl",
             isSearchActive
               ? "max-sm:w-52"
               : "max-sm:pointer-events-none max-sm:absolute max-sm:w-0 max-sm:opacity-0",

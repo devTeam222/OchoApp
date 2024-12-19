@@ -159,7 +159,7 @@ export default function Post({ post }: PostProps) {
           <Button
             variant="link"
             onClick={() => setShowComment(false)}
-            className="mx-auto block"
+            className="mx-auto block max-sm:hidden"
           >
             Masquer les commentaires
           </Button>

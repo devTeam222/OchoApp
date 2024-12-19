@@ -25,6 +25,27 @@ export default function Draggable({
   const startPoint = useRef({ x: 0, y: 0 });
   const dragThreshold = 50; // Threshold to trigger `onDrag`
 
+  const findScrollableElement = (element: HTMLElement): HTMLElement | null => {
+    // Si l'élément est défilable, on le retourne
+    if (
+      (element.scrollHeight > element.clientHeight ||
+        element.scrollWidth > element.clientWidth) &&
+      getComputedStyle(element).overflow !== "hidden"
+    ) {
+      return element;
+    }
+
+    // Sinon, on cherche récursivement dans les enfants
+    for (let child of element.children) {
+      const scrollableChild = findScrollableElement(child as HTMLElement);
+      if (scrollableChild) {
+        return scrollableChild;
+      }
+    }
+
+    return null; // Aucun élément défilable trouvé
+  };
+
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!draggable) return;
     setDragging(true);
@@ -86,44 +107,69 @@ export default function Draggable({
     const deltaX = touch.clientX - startPoint.current.x;
     const deltaY = touch.clientY - startPoint.current.y;
 
-    // Vérification des limites de défilement de l'élément concerné
     const container = e.currentTarget as HTMLElement;
-    const canScrollVertically = container.scrollHeight > container.clientHeight;
-    const canScrollHorizontally = container.scrollWidth > container.clientWidth;
 
-    const atTop = canScrollVertically && container.scrollTop === 0;
-    const atBottom =
-      canScrollVertically &&
-      container.scrollHeight === container.scrollTop + container.clientHeight;
-    const atLeft = canScrollHorizontally && container.scrollLeft === 0;
-    const atRight =
-      canScrollHorizontally &&
-      container.scrollWidth === container.scrollLeft + container.clientWidth;
+    // Trouver l'élément défilable dans le conteneur (y compris les enfants)
+    const scrollableElement = findScrollableElement(container);
 
-    // Bloque le comportement par défaut si la limite est atteinte
-    if (
-      e.cancelable &&
-      ((canScrollVertically && (atTop || atBottom)) ||
-        (canScrollHorizontally && (atLeft || atRight)))
-    ) {
-      e.preventDefault(); // Empêche le comportement de défilement uniquement si la limite est atteinte
-    } else {
-      setTranslate((prev) => {
-        const newTranslate = { ...prev };
-
-        if (direction === "left" || direction === "right") {
-          newTranslate.x =
-            direction === "left" ? Math.min(deltaX, 0) : Math.max(deltaX, 0);
-          newTranslate.y = 0; // Lock vertical movement
-        } else if (direction === "up" || direction === "down") {
-          newTranslate.y =
-            direction === "up" ? Math.min(deltaY, 0) : Math.max(deltaY, 0);
-          newTranslate.x = 0; // Lock horizontal movement
-        }
-
-        return newTranslate;
+    if (scrollableElement) {
+      console.table({
+        scrollLeft: scrollableElement.scrollLeft,
+        scrollWidth: scrollableElement.scrollWidth,
+        clientWidth: scrollableElement.clientWidth,
+        scrollTop: scrollableElement.scrollTop,
+        scrollHeight: scrollableElement.scrollHeight,
+        clientHeight: scrollableElement.clientHeight,
       });
+
+      let canScroll = false;
+
+      // Déterminer la direction du mouvement (horizontal ou vertical)
+      const isHorizontalMove = Math.abs(deltaX) > Math.abs(deltaY); // Si le mouvement horizontal est plus grand, c'est un déplacement horizontal
+      const isVerticalMove = !isHorizontalMove; // Sinon, c'est un déplacement vertical
+
+      // Vérification du défilement en fonction de la direction du mouvement
+      if (isHorizontalMove) {
+        // Vérifier si l'élément peut défiler horizontalement (gauche/droite)
+        const canScrollLeft = scrollableElement.scrollLeft > 0;
+        const canScrollRight =
+          scrollableElement.scrollWidth - scrollableElement.clientWidth >
+          scrollableElement.scrollLeft;
+
+        // Déterminer si on peut défiler dans la direction du mouvement horizontal
+        canScroll = deltaX < 0 ? canScrollLeft : canScrollRight;
+      } else if (isVerticalMove) {
+        // Vérifier si l'élément peut défiler verticalement (haut/bas)
+        const canScrollUp = scrollableElement.scrollTop > 0;
+        const canScrollDown =
+          scrollableElement.scrollHeight - scrollableElement.clientHeight >
+          scrollableElement.scrollTop;
+
+        // Déterminer si on peut défiler dans la direction du mouvement vertical
+        canScroll = deltaY < 0 ? canScrollUp : canScrollDown;
+      }
+
+      console.log("canScroll", canScroll);
+      return; // Si on peut encore défiler, on ne fait rien de plus ici
     }
+    e.preventDefault(); // Empêcher le défilement si l'élément ne peut plus défiler
+
+    setTranslate((prev) => {
+      const newTranslate = { ...prev };
+
+      // Appliquer le translate en fonction de la direction du drag
+      if (direction === "left" || direction === "right") {
+        newTranslate.x =
+          direction === "left" ? Math.min(deltaX, 0) : Math.max(deltaX, 0);
+        newTranslate.y = 0; // Verrouille le mouvement vertical
+      } else if (direction === "up" || direction === "down") {
+        newTranslate.y =
+          direction === "up" ? Math.min(deltaY, 0) : Math.max(deltaY, 0);
+        newTranslate.x = 0; // Verrouille le mouvement horizontal
+      }
+
+      return newTranslate;
+    });
   };
 
   const handleTouchEnd = () => {

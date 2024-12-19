@@ -163,7 +163,7 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
       )}
       <div>
         <form
-          className="relative"
+          className="relative p-1"
           onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
             e.preventDefault();
             setQuery(inputValue);
