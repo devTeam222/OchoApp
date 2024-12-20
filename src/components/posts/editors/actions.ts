@@ -9,6 +9,7 @@ import { createPostSchema } from "@/lib/validation";
 export async function submitPost(input: {
     content: string;
     mediaIds: string[];
+    gradient?: number;
 }) {
     const { user } = await validateRequest();
 
@@ -16,13 +17,14 @@ export async function submitPost(input: {
         throw new Error("Action non autorisée");
     }
 
-    const { content, mediaIds } = createPostSchema.parse(input);
+    const { content, mediaIds, gradient } = createPostSchema.parse(input);
     
 
     const newPost = await prisma.post.create({
         data: {
             content,
             userId: user.id,
+            gradient,
             attachments: {
                 connect: mediaIds.map(id => ({ id }))
             }

@@ -1,12 +1,8 @@
 // components/posts/editors/PostEditor.tsx
 "use client";
 
-import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import PlaceHolder from "@tiptap/extension-placeholder";
 import UserAvatar from "@/components/UserAvatar";
 import { useSession } from "@/app/(main)/SessionProvider";
-import "./styles.css";
 import { useSubmitPostMutation } from "./mutations";
 import LoadingButton from "@/components/LoadingButton";
 import useMediaUpload, { Attachment } from "./useMediaUpload";
@@ -16,11 +12,16 @@ import { ImageIcon, Loader2, XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useDropzone } from "@uploadthing/react";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function PostEditor() {
   const [clear, setClear] = useState(false);
+  const [input, setInput] = useState("");
+  const [gradient, setGradient] = useState<string | null>(null);
+  const [triggerResize, setTriggerResize] = useState(false);
   const { user } = useSession();
   const mutation = useSubmitPostMutation();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const {
     startUpload,
     attachments,
@@ -35,29 +36,20 @@ export default function PostEditor() {
 
   const { onClick, ...rootProps } = getRootProps();
 
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        bold: false,
-        italic: false,
-      }),
-      PlaceHolder.configure({
-        placeholder: "Quoi de neuf ?",
-      }),
-    ],
-  });
-
-  const input = editor?.getText({ blockSeparator: "\n" }) || "";
-
   function onSubmit() {
     mutation.mutate(
       {
-        content: input,
+        content: input.trim(),
         mediaIds: attachments.map((a) => a.mediaId).filter(Boolean) as string[],
+        gradient:
+          gradient && input.trim().length <= 150
+            ? Number(gradient.split("-")[1])
+            : undefined,
       },
       {
         onSuccess: () => {
-          editor?.commands.clearContent();
+          setGradient(null);
+          setInput("");
           resetMediaUpload();
           setClear(true);
           setTimeout(() => setClear(false), 100);
@@ -66,7 +58,9 @@ export default function PostEditor() {
     );
   }
 
-  function onPaste(e: ClipboardEvent<HTMLDivElement>) {
+  const gradients = [1, 2, 3, 4].map((i) => `gradient-${i}`);
+
+  function onPaste(e: ClipboardEvent<HTMLTextAreaElement>) {
     const files = Array.from(e.clipboardData.items)
       .filter((item) => item.kind === "file")
       .map((item) => item.getAsFile()) as File[];
@@ -74,21 +68,37 @@ export default function PostEditor() {
   }
 
   return (
-    <div className="flex flex-col gap-5 bg-card/50 p-5 shadow-sm max-sm:border-t-8 max-sm:border-solid max-sm:border-background sm:rounded-2xl sm:bg-card">
+    <div className="flex flex-col gap-5 bg-card/50 p-5 shadow-sm max-sm:border-t-8 max-sm:border-solid max-sm:border-background sm:rounded-md sm:bg-card">
       <div
+        {...rootProps}
         className={cn(
-          "flex gap-2 rounded-3xl items-end border border-input bg-background p-1 transition-all duration-75",
+          "flex items-end gap-2 rounded-3xl border border-input bg-background p-1 transition-all duration-75",
           isDragActive
             ? "outline-dashed outline-primary"
-            : "items-endring-primary ring-offset-background has-[.ProseMirror-focused]:outline-none has-[.ProseMirror-focused]:ring-2 has-[.ProseMirror-focused]:ring-ring has-[.ProseMirror-focused]:ring-offset-2",
+            : "items-endring-primary ring-offset-background has-[textarea:focus-visible]:outline-none has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring has-[textarea:focus-visible]:ring-offset-2",
         )}
       >
         <UserAvatar avatarUrl={user.avatarUrl} size={40} />
-        <div {...rootProps} className="w-full">
-          <EditorContent
-            editor={editor}
-            className="max-h-[20rem] min-h-10 w-full overflow-y-auto rounded-2xl bg-transparent py-2"
+        <div
+          className={cn(
+            "flex-1",
+            input.length <= 150 &&
+              !!gradient &&
+              `gadient-post ${gradient} flex items-center justify-center rounded-[1.4rem] rounded-s-md text-center transition-all`,
+          )}
+        >
+          <Textarea
+            ref={textareaRef}
+            placeholder="Quoi de neuf ?"
             onPaste={onPaste}
+            className={cn(
+              "max-h-[15rem] min-h-10 w-full overflow-y-auto rounded-none border-none bg-transparent px-0 ring-offset-transparent focus-visible:ring-transparent",
+              input.length <= 150 && !!gradient && "max-w-fit text-center",
+            )}
+            rows={1}
+            value={input}
+            onChange={({ target: { value } }) => setInput(value)}
+            triggerResize={triggerResize}
           />
           <input {...getInputProps()} />
         </div>
@@ -99,7 +109,40 @@ export default function PostEditor() {
           removeAttachment={removeAttachment}
         />
       )}
-      <div className="flex items-center justify-end gap-3">
+      <div
+        className="flex items-center justify-end gap-3"
+        title="Choisir un arrière-plan"
+      >
+        {!isUploading && !attachments.length && input.trim().length <= 150 && (
+          <>
+            {!!gradient && (
+              <Button
+                onClick={() => {
+                  setGradient(null);
+                  setTriggerResize((prev) => !prev);
+                }}
+                size="icon"
+                className={`min-h-0 bg-background text-foreground hover:ring-2 ring-offset-background outline-none ring-primary`}
+                title="Rétirer l'arrière-plan"
+              >
+                <XIcon size={20} />
+              </Button>
+            )}
+            {gradients.map((gradient, index) => (
+              <Button
+                key={index + 1}
+                onClick={() => {
+                  setGradient((prev) => (prev === gradient ? null : gradient));
+                  setTriggerResize((prev) => !prev);
+                }}
+                size="icon"
+                className={`gadient-post ${gradient} min-h-0`}
+              >
+                {" "}
+              </Button>
+            ))}
+          </>
+        )}
         {isUploading && (
           <Loader2 className="size-5 animate-spin text-primary" />
         )}

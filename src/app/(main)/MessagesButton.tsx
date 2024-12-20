@@ -5,7 +5,7 @@ import kyInstance from "@/lib/ky";
 import { NotificationCountInfo } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { MessageSquareMore } from "lucide-react";
+import { MessageCircleMore, MessageSquareMore } from "lucide-react";
 import Link from "next/link";
 
 interface MessagesButtonProps extends ButtonProps {
@@ -48,7 +48,7 @@ export default function MessagesButton({
         className="items-center max-sm:flex max-sm:flex-col"
       >
         <div className="relative">
-          <MessageSquareMore />
+          <MessageCircleMore />
           {!!unreadCount && (
             <span className="absolute -right-1 -top-1 rounded-full bg-primary px-1 text-xs font-medium tabular-nums text-primary-foreground">
               {unreadCount > 9 ? "9+": unreadCount}

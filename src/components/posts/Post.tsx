@@ -42,6 +42,10 @@ export default function Post({ post }: PostProps) {
   const searchParams = useSearchParams();
   const comment = searchParams.get("comment");
 
+  const gradient = post.gradient
+    ? `gadient-post gradient-${post.gradient} *:*:text-[inherit] *:*:font-bold`
+    : "";
+
   useEffect(() => {
     // On récupère le paramètre `comment` depuis les paramètres de recherche
     if (comment) {
@@ -66,7 +70,7 @@ export default function Post({ post }: PostProps) {
   const isUserOnline = lastSeenDate > now;
 
   return (
-    <article className="group/post flex flex-col bg-card/50 p-0.5 shadow-sm sm:rounded-2xl sm:bg-card">
+    <article className="group/post flex flex-col bg-card/50 p-0.5 shadow-sm sm:rounded-md sm:bg-card">
       <div className="flex justify-between gap-3 p-5">
         <div className="flex flex-wrap gap-3">
           <UserTooltip user={post.user}>
@@ -115,9 +119,25 @@ export default function Post({ post }: PostProps) {
           onClick={postPage}
         ></div>
         {!!post.content && (
-          <Linkify postId={post.id}>
-            <div className="whitespace-pre-line break-words z-10">
-              <p>{post.content}</p>
+          <Linkify
+            postId={post.id}
+            className={cn(
+              !post.attachments.length &&
+                post.content.length <= 150 &&
+                gradient &&
+                "underline",
+            )}
+          >
+            <div
+              className={cn(
+                "z-10 whitespace-pre-line break-words",
+                !post.attachments.length &&
+                  post.content.length <= 150 &&
+                  gradient,
+                  "rounded-md"
+              )}
+            >
+              <p className="w-full">{post.content}</p>
             </div>
           </Linkify>
         )}
@@ -390,10 +410,7 @@ function MediaPreview({
 
   if (media.type === "IMAGE") {
     return (
-      <Zoomable
-        clasName="mx-auto h-full w-full"
-        zoomable={isFullscreen}
-      >
+      <Zoomable clasName="mx-auto h-full w-full" zoomable={isFullscreen}>
         <Image
           src={media.url}
           alt="Attachment"
@@ -406,16 +423,14 @@ function MediaPreview({
               : "max-h-[90vh] max-w-[90vw]",
             className,
           )}
+          loading="lazy"
         />
       </Zoomable>
     );
   }
   if (media.type === "VIDEO") {
     return (
-      <Zoomable
-        clasName="mx-auto h-full w-full"
-        zoomable={isFullscreen}
-      >
+      <Zoomable clasName="mx-auto h-full w-full" zoomable={isFullscreen}>
         <div
           className={cn(
             "relative flex h-full w-full grid-cols-1 grid-rows-1 overflow-auto rounded-xl shadow-sm",

@@ -8,36 +8,18 @@ import "./style.css";
 import { useEffect, useState } from "react";
 import React from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { Textarea } from "@/components/ui/textarea";
 
 interface MessageFormProps {
   channelId: string;
 }
 
 export default function MessageForm({ channelId }: MessageFormProps) {
-  const [isEditorReady, setEditorReady] = useState(false);
+  const [input, setInput] = useState("");
   const queryClient = useQueryClient();
   const mutation = useSubmitMessageMutation();
 
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        bold: false,
-        italic: false,
-      }),
-      PlaceHolder.configure({
-        placeholder: "Écrivez un message...",
-      }),
-    ],
-    immediatelyRender: false,
-  });
 
-  useEffect(() => {
-    if (editor) {
-      setEditorReady(true);
-    }
-  }, [editor]);
-
-  const input = editor?.getText({ blockSeparator: "\n" }) || "";
 
   function onSubmit() {
     mutation.mutate(
@@ -47,7 +29,7 @@ export default function MessageForm({ channelId }: MessageFormProps) {
       },
       {
         onSuccess: () => {
-          editor?.commands.clearContent();
+          setInput("")
           const queryKey = ["chat-channels"];
 
           queryClient.invalidateQueries({ queryKey });
@@ -58,11 +40,14 @@ export default function MessageForm({ channelId }: MessageFormProps) {
 
   return (
     <div className="flex gap-1 p-3">
-      {isEditorReady ? (
-        <div className="relative flex w-full items-end gap-1 rounded-3xl border border-input bg-background p-1 ring-primary ring-offset-background transition-all duration-75 has-[.ProseMirror-focused]:outline-none has-[.ProseMirror-focused]:ring-2 has-[.ProseMirror-focused]:ring-ring has-[.ProseMirror-focused]:ring-offset-2">
-          <EditorContent
-            editor={editor}
-            className="max-h-[10rem] w-full flex-1 overflow-y-auto rounded-3xl bg-none px-4 py-2 pr-0.5"
+      
+        <div className="relative flex w-full items-end gap-1 rounded-3xl border border-input bg-background p-1 ring-primary ring-offset-background transition-all duration-75 has-[textarea:focus-visible]:outline-none has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring has-[textarea:focus-visible]:ring-offset-2">
+          <Textarea
+            placeholder="Écrivez un message..."
+            className="max-h-[10rem] min-h-10 w-full overflow-y-auto rounded-none border-none bg-transparent px-4 py-2 pr-0.5 ring-offset-transparent focus-visible:ring-transparent"
+            rows={1}
+            value={input}
+            onChange={({ target: { value } }) => setInput(value)}
           />
           <Button
             size="icon"
@@ -77,11 +62,7 @@ export default function MessageForm({ channelId }: MessageFormProps) {
             )}
           </Button>
         </div>
-      ) : (
-        <div className="flex h-full w-full items-center justify-center">
-          <Loader2 className="animate-spin" />
-        </div>
-      )}
+      
     </div>
   );
 }

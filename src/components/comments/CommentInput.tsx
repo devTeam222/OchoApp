@@ -23,16 +23,11 @@ export default function CommentInput({ post }: CommentInput) {
 
   const mutation = useSubmitCommentMutation(post.id);
 
-  if (input.trim().length >= 3000) {
-    toast({
-      description: "Vous avez atteint la limite des caractètes",
-    });
-  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!input.trim() || input.trim().length > 3000) {
+    if (!input.trim() || input.trim().length > 1000) {
       toast({
         variant: "destructive",
         description: "Entée invalide. veuillez verifier vos informations",
@@ -47,8 +42,8 @@ export default function CommentInput({ post }: CommentInput) {
       },
       {
         onSuccess: (newComment) => {
-          setInput("");
           router.push(`/posts/${post.id}?comment=${newComment.id}`);
+          setInput("");
         },
       },
     );
@@ -62,13 +57,13 @@ export default function CommentInput({ post }: CommentInput) {
       <div className="flex w-full items-end gap-2 rounded-3xl border border-input bg-background p-1 ring-primary ring-offset-background transition-all duration-75 has-[textarea:focus-visible]:outline-none has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring has-[textarea:focus-visible]:ring-offset-2">
         <UserAvatar avatarUrl={user.avatarUrl} size={40} />
         <Textarea
-          placeholder="Commenter..."
+          placeholder={`Commenter en tant que ${user.displayName.split(" ")[0]}`}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           autoFocus={!post._count.comments}
           className="max-h-40 flex-1 rounded-none border-none bg-transparent p-0 py-1.5 outline-none focus-visible:ring-transparent"
           rows={1}
-          maxLength={3000}
+          maxLength={1000}
         />
         <Button
           type="submit"

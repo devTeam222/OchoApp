@@ -7,9 +7,9 @@ import SetNavigation from "@/components/SetNavigation";
 
 export default function Home() {
   return (
-    <main className="flex w-full min-w-0 gap-5 max-sm:pb-4 h-fit">
+    <>
       <SetNavigation navPage="home" />
-      <div className="w-full min-w-0 space-y-2 sm:space-y-5">
+      <div className="w-full min-w-0 space-y-2 sm:space-y-2.5 max-w-lg">
         <PostEditor />
         <Tabs defaultValue="for-you">
           <TabsList>
@@ -25,6 +25,6 @@ export default function Home() {
         </Tabs>
       </div>
       <TrendsSidebar />
-    </main>
+    </>
   );
 }

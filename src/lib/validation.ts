@@ -69,6 +69,7 @@ export const saveMessageSchema = z.object({
 export const createPostSchema = z.object({
   content: z.string(),
   mediaIds: z.array(z.string()).max(5, "Vous pouvez ajouter jusqu'à 5 médias"),
+  gradient: z.number().int().optional(),
 });
 
 export const createMessageSchema = z.object({

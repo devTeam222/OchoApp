@@ -173,6 +173,7 @@ model Post {
   content             String
   userId              String
   user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gradient            Int?
   attachments         Media[]
   likes               Like[]
   comments            Comment[]

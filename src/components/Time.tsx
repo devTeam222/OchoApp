@@ -20,11 +20,16 @@ export default function Time({
   lowerCase = false,
   upperCase = false,
 }: TimeProps) {
-  const [language, setLanguage] = useState<string>("fr-FR");
+  const [language, setLanguage] = useState<string | null>(null);
 
   useEffect(() => {
     setLanguage(navigator.language || "fr-FR");
   }, []);
+
+  if (!language) {
+    // Rendre un contenu temporaire ou un placeholder
+    return <time>dd/mm/YYYY</time>;
+  }
 
   const timeFormatter = new TimeFormatter(time, language, long, full, relative);
   const formatTime = timeFormatter.format();

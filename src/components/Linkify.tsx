@@ -3,25 +3,27 @@ import React from "react";
 import Link from "next/link";
 import UserLinkWithTooltip from "./UserLinkWithTooltip";
 import kyInstance from "@/lib/ky";
+import { cn } from "@/lib/utils";
 
 interface LinkifyProps {
   children: React.ReactNode;
+  className?: string;
   postId?: string;
 }
 
-export default function Linkify({ children }: LinkifyProps) {
+export default function Linkify({ children, className }: LinkifyProps) {
   return (
-    <LinkifyHashtag>
+    <LinkifyHashtag className={className}>
       <LinkifyUsername>
-        <LinkifyUrl>{children}</LinkifyUrl>
+        <LinkifyUrl className={className}>{children}</LinkifyUrl>
       </LinkifyUsername>
     </LinkifyHashtag>
   );
 }
 
-function LinkifyUrl({ children }: LinkifyProps) {
+function LinkifyUrl({ children, className }: LinkifyProps) {
   return (
-    <LinkItUrl className="text-primary hover:underline">{children}</LinkItUrl>
+    <LinkItUrl className={cn("text-primary hover:underline", className)}>{children}</LinkItUrl>
   );
 }
 
@@ -58,7 +60,7 @@ function LinkifyUsername({ children, postId }: LinkifyProps) {
   );
 }
 
-function LinkifyHashtag({ children }: LinkifyProps) {
+function LinkifyHashtag({ children, className }: LinkifyProps) {
   return (
     <LinkIt
       regex={/(?<!https?:\/\/\S*)#([a-zA-Z0-9_-]+)/}
@@ -67,7 +69,7 @@ function LinkifyHashtag({ children }: LinkifyProps) {
           <Link
             key={key}
             href={`/hashtag/${match.slice(1)}`}
-            className="text-primary hover:underline"
+            className={cn("text-primary hover:underline", className)}
           >
             {match}
           </Link>

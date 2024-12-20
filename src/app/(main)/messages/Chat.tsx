@@ -76,7 +76,6 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
     initialData, // Using initialData as the first cache data
     staleTime: 600_000, // Cache data for 10 minutes
     throwOnError: false,
-    refetchInterval: 500_000,
     refetchOnWindowFocus: false,
   });
 
