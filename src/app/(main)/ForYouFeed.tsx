@@ -55,11 +55,17 @@ export default function ForYouFeed() {
       </div>
     );
   }
+  console.log(hasNextPage, isFetching, isFetchingNextPage);
+  
 
   return (
     <InfiniteScrollContainer
       className="space-y-2 sm:space-y-5"
-      onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
+      onBottomReached={() => {
+        console.log("bottom reached");
+        
+        hasNextPage && !isFetchingNextPage && fetchNextPage()
+      }}
     >
       {posts.map((post, key) => (
         <Post key={key} post={post} />

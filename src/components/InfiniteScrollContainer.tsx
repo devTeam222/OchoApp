@@ -14,6 +14,8 @@ export default function InfiniteScrollContainer({
     const {ref} = useInView({
         rootMargin: "200px",
         onChange(inView) {
+            console.log(inView);
+            
             if (inView) {
                 onBottomReached();
             }
@@ -22,6 +24,6 @@ export default function InfiniteScrollContainer({
 
     return <div className={className}>
         {children}
-        <div ref={ref} />
+        <div ref={ref} className="h-[0.1rem]"/>
     </div>
 }
