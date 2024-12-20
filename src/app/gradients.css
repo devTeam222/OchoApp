@@ -36,9 +36,12 @@
   @apply border-input;
   @apply border;
 }
-.gradient-4:hover {
-  background: hsl(var(--gradient-4-default));
-  color: hsl(var(--gradient-4-foreground));
-  @apply bg-[hsl(var(--gradient-4-default))];
-  @apply text-[hsl(var(--gradient-4-foreground))];
+.gradient-5 {
+  background: hsl(var(--gradient-5-default));
+  background: var(--gradient-5);
+  color: hsl(var(--gradient-5-foreground));
+  @apply bg-[var(--gradient-5)];
+  @apply text-[hsl(var(--gradient-5-foreground))];
+  @apply border-input;
+  @apply border;
 }

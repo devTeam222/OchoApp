@@ -60,9 +60,13 @@
     );
     --gradient-3-default: 276, 51%, 47%;
     --gradient-3-foreground: 0 0% 95%;
-
+    
     --gradient-4-default: 248, 15%, 11%;
     --gradient-4-foreground: 0 0% 95%;
+
+    --gradient-5: radial-gradient(at center, hsl(169, 40%, 63%), hsl(241, 69%, 58%));
+    --gradient-5-default: 169, 40%, 63%;
+    --gradient-5-foreground: 224 71.4% 4.1%;
   }
 
   .dark {

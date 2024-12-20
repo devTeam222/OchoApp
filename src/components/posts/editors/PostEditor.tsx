@@ -36,13 +36,15 @@ export default function PostEditor() {
 
   const { onClick, ...rootProps } = getRootProps();
 
+  const maxGradientLength = 100;
+
   function onSubmit() {
     mutation.mutate(
       {
         content: input.trim(),
         mediaIds: attachments.map((a) => a.mediaId).filter(Boolean) as string[],
         gradient:
-          gradient && input.trim().length <= 150
+          gradient && input.trim().length <= maxGradientLength
             ? Number(gradient.split("-")[1])
             : undefined,
       },
@@ -58,7 +60,10 @@ export default function PostEditor() {
     );
   }
 
-  const gradients = [1, 2, 3, 4].map((i) => `gradient-${i}`);
+  const gradients = [1, 2, 3, 4, 5].map((i) => `gradient-${i}`);
+
+  const canShowGradient = input.length <= maxGradientLength &&
+  !!gradient && !attachments.length
 
   function onPaste(e: ClipboardEvent<HTMLTextAreaElement>) {
     const files = Array.from(e.clipboardData.items)
@@ -82,9 +87,8 @@ export default function PostEditor() {
         <div
           className={cn(
             "flex-1",
-            input.length <= 150 &&
-              !!gradient &&
-              `gadient-post ${gradient} flex items-center justify-center rounded-[1.4rem] rounded-s-md text-center transition-all`,
+            canShowGradient &&
+              `gadient-post ${gradient} flex items-center justify-center rounded-[1.4rem] rounded-s-md text-center transition-all max-sm:text-lg`,
           )}
         >
           <Textarea
@@ -93,7 +97,8 @@ export default function PostEditor() {
             onPaste={onPaste}
             className={cn(
               "max-h-[15rem] min-h-10 w-full overflow-y-auto rounded-none border-none bg-transparent px-0 ring-offset-transparent focus-visible:ring-transparent",
-              input.length <= 150 && !!gradient && "max-w-fit text-center",
+              canShowGradient &&
+                "max-w-fit text-center",
             )}
             rows={1}
             value={input}
@@ -109,56 +114,62 @@ export default function PostEditor() {
           removeAttachment={removeAttachment}
         />
       )}
-      <div
-        className="flex items-center justify-end gap-3"
-        title="Choisir un arrière-plan"
-      >
-        {!isUploading && !attachments.length && input.trim().length <= 150 && (
-          <>
-            {!!gradient && (
-              <Button
-                onClick={() => {
-                  setGradient(null);
-                  setTriggerResize((prev) => !prev);
-                }}
-                size="icon"
-                className={`min-h-0 bg-background text-foreground hover:ring-2 ring-offset-background outline-none ring-primary`}
-                title="Rétirer l'arrière-plan"
-              >
-                <XIcon size={20} />
-              </Button>
-            )}
-            {gradients.map((gradient, index) => (
-              <Button
-                key={index + 1}
-                onClick={() => {
-                  setGradient((prev) => (prev === gradient ? null : gradient));
-                  setTriggerResize((prev) => !prev);
-                }}
-                size="icon"
-                className={`gadient-post ${gradient} min-h-0`}
-              >
-                {" "}
-              </Button>
-            ))}
-          </>
-        )}
-        {isUploading && (
-          <Loader2 className="size-5 animate-spin text-primary" />
-        )}
-        <AddAttachmentButton
-          onFilesSelected={startUpload}
-          disabled={isUploading || attachments.length >= 5}
-          clear={clear}
-        />
-        <LoadingButton
-          onClick={onSubmit}
-          loading={mutation.isPending}
-          disabled={(!input.trim() && !attachments.length) || isUploading}
-          className="min-w-20"
-        >
-          Poster
-        </LoadingButton>
+      <div className="flex w-full items-center justify-end gap-3 max-lg:flex-col">
+        {!isUploading &&
+          !attachments.length &&
+          input.trim().length <= maxGradientLength && (
+            <div
+              title="Choisir un arrière-plan"
+              className="flex w-full justify-end gap-2"
+            >
+              {!!gradient && (
+                <Button
+                  onClick={() => {
+                    setGradient(null);
+                    setTriggerResize((prev) => !prev);
+                  }}
+                  size="icon"
+                  className={`min-h-0 bg-background text-foreground outline-none ring-primary ring-offset-background hover:ring-2 animate-scale`}
+                  title="Rétirer l'arrière-plan"
+                >
+                  <XIcon size={20} />
+                </Button>
+              )}
+              {gradients.map((gradient, index) => (
+                <Button
+                  key={index + 1}
+                  onClick={() => {
+                    setGradient((prev) =>
+                      prev === gradient ? null : gradient,
+                    );
+                    setTriggerResize((prev) => !prev);
+                  }}
+                  size="icon"
+                  className={`gadient-post ${gradient} min-h-0 bg-[hsl(var(--gradient-4-default))] text-[hsl(var(--gradient-4-foreground))] hover:bg-[hsl(var(--gradient-4-default))] animate-scale`}
+                >
+                  {" "}
+                </Button>
+              ))}
+            </div>
+          )}
+        <div className="flex w-full justify-end gap-2 items-center">
+          {isUploading && (
+            <Loader2 className="size-5 animate-spin text-primary" />
+          )}
+          <AddAttachmentButton
+            onFilesSelected={startUpload}
+            disabled={isUploading || attachments.length >= 5}
+            clear={clear}
+          />
+          <LoadingButton
+            onClick={onSubmit}
+            loading={mutation.isPending}
+            disabled={(!input.trim() && !attachments.length) || isUploading}
+            className="min-w-20"
+          >
+            Poster
+          </LoadingButton>
+        </div>
       </div>
     </div>
   );

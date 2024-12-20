@@ -53,6 +53,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       const frameId = requestAnimationFrame(adjustHeight);
       return () => cancelAnimationFrame(frameId);
     }, [value, triggerResize, adjustHeight, fontSize, lineHeight]);
+    window.addEventListener("resize", adjustHeight);
 
     return (
       <textarea

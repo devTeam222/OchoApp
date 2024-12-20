@@ -68,6 +68,11 @@ export default function Post({ post }: PostProps) {
   const lastSeenDate = new Date(post.user.lastSeen).getTime() - 40 * 1000;
 
   const isUserOnline = lastSeenDate > now;
+  const maxGradientLength = 100;
+  const canShowGradient =
+    !post.attachments.length &&
+    post.content.length <= maxGradientLength &&
+    post.gradient;
 
   return (
     <article className="group/post flex flex-col bg-card/50 p-0.5 shadow-sm sm:rounded-md sm:bg-card">
@@ -113,7 +118,7 @@ export default function Post({ post }: PostProps) {
           />
         )}
       </div>
-      <div className="relative flex flex-col gap-5 p-5">
+      <div className={cn("relative flex flex-col gap-5 sm:p-5 max-sm:p-2", canShowGradient && "p-0")}>
         <div
           className="absolute inset-0 h-full w-full"
           onClick={postPage}
@@ -121,20 +126,13 @@ export default function Post({ post }: PostProps) {
         {!!post.content && (
           <Linkify
             postId={post.id}
-            className={cn(
-              !post.attachments.length &&
-                post.content.length <= 150 &&
-                gradient &&
-                "underline",
-            )}
+            className={cn(canShowGradient && "underline")}
           >
             <div
               className={cn(
                 "z-10 whitespace-pre-line break-words",
-                !post.attachments.length &&
-                  post.content.length <= 150 &&
-                  gradient,
-                  "rounded-md"
+                canShowGradient &&
+                  `${gradient} max-sm:rounded-none max-sm:text-2xl sm:rounded-md`,
               )}
             >
               <p className="w-full">{post.content}</p>
