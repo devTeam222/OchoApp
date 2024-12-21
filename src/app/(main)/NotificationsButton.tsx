@@ -34,7 +34,10 @@ export default function NotificationsButton({
     <Button
       {...props}
       variant="ghost"
-      className={cn("flex items-center justify-start max-sm:h-fit max-sm:p-1.5 sm:gap-3", className)}
+      className={cn(
+        "flex items-center justify-start max-sm:h-fit max-sm:flex-1 max-sm:p-1.5 sm:gap-3",
+        className,
+      )}
       title="Notifications"
       asChild
     >
@@ -50,7 +53,7 @@ export default function NotificationsButton({
             </span>
           )}
         </div>
-        <span className="text-xs sm:hidden">Activités</span>
+        <span className="text-xs sm:hidden">Activité</span>
         <span className="max-lg:hidden">Notifications</span>
       </Link>
     </Button>

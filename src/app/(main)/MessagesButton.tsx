@@ -37,7 +37,7 @@ export default function MessagesButton({
       {...props}
       variant="ghost"
       className={cn(
-        "flex items-center justify-start max-sm:h-fit max-sm:p-1.5 sm:gap-3",
+        "flex items-center justify-start max-sm:h-fit max-sm:flex-1 max-sm:p-1.5 sm:gap-3",
         className,
       )}
       title="Messages"
@@ -51,7 +51,7 @@ export default function MessagesButton({
           <MessageCircleMore />
           {!!unreadCount && (
             <span className="absolute -right-1 -top-1 rounded-full bg-primary px-1 text-xs font-medium tabular-nums text-primary-foreground">
-              {unreadCount > 9 ? "9+": unreadCount}
+              {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
         </div>

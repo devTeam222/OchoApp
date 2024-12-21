@@ -47,7 +47,7 @@ export default function MenuBar({ className }: MenuBarProps) {
       <Button
         variant="ghost"
         className={cn(
-          "flex items-center justify-start max-sm:h-fit max-sm:p-1.5 sm:gap-3",
+          "flex items-center justify-start max-sm:h-fit max-sm:flex-1 max-sm:p-1.5 sm:gap-3",
           currentNavigation === "home" &&
             "bg-accent text-primary hover:text-primary",
         )}
@@ -64,7 +64,7 @@ export default function MenuBar({ className }: MenuBarProps) {
       <Button
         variant="ghost"
         className={cn(
-          "flex items-center justify-start max-sm:h-fit max-sm:p-1.5 sm:hidden sm:gap-3",
+          "flex items-center justify-start max-sm:h-fit max-sm:flex-1 max-sm:p-1.5 sm:hidden sm:gap-3",
           currentNavigation === "explore" &&
             "bg-accent text-primary hover:text-primary",
         )}
@@ -83,7 +83,7 @@ export default function MenuBar({ className }: MenuBarProps) {
       <Button
         variant="ghost"
         className={cn(
-          "flex items-center justify-start max-sm:hidden max-sm:h-fit max-sm:p-1.5 sm:gap-3",
+          "flex items-center justify-start max-sm:hidden max-sm:h-fit max-sm:flex-1 max-sm:p-1.5 sm:gap-3",
           currentNavigation === "explore" &&
             "bg-accent text-primary hover:text-primary",
         )}
@@ -116,7 +116,7 @@ export default function MenuBar({ className }: MenuBarProps) {
       <Button
         variant="ghost"
         className={cn(
-          "flex items-center justify-start max-sm:h-fit max-sm:p-1.5 sm:hidden sm:gap-3",
+          "flex items-center justify-start max-sm:h-fit max-sm:flex-1 max-sm:p-1.5 sm:hidden sm:gap-3",
           currentNavigation === "settings" &&
             "bg-accent text-primary hover:text-primary",
         )}
@@ -135,7 +135,7 @@ export default function MenuBar({ className }: MenuBarProps) {
       <Button
         variant="ghost"
         className={cn(
-          "flex items-center justify-start max-sm:hidden max-sm:h-fit max-sm:p-1.5 sm:gap-3",
+          "flex items-center justify-start max-sm:hidden max-sm:h-fit max-sm:flex-1 max-sm:p-1.5 sm:gap-3",
           currentNavigation === "settings" &&
             "bg-accent text-primary hover:text-primary",
         )}
