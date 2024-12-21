@@ -70,7 +70,10 @@ export default function PostEditor() {
     const files = Array.from(e.clipboardData.items)
       .filter((item) => item.kind === "file")
       .map((item) => item.getAsFile()) as File[];
-    startUpload(files);
+    if (files.length > 0) {
+      e.preventDefault();
+      startUpload(files);
+    }
   }
 
   return (
@@ -78,13 +81,30 @@ export default function PostEditor() {
       <div
         {...rootProps}
         className={cn(
-          "flex items-end gap-2 rounded-3xl border border-input bg-background p-1 transition-all duration-75",
+          "flex h-max gap-2 rounded-3xl border border-input bg-background p-1 transition-all duration-75",
           isDragActive
             ? "outline-dashed outline-primary"
             : "items-endring-primary ring-offset-background has-[textarea:focus-visible]:outline-none has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring has-[textarea:focus-visible]:ring-offset-2",
+          !gradient && "items-end",
         )}
       >
-        <UserAvatar avatarUrl={user.avatarUrl} size={40} />
+        <div className="flex flex-col justify-between">
+          {!!gradient && (
+            <Button
+              onClick={() => {
+                setGradient(null);
+                textareaRef.current?.focus();
+                setTriggerResize((prev) => !prev);
+              }}
+              size="icon"
+              className={`min-h-0 animate-scale border border-input bg-background text-foreground outline-none ring-primary ring-offset-background hover:ring-2`}
+              title="Rétirer l'arrière-plan"
+            >
+              <XIcon size={20} />
+            </Button>
+          )}
+          <UserAvatar avatarUrl={user.avatarUrl} size={40} />
+        </div>
         <div
           className={cn(
             "flex-1",
@@ -97,7 +117,7 @@ export default function PostEditor() {
             placeholder="Quoi de neuf ?"
             onPaste={onPaste}
             className={cn(
-              "max-h-[15rem] min-h-10 w-full overflow-y-auto rounded-none border-none bg-transparent px-0 ring-offset-transparent focus-visible:ring-transparent placeholder:text-gray-500",
+              "max-h-[15rem] min-h-10 w-full overflow-y-auto rounded-none border-none bg-transparent px-0 ring-offset-transparent placeholder:text-gray-500 focus-visible:ring-transparent",
               canShowGradient && "max-w-fit text-center",
             )}
             rows={1}
@@ -114,7 +134,7 @@ export default function PostEditor() {
           removeAttachment={removeAttachment}
         />
       )}
-      <div className="flex w-full items-center justify-end gap-3 flex-col">
+      <div className="flex w-full flex-col items-center justify-end gap-3">
         {!isUploading &&
           !attachments.length &&
           input.trim().length <= maxGradientLength && (
@@ -122,20 +142,6 @@ export default function PostEditor() {
               title="Choisir un arrière-plan"
               className="flex w-full justify-end gap-2"
             >
-              {!!gradient && (
-                <Button
-                  onClick={() => {
-                    setGradient(null);
-                    textareaRef.current?.focus();
-                    setTriggerResize((prev) => !prev);
-                  }}
-                  size="icon"
-                  className={`min-h-0 animate-scale bg-background text-foreground outline-none ring-primary ring-offset-background hover:ring-2`}
-                  title="Rétirer l'arrière-plan"
-                >
-                  <XIcon size={20} />
-                </Button>
-              )}
               {gradients.map((gradient, index) => (
                 <Button
                   key={index + 1}
