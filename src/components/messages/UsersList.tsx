@@ -50,7 +50,7 @@ export default function UsersList({
           <li
             key={`${pageIndex}-${user.id}`}
             className={cn(
-              "w-full cursor-pointer p-3 px-4 hover:bg-primary/5 active:bg-primary/5",
+              "w-full cursor-pointer p-3 px-4 hover:bg-primary/5 active:bg-primary/5 rounded-xl",
               !canSelect && "opacity-70",
             )}
             onClick={() => {

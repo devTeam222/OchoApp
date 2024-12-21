@@ -197,7 +197,7 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
           </div>
         )}
         {status !== "success" && !query && <UsersListSkeleton />}
-        <ul className="max-h-[350px] flex-1 justify-center overflow-y-auto">
+        <ul className="max-h-[300px] flex-1 justify-center overflow-y-auto">
           <UsersList
             query={userQuery}
             onSelect={addUser}
@@ -214,7 +214,7 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
 function UsersListSkeleton() {
   return (
     <ul className="max-h-[60vh] flex-1 overflow-y-auto animate-pulse">
-      <li className="cursor-pointer p-3 px-4 hover:bg-primary/5 active:bg-primary/5">
+      <li className="cursor-pointer p-3 px-4">
         <div className="flex flex-shrink-0 items-center gap-2">
           <Skeleton className="h-10 w-10 rounded-full" />
           <div className="flex-1 space-y-1">
@@ -223,7 +223,7 @@ function UsersListSkeleton() {
           </div>
         </div>
       </li>
-      <li className="cursor-pointer p-3 px-4 hover:bg-primary/5 active:bg-primary/5">
+      <li className="cursor-pointer p-3 px-4">
         <div className="flex flex-shrink-0 items-center gap-2">
           <Skeleton className="h-10 w-10 rounded-full" />
           <div className="flex-1 space-y-1">
@@ -231,7 +231,7 @@ function UsersListSkeleton() {
           </div>
         </div>
       </li>
-      <li className="cursor-pointer p-3 px-4 hover:bg-primary/5 active:bg-primary/5">
+      <li className="cursor-pointer p-3 px-4">
         <div className="flex flex-shrink-0 items-center gap-2">
           <Skeleton className="h-10 w-10 rounded-full" />
           <div className="flex-1 space-y-1">
@@ -240,7 +240,7 @@ function UsersListSkeleton() {
           </div>
         </div>
       </li>
-      <li className="cursor-pointer p-3 px-4 hover:bg-primary/5 active:bg-primary/5">
+      <li className="cursor-pointer p-3 px-4">
         <div className="flex flex-shrink-0 items-center gap-2">
           <Skeleton className="h-10 w-10 rounded-full" />
           <div className="flex-1 space-y-1">
