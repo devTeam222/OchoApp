@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useDropzone } from "@uploadthing/react";
 import { Textarea } from "@/components/ui/textarea";
+import { text } from "node:stream/consumers";
 
 export default function PostEditor() {
   const [clear, setClear] = useState(false);
@@ -125,6 +126,7 @@ export default function PostEditor() {
                 <Button
                   onClick={() => {
                     setGradient(null);
+                    textareaRef.current?.focus();
                     setTriggerResize((prev) => !prev);
                   }}
                   size="icon"
@@ -141,6 +143,7 @@ export default function PostEditor() {
                     setGradient((prev) =>
                       prev === gradient ? null : gradient,
                     );
+                    textareaRef.current?.focus();
                     setTriggerResize((prev) => !prev);
                   }}
                   size="icon"
