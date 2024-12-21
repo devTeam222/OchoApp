@@ -15,6 +15,8 @@ import Linkify from "@/components/Linkify";
 import EditProfileButton from "./EditProfileButton";
 import { Frown } from "lucide-react";
 import SetNavigation from "@/components/SetNavigation";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Bookmarks from "../../bookmarks/Bookmarks";
 
 interface PageProps {
   params: { username: string };
@@ -87,10 +89,27 @@ export default async function page({ params: { username } }: PageProps) {
           loggedInUserId={loggedInUser.id}
           loggedInUser={loggedUserData}
         />
-        <div className="sm:rounded-2xl bg-card/50 sm:bg-card p-5 shadow-sm">
+        {user.id !== loggedInUser.id && (<div className="sm:rounded-2xl bg-card/50 sm:bg-card p-5 shadow-sm">
           <h2 className="text-center text-2xl font-bold">Publications</h2>
-        </div>
+        </div>)}
+        {user.id === loggedInUser.id ? (
+          <>
+          <Tabs defaultValue="posts">
+          <TabsList>
+            <TabsTrigger value="posts">Publications</TabsTrigger>
+            <TabsTrigger value="bookmarks">Favoris</TabsTrigger>
+          </TabsList>
+          <TabsContent value="posts" className="pb-2">
         <UserPosts userId={user.id} />
+          </TabsContent>
+          <TabsContent value="bookmarks" className="pb-2">
+            <Bookmarks/>
+          </TabsContent>
+        </Tabs>
+          </>
+        ) : (
+          <UserPosts userId={user.id} />
+        )}
       </div>
       <TrendsSidebar />
     </main>

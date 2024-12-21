@@ -16,10 +16,10 @@ export default function Home() {
             <TabsTrigger value="for-you">Pour toi</TabsTrigger>
             <TabsTrigger value="following">Suivis</TabsTrigger>
           </TabsList>
-          <TabsContent value="for-you">
+          <TabsContent value="for-you" className="pb-2">
             <ForYouFeed />
           </TabsContent>
-          <TabsContent value="following">
+          <TabsContent value="following" className="pb-2">
             <FollowingFeed />
           </TabsContent>
         </Tabs>
