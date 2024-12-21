@@ -33,7 +33,9 @@ export default function Message({
   const [isMessageMoreOpen, setIsMessageMoreOpen] = useState(false);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [isQuickReactionOpen, setIsQuickReactionOpen] = useState(false);
-  const [reactionPosition, setReactionPosition] = useState<"top" | "bottom">("bottom");
+  const [reactionPosition, setReactionPosition] = useState<"top" | "bottom">(
+    "bottom",
+  );
   const messageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -157,7 +159,9 @@ export default function Message({
   const sender =
     message.sender?.id === loggedUser.id
       ? "Vous"
-      : otherUser?.user?.displayName.split(" ")[0];
+      : channel.isGroup
+        ? (message.sender?.displayName.split(" ")[0] || "")
+        : (otherUser?.user?.displayName.split(" ")[0] || "");
   const recipient = message.recipient;
   let newMemberMsg, oldMemberMsg;
 
@@ -219,9 +223,6 @@ export default function Message({
 
     queryClient.invalidateQueries({ queryKey });
   }
-
-  console.log(message.sender);
-  
 
   const messageDate = new Date(message.createdAt);
   const currentDate = new Date();
@@ -327,12 +328,12 @@ export default function Message({
                 showDetail && "opacity-100",
               )}
               open={isMessageMoreOpen}
-              onOpenChange={(open)=>{
+              onOpenChange={(open) => {
                 toggleContextOpenChange(open);
               }}
               onReactOpen={() => {
-                setIsPickerOpen(true)
-                setIsQuickReactionOpen(true)
+                setIsPickerOpen(true);
+                setIsQuickReactionOpen(true);
               }}
               canReact={canReact}
             />
@@ -364,7 +365,7 @@ export default function Message({
                   )}
                   isOwner={isOwner}
                   open={isPickerOpen}
-                  onOpenChange={open=>{
+                  onOpenChange={(open) => {
                     setIsPickerOpen(open);
                     setIsQuickReactionOpen(false);
                   }}
