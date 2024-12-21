@@ -62,8 +62,8 @@ export default function PostEditor() {
 
   const gradients = [1, 2, 3, 4, 5].map((i) => `gradient-${i}`);
 
-  const canShowGradient = input.length <= maxGradientLength &&
-  !!gradient && !attachments.length
+  const canShowGradient =
+    input.length <= maxGradientLength && !!gradient && !attachments.length;
 
   function onPaste(e: ClipboardEvent<HTMLTextAreaElement>) {
     const files = Array.from(e.clipboardData.items)
@@ -88,7 +88,7 @@ export default function PostEditor() {
           className={cn(
             "flex-1",
             canShowGradient &&
-              `gadient-post ${gradient} flex items-center justify-center rounded-[1.4rem] rounded-s-md text-center transition-all max-sm:text-lg`,
+              `gadient-post ${gradient} flex items-center justify-center rounded-[1.4rem] rounded-s-md text-center transition-all ${input.length <= 70 ? "text-3xl max-sm:text-lg" : "text-xl max-sm:text-base"}`,
           )}
         >
           <Textarea
@@ -96,9 +96,8 @@ export default function PostEditor() {
             placeholder="Quoi de neuf ?"
             onPaste={onPaste}
             className={cn(
-              "max-h-[15rem] min-h-10 w-full overflow-y-auto rounded-none border-none bg-transparent px-0 ring-offset-transparent focus-visible:ring-transparent",
-              canShowGradient &&
-                "max-w-fit text-center",
+              "max-h-[15rem] min-h-10 w-full overflow-y-auto rounded-none border-none bg-transparent px-0 ring-offset-transparent focus-visible:ring-transparent placeholder:text-gray-500",
+              canShowGradient && "max-w-fit text-center",
             )}
             rows={1}
             value={input}
@@ -114,7 +113,7 @@ export default function PostEditor() {
           removeAttachment={removeAttachment}
         />
       )}
-      <div className="flex w-full items-center justify-end gap-3 max-lg:flex-col">
+      <div className="flex w-full items-center justify-end gap-3 flex-col">
         {!isUploading &&
           !attachments.length &&
           input.trim().length <= maxGradientLength && (
@@ -129,7 +128,7 @@ export default function PostEditor() {
                     setTriggerResize((prev) => !prev);
                   }}
                   size="icon"
-                  className={`min-h-0 bg-background text-foreground outline-none ring-primary ring-offset-background hover:ring-2 animate-scale`}
+                  className={`min-h-0 animate-scale bg-background text-foreground outline-none ring-primary ring-offset-background hover:ring-2`}
                   title="Rétirer l'arrière-plan"
                 >
                   <XIcon size={20} />
@@ -145,14 +144,14 @@ export default function PostEditor() {
                     setTriggerResize((prev) => !prev);
                   }}
                   size="icon"
-                  className={`gadient-post ${gradient} min-h-0 bg-[hsl(var(--gradient-4-default))] text-[hsl(var(--gradient-4-foreground))] hover:bg-[hsl(var(--gradient-4-default))] animate-scale`}
+                  className={`gadient-post ${gradient} min-h-0 animate-scale bg-[hsl(var(--gradient-4-default))] text-[hsl(var(--gradient-4-foreground))] hover:bg-[hsl(var(--gradient-4-default))]`}
                 >
                   {" "}
                 </Button>
               ))}
             </div>
           )}
-        <div className="flex w-full justify-end gap-2 items-center">
+        <div className="flex w-full items-center justify-end gap-2">
           {isUploading && (
             <Loader2 className="size-5 animate-spin text-primary" />
           )}

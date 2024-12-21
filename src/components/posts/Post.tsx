@@ -132,7 +132,8 @@ export default function Post({ post }: PostProps) {
               className={cn(
                 "z-10 whitespace-pre-line break-words",
                 canShowGradient &&
-                  `${gradient} max-sm:rounded-none max-sm:text-2xl sm:rounded-md`,
+                  `${gradient} max-sm:rounded-none sm:rounded-md px-8`,
+                  !post.attachments.length && `${post.content.length <= 70 ? "text-3xl max-sm:text-2xl" : "text-lg max-sm:text-base"}`
               )}
             >
               <p className="w-full">{post.content}</p>

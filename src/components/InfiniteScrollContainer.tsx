@@ -24,6 +24,6 @@ export default function InfiniteScrollContainer({
 
     return <div className={className}>
         {children}
-        <div ref={ref} className="h-[0.1rem]"/>
+        <div ref={ref}/>
     </div>
 }

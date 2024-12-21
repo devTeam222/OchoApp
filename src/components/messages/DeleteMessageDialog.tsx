@@ -40,7 +40,6 @@ export default function DeleteCommentDialog({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <div className="flex justify-center items-center">
             <LoadingButton
             variant="destructive"
             onClick={()=>mutation.mutate(message.id, {onSuccess: onClose})}
@@ -51,7 +50,6 @@ export default function DeleteCommentDialog({
             onClick={onClose} 
             disabled={mutation.isPending}
             >Annuler</Button>
-          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

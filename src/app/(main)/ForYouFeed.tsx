@@ -55,7 +55,6 @@ export default function ForYouFeed() {
       </div>
     );
   }
-  console.log(hasNextPage, isFetching, isFetchingNextPage);
   
 
   return (

@@ -40,7 +40,7 @@ export default function DeletePostDialog({
             irreversible.
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="space-x-3 space-y-3">
+        <DialogFooter>
             <LoadingButton
             variant="destructive"
             onClick={()=>mutation.mutate(post.id, {onSuccess: onClose})}
