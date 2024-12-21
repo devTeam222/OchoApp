@@ -2,7 +2,7 @@ import { Skeleton } from "../ui/skeleton";
 
 export default function PostsLoadingSkeleton() {
   return (
-    <div className="space-y-2 sm:space-y-5 max-sm:py-2">
+    <div className="space-y-2 max-sm:py-2 sm:space-y-5">
       <PostLoadingSkeleton />
       <PostLoadingSkeleton />
       <PostLoadingSkeleton />
@@ -12,7 +12,7 @@ export default function PostsLoadingSkeleton() {
 
 export function PostLoadingSkeleton() {
   return (
-    <div className="w-full animate-pulse space-y-3 sm:rounded-lg bg-card/50 sm:bg-card p-5 shadow-sm">
+    <div className="w-full max-w-lg animate-pulse space-y-3 bg-card/50 p-5 shadow-sm sm:rounded-lg sm:bg-card">
       <div className="flex flex-wrap gap-3">
         <Skeleton className="size-12 rounded-full" />
         <div className="space-y-1.5">

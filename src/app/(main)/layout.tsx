@@ -31,10 +31,10 @@ export default async function Layout({
               <div className="relative flex h-screen max-h-dvh min-h-dvh w-full flex-col">
                 <Navbar />
                 <div className="relative h-full max-h-full w-full overflow-hidden">
-                  <div className="mx-auto flex h-full max-h-full w-full max-w-7xl gap-5 overflow-auto sm:p-5 justify-center">
+                  <main className="mx-auto flex h-full max-h-full w-full max-w-7xl gap-5 overflow-auto sm:p-5 justify-center">
                     <MenuBar className="sticky top-0 hidden h-fit flex-none space-y-3 rounded-2xl bg-card px-3 py-5 sm:block lg:px-5 xl:w-60" />
                     {children}
-                  </div>
+                  </main>
                 </div>
                 <BottomMenuBar />
               </div>
