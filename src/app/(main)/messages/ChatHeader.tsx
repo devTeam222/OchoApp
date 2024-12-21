@@ -451,7 +451,7 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
 
                 {!!lastPage.length && !expandMembers && (
                   <li
-                    className="cursor-pointer text-primary hover:underline"
+                    className="cursor-pointer text-primary hover:underline flex px-4 py-2 max-sm:justify-center"
                     onClick={() => setExpandMembers(true)}
                   >
                     Tout voir{" ("}
@@ -462,7 +462,7 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
 
                 {expandMembers && (
                   <li
-                    className="cursor-pointer text-primary hover:underline"
+                    className="cursor-pointer text-primary hover:underline flex px-4 py-2 max-sm:justify-center"
                     onClick={() => setExpandMembers(false)}
                   >
                     Masquer
