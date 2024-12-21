@@ -462,7 +462,7 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
 
                 {expandMembers && (
                   <li
-                    className="cursor-pointer text-primary hover:underline flex px-4 py-2 max-sm:justify-center"
+                    className="cursor-pointer text-primary hover:underline flex px-8 py-2 sm:justify-center"
                     onClick={() => setExpandMembers(false)}
                   >
                     Masquer
