@@ -173,7 +173,7 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
             (loggedinMember?.type === "ADMIN" ||
               loggedinMember?.type === "OWNER") ? (
               <div
-                className="text-xl font-bold sm:hover:text-primary sm:hover:underline cursor-pointer"
+                className="cursor-pointer text-xl font-bold sm:hover:text-primary sm:hover:underline"
                 title="Modifier le nom du groupe"
                 onClick={() => {
                   setDialogFocus("name");
@@ -194,8 +194,11 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                   <span className="hidden group-hover/head:inline">
                     {channel.members
                       .filter((member) => member.userId !== loggedUser.id)
+                      .slice(0, 5)
                       .map((member) => member.user?.displayName.split(" ")[0])
                       .join(", ")}
+                    {channel.members.length > 5 &&
+                      ` et ${channel.members.length - 5} autre${channel.members.length - 5 > 1 ? "s" : ""}`}
                   </span>
                 </div>
               ) : (
@@ -308,7 +311,7 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                         <p>{channel.description}</p>
                       ) : loggedinMember?.type === "ADMIN" ||
                         loggedinMember?.type === "OWNER" ? (
-                        <Button 
+                        <Button
                           variant="link"
                           className="py-0"
                           title="Ajouter une description au groupe"
