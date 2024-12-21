@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { useActiveChannel } from "@/context/ChatContext";
 import { Frown, MessageSquare, SquarePen } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 
 interface SidebarProps {
   activeChannel: (channel: ChannelData) => void;
@@ -27,6 +28,8 @@ export default function ChatList({
 }: SidebarProps) {
   const { user: loggedinUser } = useSession();
   const { activeChannelId, setActiveChannelId } = useActiveChannel();
+  const pathname = usePathname();
+  const router = useRouter();
 
   const userId = loggedinUser.id;
 
@@ -84,9 +87,18 @@ export default function ChatList({
     onCloseChat();
   }
 
+  if (
+    status === "success" &&
+    channels.length &&
+    !selectedChannelId &&
+    pathname === "/messages/chat"
+  ) {
+    router.push("/messages");
+  }
+
   return (
     <div className="relative flex h-full flex-col">
-      <div className="flex items-center justify-between p-4 text-lg font-bold max-sm:bg-card/50 shadow-sm">
+      <div className="flex items-center justify-between p-4 text-lg font-bold shadow-sm max-sm:bg-card/50">
         <span>Discussions</span>
         <span
           className="cursor-pointer hover:text-primary max-sm:hidden"

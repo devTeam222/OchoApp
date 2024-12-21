@@ -197,8 +197,9 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                       .slice(0, 5)
                       .map((member) => member.user?.displayName.split(" ")[0])
                       .join(", ")}
-                    {channel.members.length > 5 &&
-                      ` et ${channel.members.length - 5} autre${channel.members.length - 5 > 1 ? "s" : ""}`}
+                      {channel.members.length === 6 && ` et ${channel.members[5].user?.displayName.split(" ")[0]}`}
+                    {channel.members.length > 6 &&
+                      ` et ${channel.members.length - 5} autres`}
                   </span>
                 </div>
               ) : (
