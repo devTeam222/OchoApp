@@ -220,6 +220,9 @@ export default function Message({
     queryClient.invalidateQueries({ queryKey });
   }
 
+  console.log(message.sender);
+  
+
   const messageDate = new Date(message.createdAt);
   const currentDate = new Date();
   const timeDifferenceInDays = Math.floor(
