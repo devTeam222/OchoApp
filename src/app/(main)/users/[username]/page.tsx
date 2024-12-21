@@ -16,7 +16,7 @@ import EditProfileButton from "./EditProfileButton";
 import { Frown } from "lucide-react";
 import SetNavigation from "@/components/SetNavigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Bookmarks from "../../bookmarks/Bookmarks";
+import Bookmarks from "../../../../components/bookmarks/Bookmarks";
 
 interface PageProps {
   params: { username: string };

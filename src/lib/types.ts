@@ -9,7 +9,7 @@ export type NavigationType =
   | "explore"
   | "activity"
   | "messages"
-  | "bookmarks"
+  | "settings"
   | null;
 export type NavigationContextType = {
   currentNavigation: NavigationType;

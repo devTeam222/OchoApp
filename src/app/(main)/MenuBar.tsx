@@ -1,13 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Bookmark,
-  Compass,
-  Home,
-  MessageSquareMore,
-  Search,
-} from "lucide-react";
+import { Compass, Home, Search, Settings, Settings2Icon } from "lucide-react";
 import Link from "next/link";
 import NotificationsButton from "./NotificationsButton";
 import { useSession } from "./SessionProvider";
@@ -44,8 +38,8 @@ export default function MenuBar({ className }: MenuBarProps) {
     setCurrentNavigation("messages");
   }
 
-  function setBookmarksNav() {
-    setCurrentNavigation("bookmarks");
+  function setSettingsNav() {
+    setCurrentNavigation("settings");
   }
 
   return (
@@ -54,7 +48,8 @@ export default function MenuBar({ className }: MenuBarProps) {
         variant="ghost"
         className={cn(
           "flex items-center justify-start max-sm:h-fit max-sm:p-1.5 sm:gap-3",
-          currentNavigation === "home" && "text-primary hover:text-primary bg-accent",
+          currentNavigation === "home" &&
+            "bg-accent text-primary hover:text-primary",
         )}
         title="Accueil"
         asChild
@@ -70,7 +65,8 @@ export default function MenuBar({ className }: MenuBarProps) {
         variant="ghost"
         className={cn(
           "flex items-center justify-start max-sm:h-fit max-sm:p-1.5 sm:hidden sm:gap-3",
-          currentNavigation === "explore" && "text-primary hover:text-primary bg-accent",
+          currentNavigation === "explore" &&
+            "bg-accent text-primary hover:text-primary",
         )}
         title="Recherche"
         onClick={handleSearchClick} // Trigger search activation when clicked
@@ -86,8 +82,10 @@ export default function MenuBar({ className }: MenuBarProps) {
       </Button>
       <Button
         variant="ghost"
-        className={cn("flex items-center justify-start max-sm:hidden max-sm:h-fit max-sm:p-1.5 sm:gap-3", 
-          currentNavigation === "explore" && "text-primary hover:text-primary bg-accent",
+        className={cn(
+          "flex items-center justify-start max-sm:hidden max-sm:h-fit max-sm:p-1.5 sm:gap-3",
+          currentNavigation === "explore" &&
+            "bg-accent text-primary hover:text-primary",
         )}
         title="Recherche"
         onClick={handleSearchClick} // Trigger search activation when clicked
@@ -103,33 +101,54 @@ export default function MenuBar({ className }: MenuBarProps) {
         initialState={{ unreadCount: 0 }}
         onClick={setActivityNav}
         className={cn(
-          currentNavigation === "activity" && "text-primary hover:text-primary bg-accent"
+          currentNavigation === "activity" &&
+            "bg-accent text-primary hover:text-primary",
         )}
       />
       <MessagesButton
         initialState={{ unreadCount: 0 }}
         onClick={setMessagesNav}
         className={cn(
-          currentNavigation === "messages" && "text-primary hover:text-primary bg-accent"
+          currentNavigation === "messages" &&
+            "bg-accent text-primary hover:text-primary",
         )}
       />
       <Button
         variant="ghost"
         className={cn(
-          "flex items-center justify-start max-sm:h-fit max-sm:p-1.5 sm:gap-3",
-          currentNavigation === "bookmarks" && "text-primary hover:text-primary bg-accent",
+          "flex items-center justify-start max-sm:h-fit max-sm:p-1.5 sm:hidden sm:gap-3",
+          currentNavigation === "settings" &&
+            "bg-accent text-primary hover:text-primary",
         )}
         title="Favoris"
         asChild
-        onClick={setBookmarksNav}
+        onClick={setSettingsNav}
       >
         <Link
-          href="/bookmarks"
+          href="/settings"
           className="items-center max-sm:flex max-sm:flex-col"
         >
-          <Bookmark />
-          <span className="text-xs sm:hidden">Favoris</span>
-          <span className="max-lg:hidden">Favoris</span>
+          <Settings2Icon />
+          <span className="text-xs">Menu</span>
+        </Link>
+      </Button>
+      <Button
+        variant="ghost"
+        className={cn(
+          "flex items-center justify-start max-sm:hidden max-sm:h-fit max-sm:p-1.5 sm:gap-3",
+          currentNavigation === "settings" &&
+            "bg-accent text-primary hover:text-primary",
+        )}
+        title="Favoris"
+        asChild
+        onClick={setSettingsNav}
+      >
+        <Link
+          href="/settings"
+          className="items-center max-sm:flex max-sm:flex-col"
+        >
+          <Settings className="max-sm" />
+          <span className="max-lg:hidden">Paramètres</span>
         </Link>
       </Button>
     </div>
