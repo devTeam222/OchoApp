@@ -23,6 +23,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { late } from "zod";
 import French from "@/components/flags/French";
 import { useTheme } from "next-themes";
+import US from "@/components/flags/US";
 
 interface OptionsProps {
   setting?: string | null;
@@ -162,7 +163,15 @@ export default function Options({
         icon: <French size={24} />,
         action: "default",
         onClick: (value: string) => console.log(value),
-    }]
+    },
+    {
+        value: "english",
+        label: "English",
+        icon: <US size={24} />,
+        action: "default",
+        onClick: (value: string) => console.log(value),
+    },
+  ]
   };
 
   // Verifier si l'option est un sous-menu si oui trouver le label dans les options et la liste des menus dans subOptions
