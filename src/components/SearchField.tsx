@@ -6,12 +6,14 @@ import { SearchIcon, XIcon } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useSearch } from "@/context/SearchContext"; // Import the SearchContext
+import { t } from "@/context/LanguageContext";
 
 export default function SearchField() {
   const { isSearchActive, setSearchActive } = useSearch(); // Use context instead of local state
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const {search} = t("search");
   // ecouter isSesrchActive avec un use effect
   useEffect(() => {
     isSearchActive ? activeSearch() : hideSearch();
@@ -53,7 +55,7 @@ export default function SearchField() {
         <Input
           ref={inputRef}
           name="q"
-          placeholder="Rechercher"
+          placeholder={search}
           className={cn(
             "max-w-full pe-16 transition-all rounded-3xl",
             isSearchActive

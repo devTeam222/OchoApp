@@ -9,6 +9,8 @@ import FormattedInt from "./FormattedInt";
 import FollowButton from "./FollowButton";
 import { getUserDataSelect } from "@/lib/types";
 import UserTooltip from "./UserTooltip";
+import { getTranslation } from "@/lib/language";
+import { VocabularyKey } from "@/lib/vocabulary";
 
 export default function TrendsSidebar() {
   return (
@@ -23,6 +25,9 @@ export default function TrendsSidebar() {
 
 async function WhoToFollow() {
   const { user } = await validateRequest();
+  const vocabulary: VocabularyKey[] = ["whoToFollow", "noOneToFollow"];
+
+  const { whoToFollow, noOneToFollow } = await getTranslation(vocabulary);
   if (!user) return null;
 
   const loggedInUserData = await prisma.user.findFirst({
@@ -54,7 +59,7 @@ async function WhoToFollow() {
 
   return (
     <div className="space-y-5 bg-card p-5 shadow-sm sm:rounded-2xl">
-      <h2 className="text-xl font-bold">Suggestions pour vous</h2>
+      <h2 className="text-xl font-bold">{whoToFollow}</h2>
       {usersToFollow.map((user) => {
         const now = Date.now();
 
@@ -110,7 +115,7 @@ async function WhoToFollow() {
       })}
       {!usersToFollow.length && (
         <p className="w-full px-2 py-8 text-center italic text-muted-foreground">
-          Aucune suggestion pour le moment
+          {noOneToFollow}
         </p>
       )}
     </div>
@@ -139,13 +144,21 @@ const getTrendingTopics = unstable_cache(
 
 async function TrendingTopics() {
   const trendingTopics = await getTrendingTopics();
+  const vocabulary: VocabularyKey[] = [
+    "trending",
+    "noTrends",
+    "aPost",
+    "posts",
+  ];
+
+  const { trending, noTrends, aPost, posts } = await getTranslation(vocabulary);
 
   return (
     <div className="space-y-5 bg-card p-5 shadow-sm sm:rounded-2xl">
-      <h2 className="text-xl font-bold">Tendances</h2>
+      <h2 className="text-xl font-bold">{trending}</h2>
       {!trendingTopics.length && (
         <p className="w-full px-2 py-8 text-center italic text-muted-foreground">
-          Aucune tendance pour le moment
+          {noTrends}
         </p>
       )}
       {trendingTopics.map(({ hashtag, count }) => {
@@ -160,7 +173,7 @@ async function TrendingTopics() {
               {hashtag}
             </h3>
             <p className="break-all text-sm text-muted-foreground">
-              <FormattedInt number={count} /> Post{count === 1 ? "" : "s"}
+              <FormattedInt number={count} /> {count === 1 ? aPost : posts}
             </p>
           </Link>
         );

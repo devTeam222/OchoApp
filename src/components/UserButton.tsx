@@ -15,12 +15,21 @@ import {
 } from "./ui/dropdown-menu";
 import UserAvatar from "./UserAvatar";
 import Link from "next/link";
-import { Check, LogOutIcon, PaintbrushVertical, Moon, Sun, UserIcon, UserRound } from "lucide-react";
+import {
+  Check,
+  LogOutIcon,
+  PaintbrushVertical,
+  Moon,
+  Sun,
+  UserRound,
+} from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import kyInstance from "@/lib/ky";
+import { VocabularyKey } from "@/lib/vocabulary";
+import { t } from "@/context/LanguageContext";
 
 interface UserButtonProps {
   className?: string;
@@ -31,12 +40,30 @@ export default function UserButton({ className }: UserButtonProps) {
 
   useQuery({
     queryKey: ["last-seen", user.id],
-    queryFn: () =>
-      kyInstance
-        .get("/api/users/set-last-seen"),
+    queryFn: () => kyInstance.get("/api/users/set-last-seen"),
     refetchInterval: 60 * 1000,
     throwOnError: false,
   });
+
+  const vocabulary: VocabularyKey[] = [
+    "loggedIn",
+    "profile",
+    "theme",
+    "logout",
+    "light",
+    "dark",
+    "systemDefault",
+  ];
+
+  const {
+    loggedIn,
+    profile,
+    theme: themeText,
+    logout: logoutText,
+    light,
+    dark,
+    systemDefault,
+  } = t(vocabulary);
 
   const { theme, setTheme } = useTheme();
 
@@ -46,7 +73,7 @@ export default function UserButton({ className }: UserButtonProps) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className={cn("flex-none rounded-full aspect-square", className)}
+          className={cn("aspect-square flex-none rounded-full", className)}
           title="Profil"
         >
           <UserAvatar avatarUrl={user.avatarUrl} size={40} online />
@@ -54,21 +81,23 @@ export default function UserButton({ className }: UserButtonProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuLabel className="max-sm:max-w-36">
-          Connecté(e) en tant que @{user.username}
+          {loggedIn} @{user.username}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <Link href={`/users/${user.username}`}>
           <DropdownMenuItem>
             <UserRound className="mr-2 size-4 rounded-full" />
-            Profil
+            {profile}
           </DropdownMenuItem>
         </Link>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
-            {theme === "system" && <PaintbrushVertical className="mr-2 size-4" />}
+            {theme === "system" && (
+              <PaintbrushVertical className="mr-2 size-4" />
+            )}
             {theme === "light" && <Sun className="mr-2 size-4" />}
             {theme === "dark" && <Moon className="mr-2 size-4" />}
-            Thême
+            {themeText}
           </DropdownMenuSubTrigger>
           <DropdownMenuPortal>
             <DropdownMenuSubContent className="max-sm:max-w-48">
@@ -78,7 +107,7 @@ export default function UserButton({ className }: UserButtonProps) {
                 }}
               >
                 <PaintbrushVertical className="mr-2 size-4" />
-                Système (défaut)
+                {systemDefault}
                 {theme === "system" && <Check className="ms-2 size-4" />}
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -87,7 +116,7 @@ export default function UserButton({ className }: UserButtonProps) {
                 }}
               >
                 <Sun className="mr-2 size-4" />
-                Clair
+                {light}
                 {theme === "light" && <Check className="ms-2 size-4" />}
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -96,7 +125,7 @@ export default function UserButton({ className }: UserButtonProps) {
                 }}
               >
                 <Moon className="mr-2 size-4" />
-                Sombre
+                {dark}
                 {theme === "dark" && <Check className="ms-2 size-4" />}
               </DropdownMenuItem>
             </DropdownMenuSubContent>
@@ -110,7 +139,7 @@ export default function UserButton({ className }: UserButtonProps) {
           }}
         >
           <LogOutIcon className="mr-2 size-4" />
-          Deconnexion
+          {logoutText}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

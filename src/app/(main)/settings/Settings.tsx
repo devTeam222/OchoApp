@@ -32,9 +32,8 @@ export default function Settings({
     <div className="flex w-full min-w-0 flex-col gap-5 pb-3">
       <div className="flex w-full flex-col items-center gap-5">
         {setting && label ? (
-          <>
             <h2 className="text-center text-2xl font-bold">{label}</h2>
-          </>
+    
         ) : (
           <>
             <UserAvatar avatarUrl={user.avatarUrl} size={100} />

@@ -3,12 +3,22 @@
 import InfiniteScrollContainer from "@/components/InfiniteScrollContainer";
 import Post from "@/components/posts/Post";
 import PostsLoadingSkeleton from "@/components/posts/PostsLoadingSkeleton";
+import { t } from "@/context/LanguageContext";
 import kyInstance from "@/lib/ky";
 import { PostsPage } from "@/lib/types";
+import { VocabularyKey } from "@/lib/vocabulary";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { BookmarkIcon, Frown, Loader2 } from "lucide-react";
 
 export default function Bookmarks() {
+
+  const vocabulary: VocabularyKey[] = [
+    "noBookmark",
+    "dataError",
+  ];
+
+  const { noBookmark, dataError } = t(vocabulary);
+
   const {
     data,
     fetchNextPage,
@@ -39,7 +49,7 @@ export default function Bookmarks() {
     return (
       <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
         <BookmarkIcon size={150} />
-        <h2 className="text-xl">Vous n&apos;avez pas encore de favoris.</h2>
+        <h2 className="text-xl">{noBookmark}</h2>
       </div>
     );
   }
@@ -47,7 +57,7 @@ export default function Bookmarks() {
     return (
       <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
         <Frown size={150} />
-        <h2 className="text-xl">Quelque chose s&apos;est mal passé.</h2>
+        <h2 className="text-xl">{dataError}</h2>
       </div>
     );
   }

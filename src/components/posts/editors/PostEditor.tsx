@@ -14,6 +14,8 @@ import Image from "next/image";
 import { useDropzone } from "@uploadthing/react";
 import { Textarea } from "@/components/ui/textarea";
 import { text } from "node:stream/consumers";
+import { VocabularyKey } from "@/lib/vocabulary";
+import { t } from "@/context/LanguageContext";
 
 export default function PostEditor() {
   const [clear, setClear] = useState(false);
@@ -30,6 +32,15 @@ export default function PostEditor() {
     removeAttachment,
     reset: resetMediaUpload,
   } = useMediaUpload();
+
+  const vocabulary: VocabularyKey[] = [
+    "wtsup",
+    "chooseBackground",
+    "removeBackground",
+    "post",
+  ];
+
+  const { wtsup, chooseBackground, removeBackground, post } = t(vocabulary);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: startUpload,
@@ -98,7 +109,7 @@ export default function PostEditor() {
               }}
               size="icon"
               className={`min-h-0 animate-scale border border-input bg-background text-foreground outline-none ring-primary ring-offset-background hover:ring-2`}
-              title="Rétirer l'arrière-plan"
+              title={removeBackground}
             >
               <XIcon size={20} />
             </Button>
@@ -114,7 +125,7 @@ export default function PostEditor() {
         >
           <Textarea
             ref={textareaRef}
-            placeholder="Quoi de neuf ?"
+            placeholder={wtsup}
             onPaste={onPaste}
             className={cn(
               "max-h-[15rem] min-h-10 w-full overflow-y-auto rounded-none border-none bg-transparent px-0 ring-offset-transparent placeholder:text-gray-500 focus-visible:ring-transparent",
@@ -139,7 +150,7 @@ export default function PostEditor() {
           !attachments.length &&
           input.trim().length <= maxGradientLength && (
             <div
-              title="Choisir un arrière-plan"
+              title={chooseBackground}
               className="flex w-full justify-end gap-2"
             >
               {gradients.map((gradient, index) => (
@@ -175,7 +186,7 @@ export default function PostEditor() {
             disabled={(!input.trim() && !attachments.length) || isUploading}
             className="min-w-20"
           >
-            Poster
+            {post}
           </LoadingButton>
         </div>
       </div>

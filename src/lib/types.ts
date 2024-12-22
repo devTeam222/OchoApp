@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { Vocabulary } from "./vocabulary";
 
 export type MenuBarContextType = {
   isVisible: boolean;
@@ -14,6 +15,14 @@ export type NavigationType =
 export type NavigationContextType = {
   currentNavigation: NavigationType;
   setCurrentNavigation: (currentNavigation: NavigationType) => void;
+};
+
+
+
+export type LanguageContextType = {
+  language: string;
+  setLanguage: (language: string) => void;
+  vocabulary: Vocabulary;
 };
 
 export function getUserDataSelect(loggedInUserId: string) {

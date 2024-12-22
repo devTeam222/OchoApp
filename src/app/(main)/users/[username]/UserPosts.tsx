@@ -3,16 +3,27 @@
 import InfiniteScrollContainer from "@/components/InfiniteScrollContainer";
 import Post from "@/components/posts/Post";
 import PostsLoadingSkeleton from "@/components/posts/PostsLoadingSkeleton";
+import { t } from "@/context/LanguageContext";
 import kyInstance from "@/lib/ky";
 import { PostsPage } from "@/lib/types";
+import { VocabularyKey } from "@/lib/vocabulary";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Frown, Loader2, UserRoundPen } from "lucide-react";
 
 interface UserPostsProps {
   userId: string;
+  name: string;
 }
 
-export default function UserPosts({ userId }: UserPostsProps) {
+export default function UserPosts({ userId, name }: UserPostsProps) {
+
+   const vocabulary: VocabularyKey[] = [
+    "noPostOnProfile",
+    "dataError",
+  ];
+
+  const { noPostOnProfile, dataError } = t(vocabulary);
+
   const {
     data,
     fetchNextPage,
@@ -44,7 +55,7 @@ export default function UserPosts({ userId }: UserPostsProps) {
       <div className="my-8 flex w-full select-none flex-col items-center gap-2 text-center text-muted-foreground">
         <UserRoundPen size={150} />
         <h2 className="mb-9 text-xl">
-          Cet utilisateur n&apos;a pas de post public.
+          {noPostOnProfile.replace("[name]", name)}
         </h2>
       </div>
     );
@@ -53,7 +64,7 @@ export default function UserPosts({ userId }: UserPostsProps) {
     return (
       <div className="my-8 flex w-full select-none flex-col items-center gap-2 text-center text-muted-foreground">
         <Frown size={150} />
-        <h2 className="mb-9 text-xl">Quelque chose s&apos;est mal passé.</h2>
+        <h2 className="mb-9 text-xl">{dataError}</h2>
       </div>
     );
   }

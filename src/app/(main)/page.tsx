@@ -4,8 +4,16 @@ import ForYouFeed from "./ForYouFeed";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FollowingFeed from "./FollowingFeed";
 import SetNavigation from "@/components/SetNavigation";
+import { VocabularyKey } from "@/lib/vocabulary";
+import { getTranslation } from "@/lib/language";
 
-export default function Home() {
+export default async function Home() {
+  const vocabulary: VocabularyKey[] = [
+    "forYou",
+    "followings",
+  ];
+
+  const { forYou, followings } = await getTranslation(vocabulary);
   return (
     <>
       <SetNavigation navPage="home" />
@@ -13,8 +21,8 @@ export default function Home() {
         <PostEditor />
         <Tabs defaultValue="for-you">
           <TabsList>
-            <TabsTrigger value="for-you">Pour toi</TabsTrigger>
-            <TabsTrigger value="following">Suivis</TabsTrigger>
+            <TabsTrigger value="for-you">{forYou}</TabsTrigger>
+            <TabsTrigger value="following">{followings}</TabsTrigger>
           </TabsList>
           <TabsContent value="for-you" className="pb-2">
             <ForYouFeed />

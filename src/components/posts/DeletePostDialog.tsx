@@ -10,6 +10,8 @@ import {
 } from "../ui/dialog";
 import LoadingButton from "../LoadingButton";
 import { Button } from "../ui/button";
+import { t } from "@/context/LanguageContext";
+import { VocabularyKey } from "@/lib/vocabulary";
 
 interface DeletePostDialogProps {
   post: PostData;
@@ -24,6 +26,14 @@ export default function DeletePostDialog({
 }: DeletePostDialogProps) {
   const mutation = useDeletePostMutation();
 
+  const vocabulary: VocabularyKey[] = [
+    "delete",
+    "cancel",
+    "deleteConfirmPrompt",
+  ];
+
+  const { delete: deleteText, cancel, deleteConfirmPrompt } = t(vocabulary);
+
   function handleOpenChange(open: boolean) {
     if (!open || !mutation.isPending) {
       onClose();
@@ -34,23 +44,24 @@ export default function DeletePostDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Supprimer ?</DialogTitle>
-          <DialogDescription>
-            Voulez-vous vraiment supprimer ce post ? Cette action est
-            irreversible.
-          </DialogDescription>
+          <DialogTitle>{deleteText}</DialogTitle>
+          <DialogDescription>{deleteConfirmPrompt}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
-            <LoadingButton
+          <LoadingButton
             variant="destructive"
-            onClick={()=>mutation.mutate(post.id, {onSuccess: onClose})}
+            onClick={() => mutation.mutate(post.id, { onSuccess: onClose })}
             loading={mutation.isPending}
-            >Supprimer</LoadingButton>
-            <Button 
-            variant="outline" 
-            onClick={onClose} 
+          >
+            {deleteText}
+          </LoadingButton>
+          <Button
+            variant="outline"
+            onClick={onClose}
             disabled={mutation.isPending}
-            >Annuler</Button>
+          >
+            {cancel}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

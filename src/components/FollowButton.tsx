@@ -6,6 +6,8 @@ import { useToast } from "./ui/use-toast";
 import { QueryKey, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "./ui/button";
 import kyInstance from "@/lib/ky";
+import { VocabularyKey } from "@/lib/vocabulary";
+import { t } from "@/context/LanguageContext";
 
 interface FollowButtonProps {
   userId: string;
@@ -17,6 +19,23 @@ export default function FollowButton({
   initialState,
 }: FollowButtonProps) {
   const { toast } = useToast();
+  const vocabulary: VocabularyKey[] = [
+    "somethingWentWrong",
+    "friend",
+    "follow",
+    "following",
+    "followBack",
+    "unFollow",
+  ];
+
+  const {
+    somethingWentWrong,
+    friend,
+    follow,
+    following,
+    followBack,
+    unFollow,
+  } = t(vocabulary);
 
   const queryClient = useQueryClient();
 
@@ -40,7 +59,7 @@ export default function FollowButton({
           (previousState?.isFollowedByUser ? -1 : 1),
         isFollowedByUser: !previousState?.isFollowedByUser,
         isFolowing: !previousState?.isFolowing,
-        isFriend: !previousState?.isFriend
+        isFriend: previousState?.isFolowing && !previousState?.isFriend,
       }));
 
       return { previousState };
@@ -50,20 +69,20 @@ export default function FollowButton({
       console.error(error);
       toast({
         variant: "destructive",
-        description: "Quelque chose n'a pas marché. Veuillez réessayer.",
+        description: somethingWentWrong,
       });
     },
   });
 
   const { isFriend, isFolowing } = data;
 
-  const followingText = isFriend ? "Ami(e)" :"Suivi(e)";
-  const notFollowingText = isFolowing ? "Suivre en retour" : "Suivre"
+  const followingText = isFriend ? friend : following;
+  const notFollowingText = isFolowing ? followBack : follow;
 
   return (
     <Button
       variant={data.isFollowedByUser ? "secondary" : "default"}
-      title={data.isFollowedByUser ? "Ne plus suivre" : "Suivre"}
+      title={data.isFollowedByUser ? unFollow : follow}
       onClick={() => mutate()}
     >
       {data.isFollowedByUser ? followingText : notFollowingText}

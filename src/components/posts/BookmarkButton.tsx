@@ -9,6 +9,8 @@ import {
 import kyInstance from "@/lib/ky";
 import { Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { t } from "@/context/LanguageContext";
+import { VocabularyKey } from "@/lib/vocabulary";
 
 interface BookmarkButtonProps {
   postId: string;
@@ -20,6 +22,22 @@ export default function BookmarkButton({
   initialState,
 }: BookmarkButtonProps) {
   const { toast } = useToast();
+
+  const vocabulary: VocabularyKey[] = [
+    "addToBookmarks",
+    "addedToBookmarks",
+    "removeFromBookmarks",
+    "removedFromBookmarks",
+    "somethingWentWrong"
+  ];
+
+  const {
+    addToBookmarks,
+    addedToBookmarks,
+    removeFromBookmarks,
+    removedFromBookmarks,
+    somethingWentWrong
+  } = t(vocabulary);
 
   const queryClient = useQueryClient();
 
@@ -40,11 +58,9 @@ export default function BookmarkButton({
         : kyInstance.post(`/api/posts/${postId}/bookmark`),
     onMutate: async () => {
       toast({
-        description: `Publication ${
-          data.isBookmarkedByUser
-            ? "rétirée des favoris"
-            : "ajoutée aux favoris"
-        }`,
+        description: data.isBookmarkedByUser
+          ? removeFromBookmarks
+          : addedToBookmarks,
       });
 
       await queryClient.cancelQueries({ queryKey });
@@ -62,14 +78,16 @@ export default function BookmarkButton({
       console.error(error);
       toast({
         variant: "destructive",
-        description: "Quelque chose n'a pas marché. Veuillez réessayer.",
+        description: somethingWentWrong,
       });
     },
   });
 
   return (
     <button
-      title={data.isBookmarkedByUser ? "Rétirer des favoris" : "Ajouter aux favoris"}
+      title={
+        data.isBookmarkedByUser ? removeFromBookmarks : addToBookmarks
+      }
       onClick={() => mutate()}
       className="flex items-center gap-1"
     >

@@ -26,6 +26,9 @@ import {
   CarouselPrevious,
 } from "../ui/carousel";
 import Zoomable from "../Zoomable";
+import { t } from "@/context/LanguageContext";
+import { VocabularyKey } from "@/lib/vocabulary";
+import { comment } from "postcss";
 
 interface PostProps {
   post: PostData;
@@ -38,6 +41,14 @@ export default function Post({ post }: PostProps) {
 
   const [showComment, setShowComment] = useState(false);
   const [targetComment, setTargetComment] = useState<string | null>(null);
+  const vocabulary: VocabularyKey[] = [
+    "hideComments",
+    "comment",
+    "comments",
+    "viewUserSProfile"
+  ];
+
+  const { hideComments, comment: commentText, comments: commentsText, viewUserSProfile  } = t(vocabulary);
 
   const searchParams = useSearchParams();
   const comment = searchParams.get("comment");
@@ -81,7 +92,7 @@ export default function Post({ post }: PostProps) {
           <UserTooltip user={post.user}>
             <Link
               href={`/users/${post.user.username}`}
-              title={`Afficher le profil de ${post.user.displayName}`}
+              title={viewUserSProfile.replace("[name]", post.user.displayName.split(" ")[0])}
             >
               <UserAvatar
                 avatarUrl={post.user.avatarUrl}
@@ -180,7 +191,7 @@ export default function Post({ post }: PostProps) {
             onClick={() => setShowComment(false)}
             className="mx-auto block max-sm:hidden"
           >
-            Masquer les commentaires
+            {hideComments}
           </Button>
         </>
       )}
@@ -486,9 +497,15 @@ interface CommentButtonProps {
   comments: number;
 }
 function CommentButton({ comments, onClick }: CommentButtonProps) {
+  const vocabulary: VocabularyKey[] = [
+    "comment",
+    "comments"
+  ];
+
+  const { comment: commentText, comments: commentsText } = t(vocabulary);
   return (
     <button
-      title="Commentaires"
+      title={commentsText}
       onClick={onClick}
       className="flex items-center gap-2"
     >
@@ -497,7 +514,7 @@ function CommentButton({ comments, onClick }: CommentButtonProps) {
         <span className="text-sm font-medium tabular-nums">
           {comments}{" "}
           <span className="hidden sm:inline">
-            commentaire{comments > 1 ? "s" : ""}
+            {comments > 1 ? commentsText : commentText}
           </span>
         </span>
       )}

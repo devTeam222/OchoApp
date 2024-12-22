@@ -3,12 +3,22 @@
 import InfiniteScrollContainer from "@/components/InfiniteScrollContainer";
 import Post from "@/components/posts/Post";
 import PostsLoadingSkeleton from "@/components/posts/PostsLoadingSkeleton";
+import { t } from "@/context/LanguageContext";
 import kyInstance from "@/lib/ky";
 import { PostsPage } from "@/lib/types";
+import { VocabularyKey } from "@/lib/vocabulary";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Frown, Loader2, SmilePlus } from "lucide-react";
 
 export default function FollowingFeed() {
+  
+  const vocabulary: VocabularyKey[] = [
+    "noPostOnFollowing",
+    "dataError",
+  ];
+
+  const { noPostOnFollowing, dataError } = t(vocabulary);
+
   const {
     data,
     fetchNextPage,
@@ -40,9 +50,7 @@ export default function FollowingFeed() {
       <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
         <SmilePlus size={150} />
         <h2 className="text-xl">
-        Aucun post pour l&apos;instant. 
-        Suivez des personnes pour voir leurs
-        post publics ici
+        {noPostOnFollowing}
         </h2>
       </div>
     );
@@ -52,7 +60,7 @@ export default function FollowingFeed() {
       <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
         <Frown size={150} />
         <h2 className="text-xl">
-        Quelque chose s&apos;est mal passé. 
+        {dataError} 
         </h2>
       </div>
     );

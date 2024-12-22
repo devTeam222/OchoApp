@@ -9,6 +9,8 @@ import { useSearch } from "@/context/SearchContext";
 import { useNavigation } from "@/context/NavigationContext";
 import { cn } from "@/lib/utils";
 import MessagesButton from "./MessagesButton";
+import { t } from "@/context/LanguageContext";
+import { VocabularyKey } from "@/lib/vocabulary";
 
 interface MenuBarProps {
   className?: string;
@@ -18,6 +20,27 @@ export default function MenuBar({ className }: MenuBarProps) {
   const { user } = useSession();
   const { setSearchActive } = useSearch();
   const { currentNavigation, setCurrentNavigation } = useNavigation();
+  const vocabulary: VocabularyKey[] = [
+      "home",
+      "explore",
+      "search",
+      "activity",
+      "notifications",
+      "messages",
+      "settings",
+      "menu",
+    ];
+  
+    const {
+      home,
+      explore,
+      search,
+      activity,
+      notifications,
+      dark,
+      settings,
+      menu
+    } = t(vocabulary);
 
   if (!user) return null;
 
@@ -51,14 +74,14 @@ export default function MenuBar({ className }: MenuBarProps) {
           currentNavigation === "home" &&
             "bg-accent text-primary hover:text-primary",
         )}
-        title="Accueil"
+        title={home}
         asChild
         onClick={setHomeNav}
       >
         <Link href="/" className="items-center max-sm:flex max-sm:flex-col">
           <Home />
-          <span className="text-xs sm:hidden">Accueil</span>
-          <span className="max-lg:hidden">Accueil</span>
+          <span className="text-xs sm:hidden">{home}</span>
+          <span className="max-lg:hidden">{home}</span>
         </Link>
       </Button>
       <Button
@@ -68,7 +91,7 @@ export default function MenuBar({ className }: MenuBarProps) {
           currentNavigation === "explore" &&
             "bg-accent text-primary hover:text-primary",
         )}
-        title="Recherche"
+        title={explore}
         onClick={handleSearchClick} // Trigger search activation when clicked
         asChild
       >
@@ -77,7 +100,7 @@ export default function MenuBar({ className }: MenuBarProps) {
           className="items-center max-sm:flex max-sm:flex-col"
         >
           <Compass />
-          <span className="text-xs">Explorer</span>
+          <span className="text-xs">{explore}</span>
         </Link>
       </Button>
       <Button
@@ -87,13 +110,13 @@ export default function MenuBar({ className }: MenuBarProps) {
           currentNavigation === "explore" &&
             "bg-accent text-primary hover:text-primary",
         )}
-        title="Recherche"
+        title={search}
         onClick={handleSearchClick} // Trigger search activation when clicked
         asChild
       >
         <Link href="/search" className="">
           <Search />
-          <span className="max-lg:hidden">Recherche</span>
+          <span className="max-lg:hidden">{search}</span>
         </Link>
       </Button>
 
@@ -120,7 +143,7 @@ export default function MenuBar({ className }: MenuBarProps) {
           currentNavigation === "settings" &&
             "bg-accent text-primary hover:text-primary",
         )}
-        title="Favoris"
+        title={menu}
         asChild
         onClick={setSettingsNav}
       >
@@ -129,7 +152,7 @@ export default function MenuBar({ className }: MenuBarProps) {
           className="items-center max-sm:flex max-sm:flex-col"
         >
           <Settings2Icon />
-          <span className="text-xs">Menu</span>
+          <span className="text-xs">{menu}</span>
         </Link>
       </Button>
       <Button
@@ -139,7 +162,7 @@ export default function MenuBar({ className }: MenuBarProps) {
           currentNavigation === "settings" &&
             "bg-accent text-primary hover:text-primary",
         )}
-        title="Favoris"
+        title={settings}
         asChild
         onClick={setSettingsNav}
       >
@@ -148,7 +171,7 @@ export default function MenuBar({ className }: MenuBarProps) {
           className="items-center max-sm:flex max-sm:flex-col"
         >
           <Settings className="max-sm" />
-          <span className="max-lg:hidden">Paramètres</span>
+          <span className="max-lg:hidden">{settings}</span>
         </Link>
       </Button>
     </div>

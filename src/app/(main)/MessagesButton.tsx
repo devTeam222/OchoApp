@@ -1,9 +1,11 @@
 "use client";
 
 import { Button, ButtonProps } from "@/components/ui/button";
+import { t } from "@/context/LanguageContext";
 import kyInstance from "@/lib/ky";
 import { NotificationCountInfo } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { VocabularyKey } from "@/lib/vocabulary";
 import { useQuery } from "@tanstack/react-query";
 import { MessageCircleMore, MessageSquareMore } from "lucide-react";
 import Link from "next/link";
@@ -19,6 +21,14 @@ export default function MessagesButton({
   ...props
 }: MessagesButtonProps) {
   const isProduction = process.env.NODE_ENV === "production";
+
+   const vocabulary: VocabularyKey[] = [
+        "messages",
+      ];
+    
+      const {
+        messages,
+      } = t(vocabulary);
 
   const { data } = useQuery({
     queryKey: ["unread-chat-messages"],
@@ -40,7 +50,7 @@ export default function MessagesButton({
         "flex items-center justify-start max-sm:h-fit max-sm:flex-1 max-sm:p-1.5 sm:gap-3",
         className,
       )}
-      title="Messages"
+      title={messages}
       asChild
     >
       <Link
@@ -55,8 +65,8 @@ export default function MessagesButton({
             </span>
           )}
         </div>
-        <span className="text-xs sm:hidden">Messages</span>
-        <span className="max-lg:hidden">Messages</span>
+        <span className="text-xs sm:hidden">{messages}</span>
+        <span className="max-lg:hidden">{messages}</span>
       </Link>
     </Button>
   );

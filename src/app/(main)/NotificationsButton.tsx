@@ -1,9 +1,11 @@
 "use client";
 
 import { Button, ButtonProps } from "@/components/ui/button";
+import { t } from "@/context/LanguageContext";
 import kyInstance from "@/lib/ky";
 import { NotificationCountInfo } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { VocabularyKey } from "@/lib/vocabulary";
 import { useQuery } from "@tanstack/react-query";
 import { Bell } from "lucide-react";
 import Link from "next/link";
@@ -19,6 +21,10 @@ export default function NotificationsButton({
   ...props
 }: NotificationsButtonProps) {
   const isProduction = process.env.NODE_ENV === "production";
+
+  const vocabulary: VocabularyKey[] = ["activity", "activityCenter", "notifications"];
+
+  const { activity, activityCenter, notifications } = t(vocabulary);
 
   const { data } = useQuery({
     queryKey: ["unread-notifications"],
@@ -38,7 +44,7 @@ export default function NotificationsButton({
         "flex items-center justify-start max-sm:h-fit max-sm:flex-1 max-sm:p-1.5 sm:gap-3",
         className,
       )}
-      title="Notifications"
+      title={activityCenter}
       asChild
     >
       <Link
@@ -53,8 +59,8 @@ export default function NotificationsButton({
             </span>
           )}
         </div>
-        <span className="text-xs sm:hidden">Activité</span>
-        <span className="max-lg:hidden">Notifications</span>
+        <span className="text-xs sm:hidden">{activity}</span>
+        <span className="max-lg:hidden">{notifications}</span>
       </Link>
     </Button>
   );

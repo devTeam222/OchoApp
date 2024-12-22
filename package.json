@@ -40,6 +40,7 @@
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.3.0",
     "emoji-mart": "^5.6.0",
+    "js-cookie": "^3.0.5",
     "ky": "^1.7.2",
     "lucia": "^3.2.0",
     "lucide-react": "^0.445.0",
@@ -63,6 +64,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/js-cookie": "^3.0.6",
     "@types/node": "^22",
     "@types/react": "^18",
     "@types/react-dom": "^18",

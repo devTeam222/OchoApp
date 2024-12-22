@@ -126,7 +126,7 @@ async function Profile({ username }: ProfileProps) {
                 <TabsTrigger value="bookmarks">Favoris</TabsTrigger>
               </TabsList>
               <TabsContent value="posts" className="pb-2">
-                <UserPosts userId={user.id} />
+                <UserPosts userId={user.id} name={user.displayName.split(" ")[0]}/>
               </TabsContent>
               <TabsContent value="bookmarks" className="pb-2">
                 <Bookmarks />
@@ -134,7 +134,7 @@ async function Profile({ username }: ProfileProps) {
             </Tabs>
           </>
         ) : (
-          <UserPosts userId={user.id} />
+          <UserPosts userId={user.id}  name={user.displayName.split(" ")[0]}/>
         )}
       </div>
       <TrendsSidebar />

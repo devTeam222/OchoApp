@@ -24,6 +24,7 @@ import { late } from "zod";
 import French from "@/components/flags/French";
 import { useTheme } from "next-themes";
 import US from "@/components/flags/US";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface OptionsProps {
   setting?: string | null;
@@ -36,6 +37,7 @@ export default function Options({
 }: OptionsProps) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const {language, setLanguage} = useLanguage();
 
   const queryClient = useQueryClient();
 
@@ -162,14 +164,14 @@ export default function Options({
         label: "Français",
         icon: <French size={24} />,
         action: "default",
-        onClick: (value: string) => console.log(value),
+        onClick: () => setLanguage("fr"),
     },
     {
         value: "english",
         label: "English",
         icon: <US size={24} />,
         action: "default",
-        onClick: (value: string) => console.log(value),
+        onClick: () => setLanguage("en"),
     },
   ]
   };

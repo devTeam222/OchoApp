@@ -9,6 +9,8 @@ import {
 import kyInstance from "@/lib/ky";
 import { Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { t } from "@/context/LanguageContext";
+import { VocabularyKey } from "@/lib/vocabulary";
 
 interface LikeButtonProps {
   postId: string;
@@ -17,6 +19,10 @@ interface LikeButtonProps {
 
 export default function LikeButton({ postId, initialState }: LikeButtonProps) {
   const { toast } = useToast();
+
+  const vocabulary: VocabularyKey[] = ["like", "likes", "unLike"];
+
+  const { like: likeText, likes: likesText, unLike } = t(vocabulary);
 
   const queryClient = useQueryClient();
 
@@ -60,19 +66,26 @@ export default function LikeButton({ postId, initialState }: LikeButtonProps) {
 
   return (
     <button
-      title={data.isLikedByUser ? "Je n'aime plus" : "J'aime"}
+      title={data.isLikedByUser ? unLike : likeText}
       onClick={() => mutate()}
       className="flex items-center gap-1"
     >
-        <Heart 
-        className={cn("size-5", data.isLikedByUser && "fill-red-500 text-red-500")}
-        />
-        {!!data.likes && (
-          <>
-          <span>{data.likes}</span>
-          {!!data.likes && (<span className="hidden sm:inline">like{data.likes > 1 ? "s":""}</span>)}
-          </>
+      <Heart
+        className={cn(
+          "size-5",
+          data.isLikedByUser && "fill-red-500 text-red-500",
         )}
+      />
+      {!!data.likes && (
+        <>
+          <span>{data.likes}</span>
+          {!!data.likes && (
+            <span className="hidden sm:inline">
+              {data.likes > 1 ? likesText : likeText}
+            </span>
+          )}
+        </>
+      )}
     </button>
   );
 }
