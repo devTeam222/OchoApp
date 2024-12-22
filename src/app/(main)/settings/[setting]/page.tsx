@@ -1,7 +1,10 @@
 import SetNavigation from "@/components/SetNavigation";
 import TrendsSidebar from "@/components/TrendsSidebar";
-import { PageProps } from "../../../../../.next/types/app/layout";
 import Options from "../Options";
+
+interface PageProps {
+  params: { setting: string };
+}
 
 export default function page({ params: { setting } } : PageProps) {
         
