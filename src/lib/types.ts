@@ -25,7 +25,7 @@ export type LanguageContextType = {
   vocabulary: Vocabulary;
 };
 
-export function getUserDataSelect(loggedInUserId: string) {
+export function getUserDataSelect(loggedInUserId: string, username: string| undefined = undefined) {
   return {
     id: true,
     username: true,
@@ -41,6 +41,16 @@ export function getUserDataSelect(loggedInUserId: string) {
       select: {
         followerId: true,
       },
+    },
+    following: {
+      where: {
+        follower: {
+          username
+        }
+      },
+      select: {
+        followerId: true,
+      }
     },
     _count: {
       select: {
@@ -74,6 +84,12 @@ export function getChatChannelDataInclude() {
                 followerId: true,
               },
             },
+            following: {
+              select: {
+                followerId:true,
+              }
+            }
+            ,
             _count: {
               select: {
                 posts: true,

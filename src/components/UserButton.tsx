@@ -15,21 +15,11 @@ import {
 } from "./ui/dropdown-menu";
 import UserAvatar from "./UserAvatar";
 import Link from "next/link";
-import {
-  Check,
-  LogOutIcon,
-  PaintbrushVertical,
-  Moon,
-  Sun,
-  UserRound,
-} from "lucide-react";
+import { Check, LogOutIcon, Monitor, Moon, Sun, UserIcon } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import kyInstance from "@/lib/ky";
-import { VocabularyKey } from "@/lib/vocabulary";
-import { t } from "@/context/LanguageContext";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface UserButtonProps {
   className?: string;
@@ -37,33 +27,6 @@ interface UserButtonProps {
 
 export default function UserButton({ className }: UserButtonProps) {
   const { user } = useSession();
-
-  useQuery({
-    queryKey: ["last-seen", user.id],
-    queryFn: () => kyInstance.get("/api/users/set-last-seen"),
-    refetchInterval: 60 * 1000,
-    throwOnError: false,
-  });
-
-  const vocabulary: VocabularyKey[] = [
-    "loggedIn",
-    "profile",
-    "theme",
-    "logout",
-    "light",
-    "dark",
-    "systemDefault",
-  ];
-
-  const {
-    loggedIn,
-    profile,
-    theme: themeText,
-    logout: logoutText,
-    light,
-    dark,
-    systemDefault,
-  } = t(vocabulary);
 
   const { theme, setTheme } = useTheme();
 
@@ -73,31 +36,29 @@ export default function UserButton({ className }: UserButtonProps) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className={cn("aspect-square flex-none rounded-full", className)}
+          className={cn("flex-none rounded-full", className)}
           title="Profil"
         >
-          <UserAvatar avatarUrl={user.avatarUrl} size={40} online />
+          <UserAvatar avatarUrl={user.avatarUrl} size={40} />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuLabel className="max-sm:max-w-36">
-          {loggedIn} @{user.username}
+          Connecté(e) en tant que @{user.username}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <Link href={`/users/${user.username}`}>
           <DropdownMenuItem>
-            <UserRound className="mr-2 size-4 rounded-full" />
-            {profile}
+            <UserIcon className="mr-2 size-4" />
+            Profil
           </DropdownMenuItem>
         </Link>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
-            {theme === "system" && (
-              <PaintbrushVertical className="mr-2 size-4" />
-            )}
+            {theme === "system" && <Monitor className="mr-2 size-4" />}
             {theme === "light" && <Sun className="mr-2 size-4" />}
             {theme === "dark" && <Moon className="mr-2 size-4" />}
-            {themeText}
+            Thême
           </DropdownMenuSubTrigger>
           <DropdownMenuPortal>
             <DropdownMenuSubContent className="max-sm:max-w-48">
@@ -106,8 +67,8 @@ export default function UserButton({ className }: UserButtonProps) {
                   setTheme("system");
                 }}
               >
-                <PaintbrushVertical className="mr-2 size-4" />
-                {systemDefault}
+                <Monitor className="mr-2 size-4" />
+                Système (défaut)
                 {theme === "system" && <Check className="ms-2 size-4" />}
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -116,7 +77,7 @@ export default function UserButton({ className }: UserButtonProps) {
                 }}
               >
                 <Sun className="mr-2 size-4" />
-                {light}
+                Clair
                 {theme === "light" && <Check className="ms-2 size-4" />}
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -125,7 +86,7 @@ export default function UserButton({ className }: UserButtonProps) {
                 }}
               >
                 <Moon className="mr-2 size-4" />
-                {dark}
+                Sombre
                 {theme === "dark" && <Check className="ms-2 size-4" />}
               </DropdownMenuItem>
             </DropdownMenuSubContent>
@@ -139,7 +100,7 @@ export default function UserButton({ className }: UserButtonProps) {
           }}
         >
           <LogOutIcon className="mr-2 size-4" />
-          {logoutText}
+          Deconnexion
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

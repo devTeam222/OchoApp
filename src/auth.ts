@@ -16,6 +16,7 @@ export const lucia = new Lucia(adapter, {
   },
   getUserAttributes(databaseUserAttributes) {
     const followers = databaseUserAttributes.followers ? [...databaseUserAttributes.followers] : [];
+    const following = databaseUserAttributes.following ? [...databaseUserAttributes.following] : [];
     
 
     return {
@@ -27,6 +28,7 @@ export const lucia = new Lucia(adapter, {
       facebookId: databaseUserAttributes.facebookId,
       bio: databaseUserAttributes.bio,
       followers,
+      following,
       _count: {
         followers: databaseUserAttributes._count?.followers ?? 0,
         posts: databaseUserAttributes._count?.posts ?? 0,
@@ -53,6 +55,9 @@ interface DatabaseUserAttributes {
   facebookId: string | null;
   bio: string | null;
   followers: {
+    followerId: string;
+  }[];
+  following:{
     followerId: string;
   }[];
   _count: {

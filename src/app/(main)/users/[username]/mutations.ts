@@ -26,24 +26,21 @@ import { useUploadThing } from "@/lib/uploadthing";
 import kyInstance from "@/lib/ky";
 import { useSession } from "../../SessionProvider";
 
-async function uploadAvatar(file: File): Promise<LocalUpload[] | null> {
-  return new Promise<LocalUpload[] | null>(async (resolve, reject) => {
-    const formData = new FormData();
-    formData.append("file", file);
+async function uploadAvatar(file: File) {
+  const formData = new FormData();
+  formData.append('file', file);
 
-    const response = await kyInstance
-      .post("/api/upload/avatar", {
-        body: formData,
-        throwHttpErrors: false,
-      })
-      .json<LocalUpload[] | null>();
-
-    if (!response?.[0]?.serverData?.avatarUrl) {
-      resolve(null);
-    }
-
-    return resolve(response);
+  const response = await fetch('/api/upload/avatar', {
+      method: 'POST',
+      body: formData,
   });
+
+  if (!response.ok) {
+      throw new Error('Failed to upload avatar');
+  }
+
+  const data = await response.json();
+  return data.fileUrl;
 }
 async function uploadGroupAvatar({
   file,
@@ -72,85 +69,70 @@ async function uploadGroupAvatar({
   });
 }
 
+
 export function useUpdateProfileMutation() {
   const { toast } = useToast();
-  const { startUpload: startAvatarUpload } = useUploadThing("avatar");
-
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  async function upload(avatar: File) {
-    const uploadResult = await uploadAvatar(avatar);
-    console.log(uploadResult);
-
-    if (!uploadResult?.[0]) {
-      const utUpload = startAvatarUpload([avatar]);
-
-      return utUpload;
-    }
-    return uploadResult;
-  }
-
   const mutation = useMutation({
-    mutationFn: async ({
-      values,
-      avatar,
-    }: {
-      values: UpdateUserProfileValues;
-      avatar?: File;
-    }) => {
-      return Promise.all([
-        updateUserProfile(values),
-        avatar ? upload(avatar) : Promise.resolve(undefined),
-      ]);
-    },
-    onSuccess: async ([updatedUser, uploadResult]) => {
-      const newAvatarUrl = uploadResult?.[0]?.serverData.avatarUrl;
-
-      const queryFilter: QueryFilters = {
-        queryKey: ["post-feed"],
-      };
-
-      await queryClient.cancelQueries(queryFilter);
-
-      queryClient.setQueriesData<InfiniteData<PostsPage, string | null>>(
-        queryFilter,
-        (oldData) => {
-          if (!oldData) return;
-          return {
-            pageParams: oldData.pageParams,
-            pages: oldData.pages.map((page) => ({
-              nextCursor: page.nextCursor,
-              posts: page.posts.map((post) => {
-                if (post.user.id === updatedUser.id) {
-                  return {
-                    ...post,
-                    user: {
-                      ...updatedUser,
-                      avatarUrl: newAvatarUrl || updatedUser.avatarUrl,
-                    },
-                  };
-                }
-                return post;
+      mutationFn: async ({ values, avatar }: { values: UpdateUserProfileValues, avatar?: File }) => {
+          const [updatedUser, avatarUrl] = await Promise.all([
+              updateUserProfile({
+                  ...values,
+                  avatarUrl: avatar ? await uploadAvatar(avatar) : undefined
               }),
-            })),
-          };
-        },
-      );
-      router.refresh();
+              avatar ? uploadAvatar(avatar) : Promise.resolve(undefined),
+          ]);
 
-      toast({
-        description: "Votre profil a été mis à jour avec succèss",
-      });
-    },
-    onError: (error) => {
-      console.error(error);
-      toast({
-        variant: "destructive",
-        description:
-          "Une erreur est survenue lors de la mise à jour de votre profil",
-      });
-    },
+          return { updatedUser, avatarUrl };
+      },
+      onSuccess: async ({ updatedUser, avatarUrl }) => {
+          const newAvatarUrl = avatarUrl ?? updatedUser.avatarUrl;
+
+          const queryFilter: QueryFilters = {
+              queryKey: ["post-feed"]
+          };
+
+          await queryClient.cancelQueries(queryFilter);
+
+          queryClient.setQueriesData<InfiniteData<PostsPage, string | null>>(
+              queryFilter,
+              (oldData) => {
+                  if (!oldData) return;
+                  return {
+                      pageParams: oldData.pageParams,
+                      pages: oldData.pages.map(page => ({
+                          nextCursor: page.nextCursor,
+                          posts: page.posts.map(post => {
+                              if (post.user.id === updatedUser.id) {
+                                  return {
+                                      ...post,
+                                      user: {
+                                          ...updatedUser,
+                                          avatarUrl: newAvatarUrl
+                                      }
+                                  };
+                              }
+                              return post;
+                          })
+                      }))
+                  };
+              }
+          );
+          router.refresh();
+
+          toast({
+              description: "Votre profil a été mis à jour avec succès"
+          });
+      },
+      onError: (error) => {
+          console.error(error);
+          toast({
+              variant: "destructive",
+              description: "Une erreur est survenue lors de la mise à jour de votre profil",
+          });
+      }
   });
 
   return mutation;

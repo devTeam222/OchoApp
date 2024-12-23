@@ -7,6 +7,8 @@ export default function NotificationsSkeleton() {
       <NotificationSkeleton />
       <NotificationSkeleton />
       <NotificationSkeleton />
+      <NotificationSkeleton />
+      <NotificationSkeleton />
     </div>
   );
 }

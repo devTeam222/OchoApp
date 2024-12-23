@@ -4,13 +4,18 @@ import UserAvatar from "@/components/UserAvatar";
 import { useSession } from "../SessionProvider";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Language, VocabularyKey, getVocabularyObject } from "@/lib/vocabulary";
+import { t } from "@/context/LanguageContext";
+import { CheckCircle2, ChevronRight } from "lucide-react";
 
 export type SettingsOption = {
   value: string;
   label: string;
   icon: JSX.Element;
   action: "default" | "destructive";
-  onClick: (value: string) => void;
+  onClick: (value: string | Language) => void;
+  active?: boolean;
+  hasSubMenu?: boolean;
 };
 
 interface SettingsProps {
@@ -25,6 +30,17 @@ export default function Settings({
   options,
 }: SettingsProps) {
   const { user } = useSession();
+
+    const vocabulary: VocabularyKey[] = [
+    "viewProfile",
+  ];
+
+  const vocabularyObject = getVocabularyObject(vocabulary);
+  type VocabularyObject = typeof vocabularyObject;
+
+  const {
+    viewProfile
+  }: VocabularyObject = t(vocabulary);
 
   if (!user) return null;
 
@@ -42,7 +58,7 @@ export default function Settings({
               <span className="text-muted-foreground">@{user.username}</span>
             </div>
             <Link href={`/users/${user.username}`}>
-              <Button variant="outline">Voir le profil</Button>
+              <Button variant="outline">{viewProfile}</Button>
             </Link>
           </>
         )}
@@ -51,28 +67,32 @@ export default function Settings({
         <ul className="flex w-full flex-col gap-2 rounded-2xl bg-card p-2 shadow-sm max-sm:rounded-none max-sm:bg-card/50">
           {options
             .filter(({ action }) => action === "default")
-            .map(({ value, label, icon, onClick }) => (
+            .map(({ value, label, icon, onClick, hasSubMenu, active }) => (
               <li
                 key={value}
                 className="flex cursor-pointer items-center gap-3 rounded-2xl p-2 text-lg hover:bg-accent max-sm:rounded-sm"
                 onClick={() => onClick(value)}
               >
                 {icon}
-                <span>{label}</span>
+                <span className="flex-1">{label}</span>
+                {active && (<CheckCircle2/>)}
+                {hasSubMenu && (<ChevronRight size={24}/>)}
               </li>
             ))}
         </ul>
         <ul className="flex w-full flex-col gap-2 rounded-2xl py-2 shadow-sm max-sm:px-2">
           {options
             .filter(({ action }) => action === "destructive")
-            .map(({ value, label, icon, onClick }) => (
+            .map(({ value, label, icon, onClick, active, hasSubMenu }) => (
               <li
                 key={value}
                 className="flex cursor-pointer items-center gap-3 rounded-2xl p-2 px-4 text-lg text-destructive hover:bg-accent max-sm:rounded-sm max-sm:px-2"
                 onClick={() => onClick(value)}
               >
                 {icon}
-                <span>{label}</span>
+                <span className="flex-1">{label}</span>
+                {active && (<CheckCircle2/>)}
+                {hasSubMenu && (<ChevronRight size={24}/>)}
               </li>
             ))}
         </ul>

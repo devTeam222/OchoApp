@@ -1,14 +1,22 @@
 import SetNavigation from "@/components/SetNavigation";
 import TrendsSidebar from "@/components/TrendsSidebar";
 import Options from "./Options";
+import { VocabularyKey, getVocabularyObject } from "@/lib/vocabulary";
+import { getTranslation } from "@/lib/language";
 
-export default function page() {
+export default async function page() {
+  const vocabulary: VocabularyKey[] = ["settings"];
+
+  const vocabularyObject = getVocabularyObject(vocabulary);
+  type VocabularyObject = typeof vocabularyObject;
+
+  const { settings }: VocabularyObject = await getTranslation(vocabulary);
   return (
     <>
       <SetNavigation navPage="settings" />
-      <div className="w-full min-w-0 space-y-2 sm:space-y-5 max-w-lg">
+      <div className="w-full min-w-0 max-w-lg space-y-2 sm:space-y-5">
         <div className="bg-card/50 p-5 shadow-sm sm:rounded-2xl sm:bg-card">
-          <h2 className="text-center text-2xl font-bold">Paramètres</h2>
+          <h2 className="text-center text-2xl font-bold">{settings}</h2>
         </div>
         <Options />
       </div>

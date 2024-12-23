@@ -3,27 +3,16 @@
 import InfiniteScrollContainer from "@/components/InfiniteScrollContainer";
 import Post from "@/components/posts/Post";
 import PostsLoadingSkeleton from "@/components/posts/PostsLoadingSkeleton";
-import { t } from "@/context/LanguageContext";
 import kyInstance from "@/lib/ky";
 import { PostsPage } from "@/lib/types";
-import { VocabularyKey } from "@/lib/vocabulary";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Frown, Loader2, UserRoundPen } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
-interface UserPostsProps {
-  userId: string;
-  name: string;
+interface UserPostsProps{
+    userId: string
 }
 
-export default function UserPosts({ userId, name }: UserPostsProps) {
-
-   const vocabulary: VocabularyKey[] = [
-    "noPostOnProfile",
-    "dataError",
-  ];
-
-  const { noPostOnProfile, dataError } = t(vocabulary);
-
+export default function UserPosts({userId}: UserPostsProps) {
   const {
     data,
     fetchNextPage,
@@ -51,27 +40,19 @@ export default function UserPosts({ userId, name }: UserPostsProps) {
   }
 
   if (status === "success" && !posts.length && !hasNextPage) {
-    return (
-      <div className="my-8 flex w-full select-none flex-col items-center gap-2 text-center text-muted-foreground">
-        <UserRoundPen size={150} />
-        <h2 className="mb-9 text-xl">
-          {noPostOnProfile.replace("[name]", name)}
-        </h2>
-      </div>
-    );
+    return <p className="my-8 w-full text-muted-foreground text-center">Cet utilisateur n&apos;a encore publié ici on dirait</p>;
   }
   if (status === "error") {
     return (
-      <div className="my-8 flex w-full select-none flex-col items-center gap-2 text-center text-muted-foreground">
-        <Frown size={150} />
-        <h2 className="mb-9 text-xl">{dataError}</h2>
-      </div>
+      <p className="w-full text-center text-destructive">
+        Erreur lors de la récupération des données
+      </p>
     );
   }
 
   return (
     <InfiniteScrollContainer
-      className="space-y-2 pb-4 sm:space-y-5"
+      className="space-y-5"
       onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
     >
       {posts.map((post) => (

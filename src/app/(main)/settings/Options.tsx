@@ -24,7 +24,8 @@ import { late } from "zod";
 import French from "@/components/flags/French";
 import { useTheme } from "next-themes";
 import US from "@/components/flags/US";
-import { useLanguage } from "@/context/LanguageContext";
+import { t, useLanguage } from "@/context/LanguageContext";
+import { Language, VocabularyKey, getVocabularyObject } from "@/lib/vocabulary";
 
 interface OptionsProps {
   setting?: string | null;
@@ -37,42 +38,184 @@ export default function Options({
 }: OptionsProps) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const {language, setLanguage} = useLanguage();
+  const { language, setLanguage } = useLanguage();
+
+  const vocabulary: VocabularyKey[] = [
+    "account",
+    "privacy",
+    "display",
+    "language",
+    "logout",
+    "birthday",
+    "password",
+    "username",
+    "exportMyData",
+    "disableMyAccount",
+    "deleteMyAccount",
+    "onlineStatus",
+    "system",
+    "light",
+    "dark",
+  ];
+
+  const vocabularyObject = getVocabularyObject(vocabulary);
+  type VocabularyObject = typeof vocabularyObject;
+
+  const {
+    account,
+    privacy,
+    display,
+    language: languageText,
+    logout: logoutText,
+    birthday,
+    password,
+    username,
+    exportMyData,
+    disableMyAccount,
+    deleteMyAccount,
+    onlineStatus,
+    system,
+    light,
+    dark,
+  }: VocabularyObject = t(vocabulary);
 
   const queryClient = useQueryClient();
 
+  const subOptions: Record<string, SettingsOption[]> = {
+    account: [
+      {
+        value: "birthday",
+        label: birthday,
+        icon: <Cake size={24} />,
+        action: "default" as const,
+        onClick: (value: string) => console.log(value),
+      },
+      {
+        value: "password",
+        label: password,
+        icon: <LockKeyholeIcon size={24} />,
+        action: "default",
+        onClick: (value: string) => console.log(value),
+      },
+      {
+        value: "username",
+        label: username,
+        icon: <AtSign size={24} />,
+        action: "default",
+        onClick: (value: string) => console.log(value),
+      },
+      {
+        value: "export",
+        label: exportMyData,
+        icon: <CarFront size={24} />,
+        action: "default",
+        onClick: (value: string) => console.log(value),
+      },
+      {
+        value: "disable",
+        label: disableMyAccount,
+        icon: <Snowflake size={24} />,
+        action: "destructive",
+        onClick: (value: string) => console.log(value),
+      },
+      {
+        value: "delete",
+        label: deleteMyAccount,
+        icon: <Trash2 size={24} />,
+        action: "destructive",
+        onClick: (value: string) => console.log(value),
+      },
+    ],
+    privacy: [
+      {
+        value: "online",
+        label: onlineStatus,
+        icon: <CirclePower size={24} />,
+        action: "default",
+        onClick: (value: string) => console.log(value),
+      },
+    ],
+    display: [
+      {
+        value: "default",
+        label: system,
+        icon: <Paintbrush2 size={24} />,
+        action: "default",
+        active: theme === "system",
+        onClick: () => setTheme("system"),
+      },
+      {
+        value: "light",
+        label: light,
+        icon: <SunIcon size={24} />,
+        action: "default",
+        active: theme === "light",
+        onClick: (value: string) => setTheme(value),
+      },
+      {
+        value: "dark",
+        label: dark,
+        icon: <Moon size={24} />,
+        action: "default",
+        active: theme === "dark",
+        onClick: (value: string) => setTheme(value),
+      },
+    ],
+    language: [
+      {
+        value: "fr",
+        label: "Français",
+        icon: <French size={24} />,
+        action: "default",
+        active: language === "fr",
+        onClick: (value: string | Language) => setLanguage(value as Language),
+      },
+      {
+        value: "en",
+        label: "English",
+        icon: <US size={24} />,
+        action: "default",
+        active: language === "en",
+        onClick: (value: string | Language) => setLanguage(value as Language),
+      },
+    ],
+  };
   const options: SettingsOption[] = [
     {
       value: "account",
-      label: "Compte",
+      label: account,
       icon: <UserRound size={24} />,
       action: "default",
       onClick: (value) => router.push(`/settings/${value}`),
+      hasSubMenu: !!subOptions.account,
     },
     {
       value: "privacy",
-      label: "Confidentialité et sécurité",
+      label: privacy,
       icon: <LockKeyholeIcon size={24} />,
       action: "default",
       onClick: (value) => router.push(`/settings/${value}`),
+      hasSubMenu: !!subOptions.privacy,
     },
     {
       value: "display",
-      label: "Affichage",
+      label: display,
       icon: <SunMoonIcon size={24} />,
       action: "default",
       onClick: (value) => router.push(`/settings/${value}`),
+      hasSubMenu: !!subOptions.display,
     },
     {
       value: "language",
-      label: "Langue (language)",
+      label: languageText,
       icon: <EarthIcon size={24} />,
       action: "default",
       onClick: (value) => router.push(`/settings/${value}`),
+      hasSubMenu: !!subOptions.language,
     },
     {
       value: "logout",
-      label: "Déconnexion",
+      label: logoutText,
       icon: <LogOutIcon size={24} />,
       action: "destructive",
       onClick: () => {
@@ -82,99 +225,6 @@ export default function Options({
     },
   ];
 
-  const subOptions: Record<string, SettingsOption[]> = {
-    account: [
-      {
-        value: "birthday",
-        label: "Date de naissance",
-        icon: <Cake size={24} />,
-        action: "default" as const,
-        onClick: (value: string) => console.log(value),
-      },
-      {
-        value: "password",
-        label: "Mot de passe",
-        icon: <LockKeyholeIcon size={24} />,
-        action: "default",
-        onClick: (value: string) => console.log(value),
-      },
-      {
-        value: "username",
-        label: "Nom d'utilisateur",
-        icon: <AtSign size={24} />,
-        action: "default",
-        onClick: (value: string) => console.log(value),
-      },
-      {
-        value: "export",
-        label: "Exporter mes données",
-        icon: <CarFront size={24} />,
-        action: "default",
-        onClick: (value: string) => console.log(value),
-      },
-      {
-        value: "disable",
-        label: "Désactiver mon compte",
-        icon: <Snowflake size={24} />,
-        action: "destructive",
-        onClick: (value: string) => console.log(value),
-      },
-      {
-        value: "delete",
-        label: "Supprimer mon compte",
-        icon: <Trash2 size={24} />,
-        action: "destructive",
-        onClick: (value: string) => console.log(value),
-      },
-    ],
-    privacy: [
-      {
-        value: "online",
-        label: "Statut en ligne",
-        icon: <CirclePower size={24} />,
-        action: "default",
-        onClick: (value: string) => console.log(value),
-      },
-    ],
-    display: [
-      {
-        value: "default",
-        label: "Système",
-        icon: <Paintbrush2 size={24} />,
-        action: "default",
-        onClick: () => setTheme("system"),
-      },
-      {
-        value: "light",
-        label: "Clair",
-        icon: <SunIcon size={24} />,
-        action: "default",
-        onClick: (value: string) => setTheme("light"),
-      },
-      {
-        value: "dark",
-        label: "Sombre",
-        icon: <Moon size={24} />,
-        action: "default",
-        onClick: (value: string) => setTheme("dark"),
-      },
-    ],
-    language: [{
-        value: "french",
-        label: "Français",
-        icon: <French size={24} />,
-        action: "default",
-        onClick: () => setLanguage("fr"),
-    },
-    {
-        value: "english",
-        label: "English",
-        icon: <US size={24} />,
-        action: "default",
-        onClick: () => setLanguage("en"),
-    },
-  ]
-  };
 
   // Verifier si l'option est un sous-menu si oui trouver le label dans les options et la liste des menus dans subOptions
   if (subOption && setting) {

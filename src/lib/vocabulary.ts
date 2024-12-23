@@ -1,10 +1,16 @@
 export const english = {
+    language: "Language",
     search: "Search",
     searches: "Search",
+    searchResultFor: 'Search results for "[q]".',
+    noSearchResultFor: 'No result for "[q]".',
+    searchEmptyKeyword: "Please enter keywords in your search",
+    tryNewSearch: "Try a new search.",
     loggedIn: "Logged in as",
     profile: "Profile",
     theme: "Theme",
     systemDefault: "System (default)",
+    system: "System",
     light: "Light",
     dark: "Dark",
     logout: "Logout",
@@ -13,6 +19,13 @@ export const english = {
     notifications: "Notifications",
     activity: "Activity",
     activityCenter: "Activity Center",
+    noActivity: "Your activities will be posted here.",
+    followedYou: "followed you",
+    commented: "commented",
+    commentPrev: "“[c]”",
+    onYourPost: "on your post",
+    likedYourPost: "liked your post.",
+    taggedYou: "tagged you",
     message: "Message",
     messages: "Messages",
     settings: "Settings",
@@ -31,14 +44,22 @@ export const english = {
     friend: "Friend",
     follow: "Follow",
     following: "Following",
+    follower: "Follower",
+    followers: "Followers",
     followBack: "Follow back",
     unFollow: "Unfollow",
     forYou: "For you",
     followings: "Following",
     noPostOnForYou: "We haven't found any good recommendations for you yet.",
-    noPostOnFollowing: "No posts yet.  Follow people to see their public posts here",
+    noPostOnFollowing:
+      "No posts yet.  Follow people to see their public posts here",
     noPostOnProfile: "[name] has no public posts.",
     noBookmark: "You don't have any bookmark yet.",
+    bookmarks: "Bookmarks",
+    addToBookmarks: "Add to bookmarks",
+    addedToBookmarks: "Added to bookmarks",
+    removeFromBookmarks: "Remove from bookmarks",
+    removedFromBookmarks: "Removed from bookmarks",
     dataError: "Something went wrong.",
     like: "Like",
     likes: "Likes",
@@ -46,23 +67,59 @@ export const english = {
     comment: "Comment",
     comments: "Comments",
     hideComments: "Hide comments",
+    viewProfile: "View profile",
     viewUserSProfile: "View [name]'s profile",
     delete: "Delete",
     cancel: "Cancel",
     edit: "Edit",
-    deleteConfirmPrompt: "Are you sure you want to delete this post? You can't undo this action.",
-    addToBookmarks: "Add to bookmarks",
-    addedToBookmarks: "Added to bookmarks",
-    removeFromBookmarks: "Remove from bookmarks",
-    removedFromBookmarks: "Removed from bookmarks",
-}
-export const french = {
+    deleteConfirmPrompt:
+      "Are you sure you want to delete this post? You can't undo this action.",
+    noLongerAvailablecomment: "The comment is no longer available",
+    showPreviousComments: "Show previous comments",
+    noComments: "No comments yet",
+    commentAs: "Comment as [name]",
+    invalidInput: "Invalid input. Please check your information",
+    maxLenReached: "You have reached the character limit ([len] characters)",
+    memberSince: "Member since",
+    editProfile: "Edit Profile",
+    profilePicture: "Profile picture",
+    fullName: "Display name",
+    yourFullName: "Your display name",
+    tellUsAboutYou: "Tell us a little bit about yourself",
+    save: "Save",
+    clickToSelectImage: "Click to select an image",
+    removePic: "Remove picture",
+    profileUpdated: "Your profile has been successfully updated",
+    profileUpdateError: "An error occurred while updating your profile",
+    profilePicDeleted: "Your profile picture has been deleted",
+    profilePicDeleteError:
+      "Unable to delete your profile picture. Please try again.",
+    crop: "Crop",
+    account: "Account",
+    privacy: "Privacy and security",
+    display: "Display",
+    birthday: "Birthday",
+    password: "Password",
+    username: "Username",
+    exportMyData: "Export my data",
+    disableMyAccount: "Disable my account",
+    deleteMyAccount: "Delete my account",
+    onlineStatus: "Online status",
+  };
+  export type Vocabulary = typeof english;
+  export const french: Vocabulary = {
+    language: "Langue (language)",
     search: "Rechercher",
     searches: "Recherche",
+    searchResultFor: 'Resultats de recherche pour "[q]".',
+    noSearchResultFor: 'Aucun résultat pour "[q]".',
+    searchEmptyKeyword: "Veuillez saisir des mots-clés dans votre recherche",
+    tryNewSearch: "Essayez une nouvelle recherche.",
     loggedIn: "Connecté(e) en tant que",
     profile: "Profil",
     theme: "Thème",
     systemDefault: "Système (défaut)",
+    system: "Système",
     light: "Clair",
     dark: "Sombre",
     logout: "Déconnexion",
@@ -71,6 +128,13 @@ export const french = {
     notifications: "Notifications",
     activity: "Activité",
     activityCenter: "Centre d'activité",
+    noActivity: "Vos activités s'afficheront ici.",
+    followedYou: "a commencé à te suivre.",
+    commented: "a commenté",
+    commentPrev: "«[c]»",
+    onYourPost: "on your post",
+    likedYourPost: "a aimé ta publication.",
+    taggedYou: "vous a identifié",
     message: "Message",
     messages: "Messages",
     settings: "Paramètres",
@@ -88,38 +152,90 @@ export const french = {
     somethingWentWrong: "Quelque chose n'a pas marché. Veuillez réessayer.",
     friend: "Ami(e)",
     follow: "Suivre",
+    follower: "Follower",
+    followers: "Followers",
     following: "Suivi(e)",
     followBack: "Suivre en retour",
     unFollow: "Ne plus suivre",
     forYou: "Pour toi",
     followings: "Suivis",
-    noPostOnForYou: "Nous n'avons encore trouvé des bonnes recommendations pour vous.",
-    noPostOnFollowing: "Aucune publication pour l'instant.\nSuivez des personnes pour voir leurs publications ici",
-    dataError: "Quelque chose s'est mal passé." ,
+    noPostOnForYou:
+      "Nous n'avons encore trouvé des bonnes recommendations pour vous.",
+    noPostOnFollowing:
+      "Aucune publication pour l'instant.\nSuivez des personnes pour voir leurs publications ici",
+    dataError: "Quelque chose s'est mal passé.",
     noPostOnProfile: "[name] n'a aucune publication publique.",
     noBookmark: "Vous n'avez pas encore de favoris.",
+    bookmarks: "Favoris",
+    addToBookmarks: "Ajouter aux favoris",
+    addedToBookmarks: "Ajoutée aux favoris",
+    removeFromBookmarks: "Rétirer des favoris",
+    removedFromBookmarks: "Rétirée des favoris",
     hideComments: "Masquer les commentaires",
     like: "J'aime",
     likes: "J'aime",
     unLike: "Je n'aime plus.",
     comment: "Commentaire",
     comments: "Commentaires",
+    viewProfile: "Afficher le profil",
     viewUserSProfile: "Afficher le profil de [name]",
     delete: "Supprimer",
     cancel: "Annuler",
     edit: "Modifier",
-    deleteConfirmPrompt: "Êtes-vous sûr de vouloir supprimer cette publication ? \nCette action est irréversible.",
-    addToBookmarks: "Ajouter aux favoris",
-    addedToBookmarks: "Ajoutée aux favoris",
-    removeFromBookmarks: "Rétirer des favoris",
-    removedFromBookmarks: "Rétirée des favoris",
-}
-
-export const vocabulary = {
+    deleteConfirmPrompt:
+      "Êtes-vous sûr de vouloir supprimer cette publication ? \nCette action est irréversible.",
+    noLongerAvailablecomment: "Le commentaire n'est plus diaponible",
+    showPreviousComments: "Afficher les commentaires precedents",
+    noComments: "Aucun commentaire à afficher",
+    commentAs: "Commenter en tant que [name]",
+    invalidInput: "Entrée incorrecte. Veuillez vérifier vos informations",
+    maxLenReached: "Vous avez atteint la limite de caractères ([len] caractères)",
+    memberSince: "Membre depuis",
+    editProfile: "Modifier le profil",
+    profilePicture: "Photo de profil",
+    fullName: "Nom complet",
+    yourFullName: "Votre nom complet",
+    tellUsAboutYou: "Parlez nous un peu de vous",
+    save: "Enregistrer",
+    clickToSelectImage: "Cliquez pour selectioner une image",
+    removePic: "Supprimer la photo",
+    profileUpdated: "Votre profil a été mis à jour avec succèss",
+    profileUpdateError:
+      "Une erreur est survenue lors de la mise à jour de votre profil",
+    profilePicDeleted: "Votre photo de profil a été supprimée",
+    profilePicDeleteError:
+      "Impossible de supprimer votre photo de profil. Veuillez réessayer.",
+    crop: "Rogner",
+    account: "Compte",
+    privacy: "Confidentialité et sécurité",
+    display: "Affichage",
+    birthday: "Date de naissance",
+    password: "Mot de passe",
+    username: "Nom d'utilisateur",
+    exportMyData: "Exporter mes données",
+    disableMyAccount: "Désactiver mon compte",
+    deleteMyAccount: "Supprimer mon compte",
+    onlineStatus: "Statut en ligne",
+  };
+  
+  export const vocabulary = {
     en: english,
     fr: french,
-}
-
-export type Vocabulary = typeof vocabulary.en;
-export type VocabularyKey = keyof Vocabulary;
-export type Language = keyof typeof vocabulary;
+  };
+  
+  export type VocabularyKey = keyof Vocabulary;
+  export type Language = keyof typeof vocabulary;
+  
+  // Fonction pour récupérer les valeurs de `vocabulary` et en faire un type
+  export function getVocabularyObject<K extends VocabularyKey>(
+    keys: K[],
+  ): Record<K, string> {
+    const result: Partial<Record<K, string>> = {};
+    keys.forEach((key) => {
+      if (key in vocabulary.en) {
+        result[key] = vocabulary.en[key];
+      }
+    });
+    return result as Record<K, string>;
+  }
+  

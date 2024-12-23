@@ -12,7 +12,7 @@ import {
 } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useDeleteAvatarMutation, useUpdateProfileMutation } from "./mutations";
+import { useUpdateProfileMutation } from "./mutations";
 import {
   Form,
   FormControl,
@@ -24,13 +24,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import LoadingButton from "@/components/LoadingButton";
-import { StaticImageData } from "next/image";
+import Image, { StaticImageData } from "next/image";
 import { useRef, useState } from "react";
 import { Label } from "@/components/ui/label";
-import { Camera, Trash2 } from "lucide-react";
+import avatarPlaceholder from "@/assets/avatar-placeholder.png";
+import { Camera } from "lucide-react";
 import CropImageDialog from "@/components/CropImageDialog";
 import Resizer from "react-image-file-resizer";
-import UserAvatar from "@/components/UserAvatar";
 
 interface EditProfileDialogProps {
   user: UserData;
@@ -80,12 +80,12 @@ export default function EditProfileDialog({
           <DialogTitle>Modifier le profil</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center gap-1.5">
-          <Label>Photo de profil</Label>
+          <Label>Avatar</Label>
           <AvatarInput
             src={
               croppedAvatar
                 ? URL.createObjectURL(croppedAvatar)
-                : user.avatarUrl
+                : user.avatarUrl || avatarPlaceholder
             }
             onImageCropped={setCroppedAvatar}
           />
@@ -135,14 +135,12 @@ export default function EditProfileDialog({
 }
 
 interface AvatarInputProps {
-  src: string | StaticImageData | null;
+  src: string | StaticImageData;
   onImageCropped: (blob: Blob | null) => void;
 }
 
 function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
   const [imageToCrop, setImageToCrop] = useState<File>();
-
-  const mutation = useDeleteAvatarMutation();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -161,10 +159,6 @@ function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
     );
   }
 
-  function deleteAvatar() {
-    mutation.mutate();
-  }
-
   return (
     <>
       <input
@@ -181,20 +175,17 @@ function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
         className="group relative block"
         title="Cliquez pour selectioner une image"
       >
-        <UserAvatar avatarUrl={src} size={150} className="flex-none" />
+        <Image
+          src={src}
+          alt="Avatar preview"
+          width={150}
+          height={150}
+          className="size-32 flex-none rounded-full object-cover"
+        />
         <span className="absolute inset-0 m-auto flex size-12 items-center justify-center rounded-full bg-black bg-opacity-30 text-white transition-colors duration-200 group-hover:bg-opacity-25">
           <Camera size={24} />
         </span>
       </button>
-      {!!src && !src?.toString().startsWith("blob:") && (
-        <LoadingButton
-          variant="destructive"
-          loading={mutation.isPending}
-          onClick={deleteAvatar}
-        >
-          <Trash2 size={20} /> Supprimer la photo
-        </LoadingButton>
-      )}
       {imageToCrop && (
         <CropImageDialog
           src={URL.createObjectURL(imageToCrop)}
