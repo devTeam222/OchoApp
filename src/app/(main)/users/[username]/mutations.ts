@@ -27,21 +27,23 @@ import kyInstance from "@/lib/ky";
 import { useSession } from "../../SessionProvider";
 import { t } from "@/context/LanguageContext";
 
-async function uploadAvatar(file: File) {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const response = await fetch("/api/upload/avatar", {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to upload avatar");
-  }
-
-  const data = await response.json();
-  return data.fileUrl;
+async function uploadAvatar(file: File): Promise<LocalUpload[] | null> {
+  return new Promise<LocalUpload[] | null>(async (resolve, reject) => {
+      const formData = new FormData();
+      formData.append('file', file);
+  
+      const response = await kyInstance.post('/api/upload/avatar', {
+          body: formData,
+          throwHttpErrors: false,
+      }).json<LocalUpload[] | null>();
+  
+      if (!response?.[0]?.serverData?.avatarUrl) {
+          resolve(null)
+      }
+      
+      return resolve(response);
+      
+  })
 }
 async function uploadGroupAvatar({
   file,
@@ -74,8 +76,21 @@ export function useUpdateProfileMutation() {
   const { toast } = useToast();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { startUpload: startAvatarUpload } =
+    useUploadThing("avatar");
 
   const { profileUpdated, profileUpdateError } = t();
+
+  async function upload(file: File) {
+    // const uploadResult = null;
+    const uploadResult = await uploadAvatar(file);
+
+    if (!uploadResult?.[0]) {
+      const utUpload = startAvatarUpload([file]);
+      return utUpload;
+    }
+    return uploadResult;
+  }
 
   const mutation = useMutation({
     mutationFn: async ({
@@ -85,18 +100,13 @@ export function useUpdateProfileMutation() {
       values: UpdateUserProfileValues;
       avatar?: File;
     }) => {
-      const [updatedUser, avatarUrl] = await Promise.all([
-        updateUserProfile({
-          ...values,
-          avatarUrl: avatar ? await uploadAvatar(avatar) : undefined,
-        }),
-        avatar ? uploadAvatar(avatar) : Promise.resolve(undefined),
+      return Promise.all([
+        updateUserProfile(values),
+        avatar ? upload(avatar) : Promise.resolve(undefined),
       ]);
-
-      return { updatedUser, avatarUrl };
     },
-    onSuccess: async ({ updatedUser, avatarUrl }) => {
-      const newAvatarUrl = avatarUrl ?? updatedUser.avatarUrl;
+    onSuccess: async ([ updatedUser, uploadResult ]) => {
+      const newAvatarUrl = uploadResult?.[0]?.serverData.avatarUrl as string | null;
 
       const queryFilter: QueryFilters = {
         queryKey: ["post-feed"],
