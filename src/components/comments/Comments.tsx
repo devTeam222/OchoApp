@@ -12,6 +12,8 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Draggable from "../Draggable";
+import { t } from "@/context/LanguageContext";
+import { getVocabularyObject, VocabularyKey, VocabularyObject } from "@/lib/vocabulary";
 
 interface CommentsProps {
   post: PostData;
@@ -23,6 +25,13 @@ export default function Comments({ post, onClose }: CommentsProps) {
   const [isDraggable, setIsDraggable] = useState(false);
   const previousWidth = useRef(window.innerWidth);
   const router = useRouter();
+
+  const {
+    showPreviousComments,
+    noComments,
+    noLongerAvailablecomment,
+    dataError,
+  }: VocabularyObject = t();
 
   const searchParams = useSearchParams();
   const comment = searchParams.get("comment");
@@ -77,7 +86,7 @@ export default function Comments({ post, onClose }: CommentsProps) {
     window.addEventListener("resize", handleResize);
 
     return () => window.removeEventListener("resize", handleResize);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const comments = data?.pages.flatMap((page) => page.comments) || [];
@@ -90,7 +99,7 @@ export default function Comments({ post, onClose }: CommentsProps) {
     ) {
       toast({
         variant: "destructive",
-        description: "Le commentaire n'est plus diaponible",
+        description: noLongerAvailablecomment,
       });
       router.push(`/posts/${post.id}`);
       onClose();
@@ -106,14 +115,17 @@ export default function Comments({ post, onClose }: CommentsProps) {
   }, [status, comment, data, comments]);
 
   return (
-    <Draggable draggable={isDraggable} direction="down" className="bottom-0 left-0 z-20 max-sm:fixed w-full  max-sm:rounded-e-sm "
-    contentClassName="max-sm:bg-card max-sm:pt-2 sm:space-y-3 max-sm:rounded-s-sm max-sm:flex max-sm:flex-col-reverse"
-    
-    onDrag={(number)=>{
-      if (number > 200) {
-        onClose();
-      }
-    }}>
+    <Draggable
+      draggable={isDraggable}
+      direction="down"
+      className="bottom-0 left-0 z-20 w-full max-sm:fixed max-sm:rounded-e-sm"
+      contentClassName="max-sm:bg-card max-sm:pt-2 sm:space-y-3 max-sm:rounded-s-sm max-sm:flex max-sm:flex-col-reverse"
+      onDrag={(number) => {
+        if (number > 200) {
+          onClose();
+        }
+      }}
+    >
       <CommentInput post={post} />
       {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
       {hasNextPage && (
@@ -123,18 +135,18 @@ export default function Comments({ post, onClose }: CommentsProps) {
           disabled={isFetching}
           onClick={() => fetchNextPage()}
         >
-          Afficher les commentaires precedents
+          {showPreviousComments}
         </Button>
       )}
       {status === "pending" && <CommentsLoadingSkeleton />}
       {status === "success" && !comments.length && !hasNextPage && (
         <p className="w-full py-4 text-center text-muted-foreground max-sm:flex max-sm:h-[50vh] max-sm:items-center max-sm:justify-center">
-          Aucun commentaire à afficher
+          {noComments}
         </p>
       )}
       {status === "error" && (
         <p className="w-full py-4 text-center text-muted-foreground max-sm:flex max-sm:h-[50vh] max-sm:items-center max-sm:justify-center">
-          Quelque chose s&apos;est mal passé
+          {dataError}
         </p>
       )}
       <div

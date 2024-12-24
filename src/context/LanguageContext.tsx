@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
-import {vocabulary, VocabularyKey} from "@/lib/vocabulary";
+import { allVocabularyKeys, vocabulary, VocabularyKey } from "@/lib/vocabulary";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { useSession } from "@/app/(main)/SessionProvider";
@@ -23,7 +23,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [language, setLanguage] = useState<Language>("en");
-  const {user} = useSession();
+  const { user } = useSession();
   const router = useRouter();
 
   const userId = user.id || "guest";
@@ -65,19 +65,21 @@ export const useLanguage = () => useContext(LanguageContext);
 
 // Fonction pour récupérer une ou plusieurs traductions côté client
 export const t = (
-    keys: VocabularyKey | VocabularyKey[]
-  ): Record<string, string> => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const { language } = useLanguage();
-  
-    // Convertir une clé unique en tableau pour simplifier le traitement
-    const keysArray = Array.isArray(keys) ? keys : [keys];
-  
-    // Construire un objet avec les traductions demandées
-    return keysArray.reduce((acc, key) => {
+  keys: VocabularyKey | VocabularyKey[] = allVocabularyKeys,
+): Record<string, string> => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { language } = useLanguage();
+
+  // Convertir une clé unique en tableau pour simplifier le traitement
+  const keysArray = Array.isArray(keys) ? keys : [keys];
+
+  // Construire un objet avec les traductions demandées
+  return keysArray.reduce(
+    (acc, key) => {
       acc[key] = vocabulary[language][key];
-      
+
       return acc;
-    }, {} as Record<string, string>);
-  };
-  
+    },
+    {} as Record<string, string>,
+  );
+};

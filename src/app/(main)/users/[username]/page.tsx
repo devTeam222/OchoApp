@@ -9,11 +9,15 @@ import prisma from "@/lib/prisma";
 import { FollowerInfo, getUserDataSelect, UserData } from "@/lib/types";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { cache } from "react";
+import { cache, Suspense } from "react";
 import UserPosts from "./UserPosts";
 import Linkify from "@/components/Linkify";
 import EditProfileButton from "./EditProfileButton";
-import { undefined } from "zod";
+import { Frown, Loader2 } from "lucide-react";
+import SetNavigation from "@/components/SetNavigation";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Bookmarks from "../../../../components/bookmarks/Bookmarks";
+import { PostLoadingSkeleton } from "@/components/posts/PostsLoadingSkeleton";
 
 interface PageProps {
   params: { username: string };
@@ -27,13 +31,48 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
         mode: "insensitive",
       },
     },
-    select: getUserDataSelect(loggedInUserId, username),
+    select: getUserDataSelect(loggedInUserId),
   });
 
   if (!user) notFound();
 
   return user;
 });
+
+const getLoggedUser = cache(async (userId: string, loggedInUserId: string) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      id: {
+        equals: loggedInUserId,
+        mode: "insensitive",
+      },
+    },
+    select: getUserDataSelect(userId),
+  });
+
+  if (!user) notFound();
+
+  return user;
+});
+
+export default function page({ params: { username } }: PageProps) {
+  return (
+    <Suspense
+      fallback={
+        <>
+          <div className="w-full max-w-lg">
+            <PostLoadingSkeleton />
+          </div>
+          <div className="sticky top-0 hidden h-fit w-80 flex-none lg:block">
+            <Loader2 className="mx-auto my-3 animate-spin" />
+          </div>
+        </>
+      }
+    >
+      <Profile username={username} />
+    </Suspense>
+  );
+}
 
 export async function generateMetadata({
   params: { username },
@@ -43,65 +82,105 @@ export async function generateMetadata({
   if (!loggedInUser) return {};
   const user = await getUser(username, loggedInUser.id);
   return {
-    title: `${user.displayName} @${user.username}`,
+    title: `${user.displayName}`,
   };
 }
 
-export default async function page({ params: { username } }: PageProps) {
+interface ProfileProps {
+  username: string;
+}
+
+async function Profile({ username }: ProfileProps) {
   const { user: loggedInUser } = await validateRequest();
+
   if (!loggedInUser)
     return (
-      <p className="text-destructive">
-        Vous n&apos;êtes pas autorisé à afficher cette page veuillez
-        d&apos;abord vous connecter ou creer un compte
-      </p>
+      <div className="my-8 flex w-full select-none flex-col items-center gap-2 text-center text-muted-foreground">
+        <Frown size={150} />
+        <h2 className="text-xl">Quelque chose s&apos;est mal passé.</h2>
+      </div>
     );
 
   const user = await getUser(username, loggedInUser.id);
+  const loggedUserData = await getLoggedUser(user.id, loggedInUser.id);
 
   return (
-    <main className="flex w-full min-w-0 gap-5c max-sm:p-4">
-      <div className="w-full min-w-0 space-y-5">
-        <UserProfile user={user} loggedInUserId={loggedInUser.id} />
-        <div className="rounded-2xl bg-card p-5 shadow-sm">
-          <h2 className="text-center text-2xl font-bold">Publications</h2>
-        </div>
-        <UserPosts userId={user.id} />
+    <>
+      <SetNavigation navPage={null} />
+      <div className="w-full min-w-0 max-w-lg space-y-2 pb-2 sm:space-y-5">
+        <UserProfile
+          user={user}
+          loggedInUserId={loggedInUser.id}
+          loggedInUser={loggedUserData}
+        />
+        {user.id !== loggedInUser.id && (
+          <div className="bg-card/50 p-5 shadow-sm sm:rounded-2xl sm:bg-card">
+            <h2 className="text-center text-2xl font-bold">Publications</h2>
+          </div>
+        )}
+        {user.id === loggedInUser.id ? (
+          <>
+            <Tabs defaultValue="posts">
+              <TabsList>
+                <TabsTrigger value="posts">Publications</TabsTrigger>
+                <TabsTrigger value="bookmarks">Favoris</TabsTrigger>
+              </TabsList>
+              <TabsContent value="posts" className="pb-2">
+                <UserPosts userId={user.id} name={user.displayName.split(" ")[0]}/>
+              </TabsContent>
+              <TabsContent value="bookmarks" className="pb-2">
+                <Bookmarks />
+              </TabsContent>
+            </Tabs>
+          </>
+        ) : (
+          <UserPosts userId={user.id}  name={user.displayName.split(" ")[0]}/>
+        )}
       </div>
       <TrendsSidebar />
-    </main>
+    </>
   );
 }
 
 interface UserProfileProps {
   user: UserData;
   loggedInUserId: string;
+  loggedInUser: UserData;
 }
 
-async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
+async function UserProfile({
+  user,
+  loggedInUserId,
+  loggedInUser,
+}: UserProfileProps) {
   const followerInfo: FollowerInfo = {
     followers: user._count.followers,
     isFollowedByUser: user.followers.some(
-      ({ followerId }) => followerId === loggedInUserId
+      ({ followerId }) => followerId === loggedInUserId,
     ),
-    isFolowing: false
+    isFolowing: loggedInUser.followers.some(
+      ({ followerId }) => followerId === user.id,
+    ),
+    isFriend:
+      user.followers.some(({ followerId }) => followerId === loggedInUserId) &&
+      loggedInUser.followers.some(({ followerId }) => followerId === user.id),
   };
 
   return (
-    <div className="h-fit w-full rounded-2xl bg-card p-5 shadow-sm flex flex-col items-center gap-5">
+    <div className="flex h-fit w-full flex-col items-center gap-5 bg-card/50 p-5 shadow-sm sm:rounded-2xl sm:bg-card">
       <UserAvatar
         avatarUrl={user.avatarUrl}
         size={250}
         className="mx-auto size-full max-h-60 max-w-60 rounded-full"
       />
-      <div className="flex flex-wrap gap-3 sm:flex-nowrap w-full">
+      <div className="flex w-full flex-wrap gap-3 sm:flex-nowrap">
         <div className="me-auto space-y-3">
           <div>
             <h1 className="text-3xl font-bold">{user.displayName}</h1>
             <div className="text-muted-foreground">@{user.username}</div>
           </div>
           <div>
-            Membre depuis <Time time={user.createdAt} />
+            Membre depuis <Time time={user.createdAt} long />
           </div>
           <div className="flex items-center gap-3">
             <span>
@@ -115,7 +194,7 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
           </div>
         </div>
         {user.id === loggedInUserId ? (
-          <EditProfileButton user={user}/>
+          <EditProfileButton user={user} />
         ) : (
           <FollowButton userId={user.id} initialState={followerInfo} />
         )}

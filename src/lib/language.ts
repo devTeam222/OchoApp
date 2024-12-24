@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { Language, vocabulary, VocabularyKey } from "./vocabulary";
+import { allVocabularyKeys, Language, vocabulary, VocabularyKey } from "./vocabulary";
 import { validateRequest } from "@/auth";
 
 
@@ -20,7 +20,7 @@ export const getLanguage = async (): Promise<Language> => {
 
 // Récupérer une ou plusieurs traductions côté serveur
 export const getTranslation = async (
-    keys: VocabularyKey | VocabularyKey[]
+    keys: VocabularyKey | VocabularyKey[] = allVocabularyKeys
   ): Promise<Record<string, string>> => {
     const language = await getLanguage();
   

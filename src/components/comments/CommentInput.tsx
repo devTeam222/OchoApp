@@ -9,6 +9,8 @@ import { Textarea } from "../ui/textarea";
 import { useSession } from "@/app/(main)/SessionProvider";
 import UserAvatar from "../UserAvatar";
 import { useToast } from "../ui/use-toast";
+import { t } from "@/context/LanguageContext";
+import { VocabularyObject } from "@/lib/vocabulary";
 
 interface CommentInput {
   post: PostData;
@@ -18,6 +20,11 @@ export default function CommentInput({ post }: CommentInput) {
   const [input, setInput] = useState("");
   const { user } = useSession();
   const { toast } = useToast();
+
+  const {
+    invalidInput,
+    commentAs
+  }: VocabularyObject = t();
 
   const router = useRouter();
 
@@ -30,7 +37,7 @@ export default function CommentInput({ post }: CommentInput) {
     if (!input.trim() || input.trim().length > 1000) {
       toast({
         variant: "destructive",
-        description: "Entée invalide. veuillez verifier vos informations",
+        description: invalidInput,
       });
       return;
     }
@@ -57,7 +64,7 @@ export default function CommentInput({ post }: CommentInput) {
       <div className="flex w-full items-end gap-2 rounded-3xl border border-input bg-background p-1 ring-primary ring-offset-background transition-all duration-75 has-[textarea:focus-visible]:outline-none has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring has-[textarea:focus-visible]:ring-offset-2">
         <UserAvatar avatarUrl={user.avatarUrl} size={40} />
         <Textarea
-          placeholder={`Commenter en tant que ${user.displayName.split(" ")[0]}`}
+          placeholder={commentAs.replace("[name]", user.displayName.split(" ")[0])}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           autoFocus={!post._count.comments}
