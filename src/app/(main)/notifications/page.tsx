@@ -15,7 +15,7 @@ export default async function Page() {
   return (
     <>
       <div className="w-full min-w-0 max-w-lg space-y-5">
-        <div className="rounded-2xl bg-card p-5 shadow-sm">
+        <div className="sm:rounded-2xl bg-card/50 sm:bg-card p-5 shadow-sm">
           <h2 className="text-center text-2xl font-bold">{activityCenter}</h2>
         </div>
         <Notifications />
