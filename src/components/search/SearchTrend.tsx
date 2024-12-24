@@ -10,6 +10,7 @@ import { unstable_cache } from "next/cache";
 import FormattedInt from "../FormattedInt";
 import PostsLoadingSkeleton from "../posts/PostsLoadingSkeleton";
 import { cn } from "@/lib/utils";
+import { getTranslation } from "@/lib/language";
 
 export default function SearchTrend() {
   return (
@@ -24,6 +25,7 @@ export default function SearchTrend() {
 
 async function WhoToFollow() {
   const { user } = await validateRequest();
+  const {whoToFollow, noOneToFollow } = await getTranslation()
   if (!user) return null;
 
   const loggedInUserData = await prisma.user.findFirst({
@@ -55,7 +57,7 @@ async function WhoToFollow() {
 
   return (
     <div className="space-y-5 bg-card/50 p-5 shadow-sm sm:rounded-2xl sm:bg-card">
-      <h2 className="text-xl font-bold">Suggestions pour vous</h2>
+      <h2 className="text-xl font-bold">{whoToFollow}</h2>
       {usersToFollow.map((user) => {
         const now = Date.now();
 
@@ -111,7 +113,7 @@ async function WhoToFollow() {
       })}
       {!usersToFollow.length && (
         <p className="w-full px-2 py-8 text-center italic text-muted-foreground">
-          Aucune suggestion pour le moment
+          {noOneToFollow}
         </p>
       )}
     </div>
@@ -140,6 +142,7 @@ const getTrendingTopics = unstable_cache(
 
 async function TrendingTopics() {
   const trendingTopics = await getTrendingTopics();
+  const {trending, aPost, posts, noTrends } = await getTranslation()
 
   return (
     <div
@@ -148,10 +151,10 @@ async function TrendingTopics() {
         !trendingTopics.length && "hidden",
       )}
     >
-      <h2 className="text-xl font-bold">Tendances</h2>
+      <h2 className="text-xl font-bold">{trending}</h2>
       {!trendingTopics.length && (
         <p className="w-full px-2 py-8 text-center italic text-muted-foreground">
-          Aucune tendance pour le moment
+          {noTrends}
         </p>
       )}
       {trendingTopics.map(({ hashtag, count }) => {
@@ -166,7 +169,7 @@ async function TrendingTopics() {
               {hashtag}
             </h3>
             <p className="break-all text-sm text-muted-foreground">
-              <FormattedInt number={count} /> Post{count === 1 ? "" : "s"}
+              <FormattedInt number={count} /> {count === 1 ? aPost : posts}
             </p>
           </Link>
         );
