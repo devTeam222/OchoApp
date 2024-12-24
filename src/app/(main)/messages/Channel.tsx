@@ -11,6 +11,7 @@ import { QueryKey, useQuery, useQueryClient } from "@tanstack/react-query";
 import kyInstance from "@/lib/ky";
 import FormattedInt from "@/components/FormattedInt";
 import { usePathname, useRouter } from "next/navigation";
+import { t } from "@/context/LanguageContext";
 
 interface ChannelProps {
   channel: ChannelData;
@@ -20,7 +21,34 @@ interface ChannelProps {
 
 export default function Channel({ channel, active, onSelect }: ChannelProps) {
   const { user: loggedinUser } = useSession();
-  const pathname = usePathname();
+  const {
+    appUser,
+    you,
+    newMember,
+    youAddedMember,
+    addedYou,
+    addedMember,
+    memberLeft,
+    youRemovedMember,
+    removedYou,
+    removedMember,
+    memberBanned,
+    youBannedMember,
+    bannedYou,
+    bannedMember,
+    youCreatedGroup,
+    createdGroup,
+    canChatWithYou,
+    youReactedToYourMessage,
+    youReactedToMessage,
+    reactedToMessage,
+    reactedMemberMessage,
+    messageYourself,
+    noPreview,
+    canNoLongerInteract,
+    noMessage,
+    deletedChat,
+  } = t();
   const router = useRouter();
 
   const queryKey: QueryKey = ["unread-chat-messages", channel.id];
@@ -63,7 +91,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
   );
 
   const sender = isSender
-    ? "Vous"
+    ? you
     : channel.isGroup
       ? messagePreview.sender?.displayName.split(" ")[0]
       : otherUser?.displayName.split(" ")[0];
@@ -74,50 +102,94 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
     const memberName = recipient.displayName.split(" ")[0];
     // Check if message type is info of added member
     if (messageType === "NEWMEMBER") {
-      newMemberMsg = `Nouveau membre : ${memberName}`;
+      newMemberMsg = newMember.replace("[name]", memberName);
       if (channel?.messages[0].sender) {
         channel?.messages[0].sender.id === loggedinUser.id
-          ? (newMemberMsg = `Vous avez ajouté ${memberName} au groupe.`)
-          : (newMemberMsg = `${sender} ${recipient.id === loggedinUser.id ? "vous a ajouté" : `a ajouté ${memberName}`} au groupe.`);
+          ? (newMemberMsg = youAddedMember.replace("[name]", memberName))
+          : (newMemberMsg =
+              recipient.id === loggedinUser.id
+                ? addedYou.replace("[name]", sender || appUser)
+                : addedMember
+                    .replace("[name]", sender || appUser)
+                    .replace("[member]", memberName));
       }
     }
     if (messageType === "LEAVE") {
-      oldMemberMsg = `${memberName} a quitté le groupe`;
+      oldMemberMsg = memberLeft.replace("[name]", memberName);
       if (channel?.messages[0].sender) {
         channel?.messages[0].sender.id === loggedinUser.id
-          ? (oldMemberMsg = `Vous avez retiré ${memberName} du groupe.`)
-          : (oldMemberMsg = `${sender} ${recipient.id === loggedinUser.id ? "vous a retiré" : `a retiré ${memberName}`} au groupe.`);
+          ? (oldMemberMsg = youRemovedMember.replace("[name]", memberName))
+          : (oldMemberMsg =
+              recipient.id === loggedinUser.id
+                ? removedYou.replace("[name]", sender || appUser)
+                : removedMember
+                    .replace("[name]", sender || appUser)
+                    .replace("[member]", memberName));
       }
     }
     if (messageType === "BAN") {
-      oldMemberMsg = `${memberName} a été suspendu`;
+      oldMemberMsg = memberBanned.replace("[name]", memberName);
       if (channel?.messages[0].sender) {
         channel?.messages[0].sender.id === loggedinUser.id
-          ? (oldMemberMsg = `Vous avez suspendu ${memberName} du groupe.`)
-          : (oldMemberMsg = `${sender} ${recipient.id === loggedinUser.id ? "vous a suspendu" : `a suspendu ${memberName}`} du groupe.`);
+          ? (oldMemberMsg = youBannedMember.replace("[name]", memberName))
+          : (oldMemberMsg =
+              recipient.id === loggedinUser.id
+                ? bannedYou.replace("[name]", sender || appUser)
+                : bannedMember
+                    .replace("[name]", sender || appUser)
+                    .replace("[member]", memberName));
       }
     }
   }
   const showUserPreview = channel.isGroup || isSender;
 
+  const recipientFirstName = messagePreview.recipient?.displayName.split(" ")[0]
+
   const contentsTypes = {
     CREATE: channel.isGroup
-      ? `${sender} ${messagePreview.sender?.id === loggedinUser.id ? "avez" : "a"} créé ce groupe`
-      : `${otherUser?.displayName.split(" ")[0] || ""} peut maintenant discuter avec vous`,
-    CONTENT: `${showUserPreview ? sender || "" : ""}${showUserPreview ? ": " : ""}${messagePreview.content.length > 100 ? messagePreview.content.slice(0, 100) : messagePreview.content}`,
-    CLEAR: "Aperçu non disponible",
-    DELETE: "Discussion supprimée",
-    SAVED: "Envoyez-vous un message",
+      ? messagePreview.sender?.id === loggedinUser.id
+        ? youCreatedGroup.replace("[name]", sender || appUser)
+        : createdGroup.replace("[name]", sender || appUser)
+      : canChatWithYou.replace(
+          "[name]",
+          otherUser?.displayName.split(" ")[0] || appUser,
+        ),
+    CONTENT: `${showUserPreview ? sender || appUser : ""}${showUserPreview ? ": " : ""}${messagePreview.content.length > 100 ? messagePreview.content.slice(0, 100) : messagePreview.content}`,
+    CLEAR: noPreview,
+    DELETE: deletedChat,
+    SAVED: messageYourself,
     NEWMEMBER: newMemberMsg,
     LEAVE: oldMemberMsg,
     BAN: oldMemberMsg,
-    REACTION: `${sender || ""} ${isSender ? "avez" : "a"} réagi ${messagePreview.content} ${isSender ? `au message de ${messagePreview.recipient?.displayName.split(" ")[0] || "Utilisateur OchoApp"}` : "à votre message"}`,
+    REACTION: isSender
+      ? recipient?.id === loggedinUser.id
+        ? youReactedToYourMessage
+            .replace("[name]", sender || appUser)
+            .replace("[r]", messagePreview.content)
+        : youReactedToMessage
+            .replace("[name]", sender || appUser)
+            .replace("[r]", messagePreview.content)
+            .replace(
+              "[member]",
+              recipientFirstName || appUser,
+            )
+      : recipient?.id === loggedinUser.id
+        ? reactedToMessage
+            .replace("[name]", sender || appUser)
+            .replace("[r]", messagePreview.content)
+        : reactedMemberMessage
+            .replace("[name]", sender || appUser)
+            .replace("[r]", messagePreview.content)
+            .replace(
+              "[member]",
+              recipientFirstName || appUser,
+            ),
   };
 
   let messagePreviewContent = contentsTypes[messageType];
 
   if (currentMember?.type === "OLD" || currentMember?.type === "BANNED") {
-    messagePreviewContent = "Vous ne pouvez plus interagir";
+    messagePreviewContent = canNoLongerInteract;
     messageType = "CLEAR";
   }
 
@@ -141,7 +213,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
       key={channel.id}
       className={`cursor-pointer p-2 ${active && "bg-accent/50"}`}
       onClick={select}
-      title={messagePreviewContent || "Aucun message"}
+      title={messagePreviewContent || noMessage}
     >
       <div className="flex items-center space-x-2">
         {channel.isGroup ? (
@@ -156,10 +228,10 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
         <div className="">
           <span className="font-semibold">
             {channel.name ||
-              `${otherUser?.displayName || "Utilisateur OchoApp"} ${channel.id === `saved-${loggedinUser.id}` ? "(vous)" : ""}` ||
+              `${otherUser?.displayName || appUser} ${channel.id === `saved-${loggedinUser.id}` ? "(vous)" : ""}` ||
               (channel.isGroup
                 ? "Groupe de discussion"
-                : "Utilisateur OchoApp")}
+                : appUser)}
           </span>
           <div className="flex w-fit max-w-full flex-shrink-0 items-center gap-1 text-sm text-muted-foreground">
             <span
@@ -168,7 +240,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
                 messageType !== "CONTENT" && "text-xs text-primary",
               )}
             >
-              {messagePreviewContent || "Aucun message"}
+              {messagePreviewContent || noMessage}
             </span>
             <span>•</span>
             <span className="line-clamp-1 min-w-fit">

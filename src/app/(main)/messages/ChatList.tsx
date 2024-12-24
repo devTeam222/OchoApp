@@ -32,7 +32,7 @@ export default function ChatList({
   const pathname = usePathname();
   const router = useRouter();
 
-  const {unableToLoadChat} = t()
+  const { chats, newChat, startNewChat, noChat, unableToLoadChat, dataError } = t();
 
   const userId = loggedinUser.id;
 
@@ -70,11 +70,7 @@ export default function ChatList({
         } else {
           toast({
             variant: "destructive",
-            description:
-            unableToLoadChat.replace(
-              "[name]",
-              savedChannelId,
-            ),
+            description: unableToLoadChat.replace("[name]", savedChannelId),
           });
         }
       }
@@ -105,9 +101,10 @@ export default function ChatList({
   return (
     <div className="relative flex h-full flex-col">
       <div className="flex items-center justify-between p-4 text-lg font-bold shadow-sm max-sm:bg-card/50">
-        <span>Discussions</span>
+        <span>{chats}</span>
         <span
           className="cursor-pointer hover:text-primary max-sm:hidden"
+          title={startNewChat}
           onClick={onNewChat}
         >
           <SquarePen />
@@ -124,9 +121,9 @@ export default function ChatList({
             <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
               <MessageSquare size={150} />
               <h2 className="text-xl">
-                Aucune discussion disponible. Cliquez sur{" "}
-                <SquarePen className="inline" /> pour créer une nouvelle
-                discussion
+                {noChat.split("[pen]")[0]}
+                <SquarePen className="inline" />
+                {noChat.split("[pen]")[1]}
               </h2>
             </div>
           </p>
@@ -136,7 +133,7 @@ export default function ChatList({
           <p className="flex w-full flex-1 select-none items-center px-3 py-8 text-center italic text-muted-foreground">
             <div className="my-8 flex w-full select-none flex-col items-center gap-2 text-center text-muted-foreground">
               <Frown size={150} />
-              <h2 className="text-xl">Quelque chose s&apos;est mal passé.</h2>
+              <h2 className="text-xl">{dataError}</h2>
             </div>
           </p>
         )}
@@ -158,6 +155,7 @@ export default function ChatList({
       <div
         className="fixed bottom-20 right-5 aspect-square h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary max-sm:flex sm:hidden"
         onClick={onNewChat}
+        title={startNewChat}
       >
         <SquarePen />
       </div>

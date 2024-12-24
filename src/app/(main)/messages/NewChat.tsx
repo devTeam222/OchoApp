@@ -38,6 +38,16 @@ export default function NewChat({ onClose, className }: NewChatProps) {
   const [selectedUsers, setSelectedUsers] = useState<UserData[]>([]);
 
   const {
+    newChat,
+    newGroup,
+    startNewChat,
+    wait,
+    messageYourself,
+    friends,
+    followers,
+    followings,
+    suggestions,
+    groupNameOptional,
     waitEndOfOperation,
     unableToSendMessage,
     unableToCreateGroup,
@@ -206,9 +216,7 @@ export default function NewChat({ onClose, className }: NewChatProps) {
               <ArrowLeft />
             </div>
           )}
-          <span className="flex-1">
-            {isGroup ? "Nouveau groupe" : "Nouvelle discussion"}
-          </span>
+          <span className="flex-1">{isGroup ? newGroup : newChat}</span>
           {!isGroup && (
             <div
               className="cursor-pointer max-sm:hidden"
@@ -237,13 +245,13 @@ export default function NewChat({ onClose, className }: NewChatProps) {
                     size={20}
                   />
                 </div>
-                <p>Nouveau groupe</p>
+                <p>{newGroup}</p>
               </div>
             </li>
             {isPending && (
               <li className="w-full p-3">
                 <LoadingButton loading={isPending} className="w-full">
-                  Patientez
+                  {wait}
                 </LoadingButton>
               </li>
             )}
@@ -258,7 +266,7 @@ export default function NewChat({ onClose, className }: NewChatProps) {
                 <div>
                   <p>{loggedinUser.displayName} (Vous)</p>
                   <p className="text-sm text-muted-foreground">
-                    Envoyez-vous un message
+                    {messageYourself}
                   </p>
                 </div>
               </div>
@@ -270,22 +278,22 @@ export default function NewChat({ onClose, className }: NewChatProps) {
             )}
             <UsersList
               query={friendsQuery}
-              title="Amis"
+              title={friends}
               onSelect={handleChatStart}
             />
             <UsersList
               query={followersQuery}
-              title="Followers"
+              title={followers}
               onSelect={handleChatStart}
             />
             <UsersList
               query={followingQuery}
-              title="Suivis"
+              title={followings}
               onSelect={handleChatStart}
             />
             <UsersList
               query={suggestionsQuery}
-              title="Suggestions"
+              title={suggestions}
               onSelect={handleChatStart}
             />
           </ul>
@@ -305,7 +313,7 @@ export default function NewChat({ onClose, className }: NewChatProps) {
                 </div>
                 <div className="w-full flex-1 border-b-2 border-b-primary py-1">
                   <input
-                    placeholder="Nom du groupe (Facultatif)"
+                    placeholder={groupNameOptional}
                     className="b w-full border-none bg-transparent outline-none"
                     ref={inputRef}
                     onChange={handleNameChange}
@@ -365,7 +373,7 @@ export default function NewChat({ onClose, className }: NewChatProps) {
               <ul className="flex flex-col gap-1">
                 <UsersList
                   query={friendsQuery}
-                  title="Amis"
+                  title={friends}
                   isGroup
                   selectedUsers={selectedUsers}
                   onSelect={addUser}
@@ -379,14 +387,14 @@ export default function NewChat({ onClose, className }: NewChatProps) {
                 />
                 <UsersList
                   query={followingQuery}
-                  title="Suivis"
+                  title={followings}
                   isGroup
                   selectedUsers={selectedUsers}
                   onSelect={addUser}
                 />
                 <UsersList
                   query={suggestionsQuery}
-                  title="Suggestions"
+                  title={suggestions}
                   isGroup
                   selectedUsers={selectedUsers}
                   onSelect={addUser}
@@ -399,7 +407,7 @@ export default function NewChat({ onClose, className }: NewChatProps) {
                 (isPending || !selectedUsers.length) &&
                   "bg-primary-foreground text-primary",
               )}
-              title="Demarrer une nouvelle discussion"
+              title={startNewChat}
               onClick={() => handleChatStart()}
               disabled={isPending || !selectedUsers.length}
             >
