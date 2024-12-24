@@ -41,7 +41,12 @@ export default function Post({ post }: PostProps) {
 
   const [showComment, setShowComment] = useState(false);
   const [targetComment, setTargetComment] = useState<string | null>(null);
-  const { hideComments, comment: commentText, comments: commentsText, viewUserSProfile  } = t();
+  const {
+    hideComments,
+    comment: commentText,
+    comments: commentsText,
+    viewUserSProfile,
+  } = t();
 
   const searchParams = useSearchParams();
   const comment = searchParams.get("comment");
@@ -85,7 +90,10 @@ export default function Post({ post }: PostProps) {
           <UserTooltip user={post.user}>
             <Link
               href={`/users/${post.user.username}`}
-              title={viewUserSProfile.replace("[name]", post.user.displayName.split(" ")[0])}
+              title={viewUserSProfile.replace(
+                "[name]",
+                post.user.displayName.split(" ")[0],
+              )}
             >
               <UserAvatar
                 avatarUrl={post.user.avatarUrl}
@@ -122,7 +130,12 @@ export default function Post({ post }: PostProps) {
           />
         )}
       </div>
-      <div className={cn("relative flex flex-col gap-5 sm:p-5 max-sm:p-2", canShowGradient && "p-0")}>
+      <div
+        className={cn(
+          "relative flex flex-col gap-5 max-sm:p-2 sm:p-5",
+          canShowGradient && "p-0",
+        )}
+      >
         <div
           className="absolute inset-0 h-full w-full"
           onClick={postPage}
@@ -136,9 +149,15 @@ export default function Post({ post }: PostProps) {
               className={cn(
                 "z-10 whitespace-pre-line break-words",
                 canShowGradient &&
-                  `${gradient} max-sm:rounded-none sm:rounded-md px-8`,
-                  !post.attachments.length && `${post.content.length <= 70 ? "text-3xl max-sm:text-2xl" : "text-lg max-sm:text-base"}`
+                  `${gradient} px-8 max-sm:rounded-none sm:rounded-md`,
+                !post.attachments.length &&
+                  `${post.content.length <= 70 ? "text-3xl max-sm:text-2xl" : "text-lg max-sm:text-base"}`,
               )}
+              onClick={() => {
+                if (canShowGradient) {
+                  postPage();
+                }
+              }}
             >
               <p className="w-full">{post.content}</p>
             </div>
