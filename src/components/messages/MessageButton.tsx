@@ -10,6 +10,7 @@ import { useActiveChannel } from "@/context/ChatContext";
 import { useRouter } from "next/navigation";  // Importation de useRouter
 import { ButtonProps } from "../ui/button";
 import { cn } from "@/lib/utils";
+import { t } from "@/context/LanguageContext";
 
 interface MessageButtonProps extends ButtonProps {
   userId: string;
@@ -21,6 +22,7 @@ export default function MessageButton({ userId, className, ...props }: MessageBu
   const { setActiveChannelId } = useActiveChannel();
   const { user: loggedinUser } = useSession();
   const { toast } = useToast();
+  const { unableToSendMessage, message } = t();
   const router = useRouter();  // Utilisation de useRouter
 
   const handleSubmit = () => {
@@ -36,7 +38,7 @@ export default function MessageButton({ userId, className, ...props }: MessageBu
             console.error(error);
             toast({
               variant: "destructive",
-              description: "Impossible d'envoyer un message",
+              description: unableToSendMessage,
             });
           },
         },
@@ -58,7 +60,7 @@ export default function MessageButton({ userId, className, ...props }: MessageBu
             console.error(error);
             toast({
                 variant: "destructive",
-                description: "Impossible d'envoyer un message",
+                description: unableToSendMessage,
             })
         },
       },
@@ -71,7 +73,7 @@ export default function MessageButton({ userId, className, ...props }: MessageBu
       className={cn("bg-primary", className)}
       onClick={handleSubmit}
     >
-      <Send size={24} /> Message
+      <Send size={24} /> {message}
     </LoadingButton>
   );
 }

@@ -12,13 +12,14 @@ import DeleteMessageDialog from "./DeleteMessageDialog";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/app/(main)/SessionProvider";
 import { useToast } from "../ui/use-toast";
+import { t } from "@/context/LanguageContext";
 
 interface MessageMoreButtonProps {
   message: MessageData;
   className?: string;
   open?: boolean;
-  onOpenChange?: (open: boolean)=>void;
-  onReactOpen?: ()=>void; 
+  onOpenChange?: (open: boolean) => void;
+  onReactOpen?: () => void;
   canReact: boolean;
 }
 
@@ -30,28 +31,29 @@ export default function MessageMoreButton({
   onOpenChange,
   canReact,
 }: MessageMoreButtonProps) {
-    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-    const {user: loggedinUser} = useSession();
-    const {toast} = useToast();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { user: loggedinUser } = useSession();
+  const { toast } = useToast();
+  const { messageCopied, unableToCopyMessage } = t();
 
-    if (!loggedinUser) {
-        return null;
-    }
+  if (!loggedinUser) {
+    return null;
+  }
 
-    const isOwner = loggedinUser.id === message.senderId;
+  const isOwner = loggedinUser.id === message.senderId;
 
-     // Fonction pour copier le contenu du message dans le presse-papiers
+  // Fonction pour copier le contenu du message dans le presse-papiers
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(message.content);
       toast({
-        description: "Message copié dans le presse-papiers !"
-      })
+        description: messageCopied,
+      });
     } catch (error) {
-      console.error("Erreur lors de la copie dans le presse-papiers:", error);
+      console.error(unableToCopyMessage, error);
       toast({
         variant: "destructive",
-        description: "Erreur lors de la copie dans le presse-papiers !"
+        description: unableToCopyMessage,
       });
     }
   };
@@ -60,17 +62,23 @@ export default function MessageMoreButton({
     <>
       <DropdownMenu open={open} onOpenChange={onOpenChange}>
         <DropdownMenuTrigger asChild>
-          <Button size="icon" variant="ghost" className={cn("rounded-full w-8 h-8",className)}>
+          <Button
+            size="icon"
+            variant="ghost"
+            className={cn("h-8 w-8 rounded-full", className)}
+          >
             <MoreHorizontal className="size-5 text-muted-foreground" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          {canReact && <DropdownMenuItem onClick={onReactOpen}>
-            <span className="flex items-center gap-3">
-              <Smile className="size-4" />
-              Reagir
-            </span>
-          </DropdownMenuItem>}
+          {canReact && (
+            <DropdownMenuItem onClick={onReactOpen}>
+              <span className="flex items-center gap-3">
+                <Smile className="size-4" />
+                Reagir
+              </span>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onClick={copyToClipboard}>
             <span className="flex items-center gap-3">
               <Copy className="size-4" />
@@ -78,12 +86,14 @@ export default function MessageMoreButton({
             </span>
           </DropdownMenuItem>
 
-          {isOwner && <DropdownMenuItem onClick={() => setShowDeleteDialog(true)}>
-            <span className="flex items-center gap-3 text-destructive">
-              <Trash2 className="size-4" />
-              Supprimer
-            </span>
-          </DropdownMenuItem>}
+          {isOwner && (
+            <DropdownMenuItem onClick={() => setShowDeleteDialog(true)}>
+              <span className="flex items-center gap-3 text-destructive">
+                <Trash2 className="size-4" />
+                Supprimer
+              </span>
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
       <DeleteMessageDialog

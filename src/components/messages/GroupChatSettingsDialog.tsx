@@ -37,6 +37,7 @@ import GroupAvatar from "../GroupAvatar";
 import { Camera, Trash2 } from "lucide-react";
 import CropImageDialog from "../CropImageDialog";
 import { useToast } from "../ui/use-toast";
+import { t } from "@/context/LanguageContext";
 
 interface GroupChatSettingsDialogProps {
   channel: ChannelData;
@@ -56,9 +57,10 @@ export default function GroupChatSettingsDialog({
   onOpenChange,
 }: GroupChatSettingsDialogProps) {
   const [croppedAvatar, setCroppedAvatar] = useState<Blob | null>(null);
-  const {toast} = useToast();
+  const { toast } = useToast();
+  const { dataError } = t();
 
-  const mutation = useUpdateGroupChatMutation({channelId: channel.id});
+  const mutation = useUpdateGroupChatMutation({ channelId: channel.id });
 
   const form = useForm<UpdateGroupChatProfileValues>({
     resolver: zodResolver(updateGroupChatProfileSchema),
@@ -87,10 +89,10 @@ export default function GroupChatSettingsDialog({
           onOpenChange(false);
         },
         onError(error, variables, context) {
-            toast({
-                variant: "destructive",
-                description: "Quelque chose s'est mal passé"
-            })
+          toast({
+            variant: "destructive",
+            description: dataError,
+          });
         },
       },
     );
@@ -129,7 +131,11 @@ export default function GroupChatSettingsDialog({
                 <FormItem>
                   <FormLabel>Nom du groupe</FormLabel>
                   <FormControl>
-                    <Input placeholder="Changer le nom du groupe" {...field} autoFocus={focus=== "name"}/>
+                    <Input
+                      placeholder="Changer le nom du groupe"
+                      {...field}
+                      autoFocus={focus === "name"}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -146,7 +152,7 @@ export default function GroupChatSettingsDialog({
                       placeholder="Decrivez ce groupe..."
                       {...field}
                       className="resize-none"
-                      autoFocus={focus==="description"}
+                      autoFocus={focus === "description"}
                     />
                   </FormControl>
                   <FormMessage />

@@ -3,6 +3,7 @@ import { Loader2, Check } from "lucide-react";
 import UserAvatar from "../UserAvatar";
 import { useToast } from "../ui/use-toast";
 import { cn } from "@/lib/utils";
+import { t } from "@/context/LanguageContext";
 
 type UsersQuery = {
   data: { pages: UsersPage[] } | undefined;
@@ -31,6 +32,8 @@ export default function UsersList({
   onSelect,
 }: UsersListProps) {
   const { toast } = useToast();
+  const { cantSelectMoreUsers } = t();
+
   if (!data?.pages?.length) return null;
 
   return (
@@ -41,7 +44,7 @@ export default function UsersList({
         </li>
       )}
       {isFetching && !isFetchingNextPage && (
-        <li className="w-full py-5 flex justify-center">
+        <li className="flex w-full justify-center py-5">
           <Loader2 className="animate-spin" />
         </li>
       )}
@@ -50,14 +53,13 @@ export default function UsersList({
           <li
             key={`${pageIndex}-${user.id}`}
             className={cn(
-              "w-full cursor-pointer p-3 px-4 hover:bg-primary/5 active:bg-primary/5 rounded-xl",
+              "w-full cursor-pointer rounded-xl p-3 px-4 hover:bg-primary/5 active:bg-primary/5",
               !canSelect && "opacity-70",
             )}
             onClick={() => {
               if (!canSelect) {
                 toast({
-                  description:
-                    "Vous ne pouvez pas selectionner d'autres utilisateurs",
+                  description: cantSelectMoreUsers,
                 });
               }
               onSelect(user);
@@ -87,13 +89,13 @@ export default function UsersList({
         )),
       )}
       {isFetchingNextPage && (
-        <li className="w-full flex justify-center py-5">
+        <li className="flex w-full justify-center py-5">
           <Loader2 className="animate-spin" />
         </li>
       )}
       {hasNextPage && !isFetchingNextPage && (
         <li
-          className="w-full flex justify-center cursor-pointer pb-2 text-primary hover:underline max-sm:underline"
+          className="flex w-full cursor-pointer justify-center pb-2 text-primary hover:underline max-sm:underline"
           onClick={fetchNextPage}
         >
           Afficher plus

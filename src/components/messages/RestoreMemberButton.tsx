@@ -3,6 +3,7 @@ import LoadingButton from "../LoadingButton";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../ui/use-toast";
 import { useRestoreMemberMutation } from "./mutations";
+import { t } from "@/context/LanguageContext";
 
 interface RestoreMemberButtonProps {
   memberId: string;
@@ -17,6 +18,7 @@ export default function RestoreMemberButton({
 }: RestoreMemberButtonProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { groupRestoreSuccess } = t()
 
   const mutation = useRestoreMemberMutation();
   const channelId = channel.id;
@@ -36,7 +38,9 @@ export default function RestoreMemberButton({
           queryClient.invalidateQueries({ queryKey });
 
           toast({
-            description: `Vous avez reintegré ${member?.user?.displayName || "un utilisateur"} à ${channel.name || "ce groupe"}`,
+            description: groupRestoreSuccess
+            .replace("[name]", member?.user?.displayName || "un utilisateur")
+            .replace("[group]", channel.name || "ce groupe"),
           });
         },
         onError(error) {

@@ -13,6 +13,7 @@ import { Button } from "../ui/button";
 import { CircleX } from "lucide-react";
 import LoadingButton from "../LoadingButton";
 import { useBanMemberMutation } from "./mutations";
+import { t } from "@/context/LanguageContext";
 
 interface BanDialogProps {
   memberId: string;
@@ -23,6 +24,7 @@ export default function BanDialog({ memberId, channel }: BanDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { groupBanSuccess } = t();
 
   function onClose() {
     setIsOpen(false);
@@ -46,7 +48,9 @@ export default function BanDialog({ memberId, channel }: BanDialogProps) {
           queryClient.invalidateQueries({ queryKey });
 
           toast({
-            description: `Vous avez suspendu ${member?.user?.displayName || "un utilisateur"} de ${channel.name || "ce groupe"}`,
+            description: groupBanSuccess
+              .replace("[name]", member?.user?.displayName || "un utilisateur")
+              .replace("[group]", channel.name || "ce groupe"),
           });
           onClose();
         },

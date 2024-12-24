@@ -14,6 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../ui/use-toast";
 import LoadingButton from "../LoadingButton";
 import { useSession } from "@/app/(main)/SessionProvider";
+import { t } from "@/context/LanguageContext";
 
 interface LeaveGroupDialogProps {
   channel: ChannelData;
@@ -25,6 +26,7 @@ export default function LeaveGroupDialog({ channel }: LeaveGroupDialogProps) {
   const { user: loggedUser } = useSession();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { groupLeftSuccess } = t();
 
   const memberId = loggedUser.id;
 
@@ -47,7 +49,10 @@ export default function LeaveGroupDialog({ channel }: LeaveGroupDialogProps) {
           queryClient.invalidateQueries({ queryKey });
 
           toast({
-            description: `Vous avez quitté ${channel.name || "ce groupe"}`,
+            description: groupLeftSuccess.replace(
+              "[name]",
+              channel.name || "ce groupe",
+            ),
           });
           onClose();
         },
@@ -93,7 +98,7 @@ export default function LeaveGroupDialog({ channel }: LeaveGroupDialogProps) {
           >
             Quitter
           </LoadingButton>
-          {(member?.type === "OWNER") && (
+          {member?.type === "OWNER" && (
             <LoadingButton
               loading={mutation.isPending}
               variant="destructive"

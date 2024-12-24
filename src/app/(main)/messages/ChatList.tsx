@@ -10,6 +10,7 @@ import { toast } from "@/components/ui/use-toast";
 import { useActiveChannel } from "@/context/ChatContext";
 import { Frown, MessageSquare, SquarePen } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import { t } from "@/context/LanguageContext";
 
 interface SidebarProps {
   activeChannel: (channel: ChannelData) => void;
@@ -30,6 +31,8 @@ export default function ChatList({
   const { activeChannelId, setActiveChannelId } = useActiveChannel();
   const pathname = usePathname();
   const router = useRouter();
+
+  const {unableToLoadChat} = t()
 
   const userId = loggedinUser.id;
 
@@ -68,7 +71,10 @@ export default function ChatList({
           toast({
             variant: "destructive",
             description:
-              "Impossible de charger la conversation " + savedChannelId,
+            unableToLoadChat.replace(
+              "[name]",
+              savedChannelId,
+            ),
           });
         }
       }

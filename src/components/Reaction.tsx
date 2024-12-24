@@ -19,6 +19,7 @@ import { useToast } from "./ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import UserAvatar from "./UserAvatar";
 import { Skeleton } from "./ui/skeleton";
+import { t } from "@/context/LanguageContext";
 
 interface ReactionProps {
   message: MessageData;
@@ -49,6 +50,8 @@ export default function Reaction({
   const [reactionPosition, setReactionPosition] = useState<"top" | "bottom">(
     position,
   );
+
+  const { somethingWentWrong } = t();
 
   useEffect(() => {
     setReactionPosition(position);
@@ -162,7 +165,7 @@ export default function Reaction({
       }
       toast({
         variant: "destructive",
-        description: "Une erreur est survenue. Veuillez réessayer.",
+        description: somethingWentWrong,
       });
     },
     onSettled: () => {
@@ -291,7 +294,7 @@ export default function Reaction({
         {showPicker && (
           <div
             className={cn(
-              "absolute h-fit w-fit bg-background max-sm:fixed max-sm:bottom-2 max-sm:left-full max-sm:flex max-sm:w-full max-sm:justify-center max-sm:bg-transparent z-50",
+              "absolute z-50 h-fit w-fit bg-background max-sm:fixed max-sm:bottom-2 max-sm:left-full max-sm:flex max-sm:w-full max-sm:justify-center max-sm:bg-transparent",
               !isOwner ? "left-0" : "right-0",
               reactionPosition === "top" ? "sm:top-0" : "sm:bottom-0",
             )}

@@ -1,6 +1,7 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { uploadFile } from "@/lib/fileUtils";
+import { t } from "@/context/LanguageContext";
 
 export interface Attachment {
     file: File;
@@ -10,6 +11,7 @@ export interface Attachment {
 
 export default function useMediaUpload() {
     const { toast } = useToast();
+    const {fileMaxLenReached, fileUploadError} = t()
     const [attachments, setAttachment] = useState<Attachment[]>([]);
     const [uploadProgress, setUploadProgress] = useState<number>();
 
@@ -17,7 +19,7 @@ export default function useMediaUpload() {
         if (attachments.length + files.length > 5) {
             toast({
                 variant: "destructive",
-                description: "Vous ne pouvez pas téléverser plus de 5 pièces jointes à la fois."
+                description: fileMaxLenReached
             });
             return;
         }
@@ -43,7 +45,7 @@ export default function useMediaUpload() {
             console.error((e as Error).message);
             toast({
                 variant: "destructive",
-                description: "Une erreur est survenue lors du téléversement de la pièce jointe."
+                description: fileUploadError
             });
         }
     }

@@ -1,5 +1,6 @@
 // components/posts/editors/useMediaUpload.ts
 import { useToast } from "@/components/ui/use-toast";
+import { t } from "@/context/LanguageContext";
 import { useUploadThing } from "@/lib/uploadthing";
 import { useState } from "react";
 
@@ -111,6 +112,7 @@ export default function useMediaUpload() {
   }
 
   async function handleStartUpload(files: File[]) {
+    const { fileMaxSizeReached } = t();
     setIsUploading(true);
     const newAttachments: Attachment[] = [];
 
@@ -121,12 +123,20 @@ export default function useMediaUpload() {
         fileSizeMB > MAX_FILE_SIZE_MB ||
         (file.type.startsWith("image/") && fileSizeMB > MAX_IMAGE_SIZE_MB)
       ) {
-        
         toast({
           variant: "destructive",
-          description: `Le fichier ${file.name} dépasse la taille maximale de ${file.type.startsWith("image/") ? MAX_IMAGE_SIZE_MB : MAX_FILE_SIZE_MB} Mo.`,
+          description: fileMaxSizeReached
+            .replace("[name]", file.name)
+            .replace(
+              "[size]",
+              `${file.type.startsWith("image/") ? MAX_IMAGE_SIZE_MB : MAX_FILE_SIZE_MB} Mo.`,
+            ),
         });
-        setAttachment(attachments.filter(a=>(a.file.name === file.name && a.file.size === file.size)));
+        setAttachment(
+          attachments.filter(
+            (a) => a.file.name === file.name && a.file.size === file.size,
+          ),
+        );
         continue; // Passer au fichier suivant
       }
 

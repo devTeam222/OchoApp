@@ -19,7 +19,7 @@ interface LikeButtonProps {
 
 export default function LikeButton({ postId, initialState }: LikeButtonProps) {
   const { toast } = useToast();
-  const { like: likeText, likes: likesText, unLike } = t();
+  const { like: likeText, likes: likesText, unLike, somethingWentWrong } = t();
 
   const queryClient = useQueryClient();
 
@@ -56,7 +56,7 @@ export default function LikeButton({ postId, initialState }: LikeButtonProps) {
       console.error(error);
       toast({
         variant: "destructive",
-        description: "Quelque chose n'a pas marché. Veuillez réessayer.",
+        description: somethingWentWrong,
       });
     },
   });

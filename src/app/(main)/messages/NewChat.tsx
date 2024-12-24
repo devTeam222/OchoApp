@@ -15,6 +15,7 @@ import { useActiveChannel } from "@/context/ChatContext";
 import { useToast } from "@/components/ui/use-toast";
 import LoadingButton from "@/components/LoadingButton";
 import UsersList from "@/components/messages/UsersList";
+import { t } from "@/context/LanguageContext";
 
 const fetchUsers =
   (endpoint: string) =>
@@ -35,6 +36,13 @@ export default function NewChat({ onClose, className }: NewChatProps) {
   const [search, setSearch] = useState("");
   const [name, setName] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<UserData[]>([]);
+
+  const {
+    waitEndOfOperation,
+    unableToSendMessage,
+    unableToCreateGroup,
+    mustSelectGroupUser,
+  } = t();
 
   const mutation = useCreateChatChannelMutation();
   const saveMsgMutation = useSaveMessageMutation();
@@ -90,11 +98,10 @@ export default function NewChat({ onClose, className }: NewChatProps) {
 
   const isPending = mutation.isPending || saveMsgMutation.isPending;
 
-  
   const handleChatStart = (user: UserData | null = null) => {
     if (isPending) {
       toast({
-        description: "Patientez la fin de l'opération en cours"
+        description: waitEndOfOperation,
       });
       return;
     }
@@ -107,14 +114,14 @@ export default function NewChat({ onClose, className }: NewChatProps) {
             onSuccess: ({ newChannel }) => {
               setActiveChannelId(newChannel.id);
               setSelectedUsers([]);
-              setIsgroup(false)
+              setIsgroup(false);
               onClose();
             },
             onError(error) {
               console.error(error);
               toast({
                 variant: "destructive",
-                description: "Impossible d'envoyer un message",
+                description: unableToSendMessage,
               });
             },
           },
@@ -137,7 +144,7 @@ export default function NewChat({ onClose, className }: NewChatProps) {
             console.error(error);
             toast({
               variant: "destructive",
-              description: "Impossible d'envoyer un message",
+              description: unableToSendMessage,
             });
           },
         },
@@ -160,7 +167,7 @@ export default function NewChat({ onClose, className }: NewChatProps) {
             console.error(error);
             toast({
               variant: "destructive",
-              description: "Impossible de creer ce groupe",
+              description: unableToCreateGroup,
             });
           },
         },
@@ -169,8 +176,7 @@ export default function NewChat({ onClose, className }: NewChatProps) {
     if (isGroup && !selectedUsers.length) {
       toast({
         variant: "destructive",
-        description:
-          "Vous devez sélectionner des utilisateurs pour créer un groupe",
+        description: mustSelectGroupUser,
       });
     }
   };
@@ -310,24 +316,29 @@ export default function NewChat({ onClose, className }: NewChatProps) {
             {!!selectedUsers.length && (
               <>
                 <li className="sticky top-0 w-full animate-scale gap-2 overflow-x-auto p-3 px-4">
-                  <div className="min-w-fit  flex-nowrap flex gap-1">
-                  {selectedUsers.map((user, index) => (
-                    <div
-                      className="flex flex-col items-center gap-2 flex-shrink-0"
-                      key={index}
-                      onClick={() => removeUser(user)}
-                    >
-                      <div className="relative animate-scale">
-                        <UserAvatar avatarUrl={user.avatarUrl} size={48} />
-                        <div className="absolute bottom-0 right-0 flex cursor-pointer items-center justify-center rounded-full bg-muted p-0.5 outline-2 outline-background">
-                          <XIcon size={15} />
+                  <div className="flex min-w-fit flex-nowrap gap-1">
+                    {selectedUsers.map((user, index) => (
+                      <div
+                        className="flex flex-shrink-0 flex-col items-center gap-2"
+                        key={index}
+                        onClick={() => removeUser(user)}
+                      >
+                        <div className="relative animate-scale">
+                          <UserAvatar avatarUrl={user.avatarUrl} size={48} />
+                          <div className="absolute bottom-0 right-0 flex cursor-pointer items-center justify-center rounded-full bg-muted p-0.5 outline-2 outline-background">
+                            <XIcon size={15} />
+                          </div>
                         </div>
+                        <span className="text-xs text-muted-foreground">
+                          {
+                            user.displayName
+                              .split(" ")[0]
+                              .split("-")[0]
+                              .split("_")[0]
+                          }
+                        </span>
                       </div>
-                      <span className="text-xs text-muted-foreground">
-                        {user.displayName.split(" ")[0].split("-")[0].split("_")[0]}
-                      </span>
-                    </div>
-                  ))}
+                    ))}
                   </div>
                 </li>
                 <li className="sticky top-0 flex w-full animate-scale gap-2 px-2 max-sm:hidden">

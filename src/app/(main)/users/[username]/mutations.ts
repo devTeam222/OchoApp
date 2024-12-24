@@ -29,15 +29,15 @@ import { t } from "@/context/LanguageContext";
 
 async function uploadAvatar(file: File) {
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append("file", file);
 
-  const response = await fetch('/api/upload/avatar', {
-      method: 'POST',
-      body: formData,
+  const response = await fetch("/api/upload/avatar", {
+    method: "POST",
+    body: formData,
   });
 
   if (!response.ok) {
-      throw new Error('Failed to upload avatar');
+    throw new Error("Failed to upload avatar");
   }
 
   const data = await response.json();
@@ -51,7 +51,7 @@ async function uploadGroupAvatar({
   channelId: string;
 }): Promise<LocalUpload[] | null> {
   return new Promise<LocalUpload[] | null>(async (resolve) => {
-    const formData : FormData = new FormData();
+    const formData: FormData = new FormData();
     formData.append("file", file);
     formData.append("id", channelId);
 
@@ -70,72 +70,77 @@ async function uploadGroupAvatar({
   });
 }
 
-
 export function useUpdateProfileMutation() {
   const { toast } = useToast();
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const {profileUpdated, profileUpdateError} = t()
+  const { profileUpdated, profileUpdateError } = t();
 
   const mutation = useMutation({
-      mutationFn: async ({ values, avatar }: { values: UpdateUserProfileValues, avatar?: File }) => {
-          const [updatedUser, avatarUrl] = await Promise.all([
-              updateUserProfile({
-                  ...values,
-                  avatarUrl: avatar ? await uploadAvatar(avatar) : undefined
-              }),
-              avatar ? uploadAvatar(avatar) : Promise.resolve(undefined),
-          ]);
+    mutationFn: async ({
+      values,
+      avatar,
+    }: {
+      values: UpdateUserProfileValues;
+      avatar?: File;
+    }) => {
+      const [updatedUser, avatarUrl] = await Promise.all([
+        updateUserProfile({
+          ...values,
+          avatarUrl: avatar ? await uploadAvatar(avatar) : undefined,
+        }),
+        avatar ? uploadAvatar(avatar) : Promise.resolve(undefined),
+      ]);
 
-          return { updatedUser, avatarUrl };
-      },
-      onSuccess: async ({ updatedUser, avatarUrl }) => {
-          const newAvatarUrl = avatarUrl ?? updatedUser.avatarUrl;
+      return { updatedUser, avatarUrl };
+    },
+    onSuccess: async ({ updatedUser, avatarUrl }) => {
+      const newAvatarUrl = avatarUrl ?? updatedUser.avatarUrl;
 
-          const queryFilter: QueryFilters = {
-              queryKey: ["post-feed"]
-          };
+      const queryFilter: QueryFilters = {
+        queryKey: ["post-feed"],
+      };
 
-          await queryClient.cancelQueries(queryFilter);
+      await queryClient.cancelQueries(queryFilter);
 
-          queryClient.setQueriesData<InfiniteData<PostsPage, string | null>>(
-              queryFilter,
-              (oldData) => {
-                  if (!oldData) return;
+      queryClient.setQueriesData<InfiniteData<PostsPage, string | null>>(
+        queryFilter,
+        (oldData) => {
+          if (!oldData) return;
+          return {
+            pageParams: oldData.pageParams,
+            pages: oldData.pages.map((page) => ({
+              nextCursor: page.nextCursor,
+              posts: page.posts.map((post) => {
+                if (post.user.id === updatedUser.id) {
                   return {
-                      pageParams: oldData.pageParams,
-                      pages: oldData.pages.map(page => ({
-                          nextCursor: page.nextCursor,
-                          posts: page.posts.map(post => {
-                              if (post.user.id === updatedUser.id) {
-                                  return {
-                                      ...post,
-                                      user: {
-                                          ...updatedUser,
-                                          avatarUrl: newAvatarUrl
-                                      }
-                                  };
-                              }
-                              return post;
-                          })
-                      }))
+                    ...post,
+                    user: {
+                      ...updatedUser,
+                      avatarUrl: newAvatarUrl,
+                    },
                   };
-              }
-          );
-          router.refresh();
+                }
+                return post;
+              }),
+            })),
+          };
+        },
+      );
+      router.refresh();
 
-          toast({
-              description: profileUpdated
-          });
-      },
-      onError: (error) => {
-          console.error(error);
-          toast({
-              variant: "destructive",
-              description: profileUpdateError,
-          });
-      }
+      toast({
+        description: profileUpdated,
+      });
+    },
+    onError: (error) => {
+      console.error(error);
+      toast({
+        variant: "destructive",
+        description: profileUpdateError,
+      });
+    },
   });
 
   return mutation;
@@ -144,7 +149,7 @@ export function useUpdateProfileMutation() {
 export function useDeleteAvatarMutation() {
   const { toast } = useToast();
 
-  const {profilePicDeleted, profilePicDeleteError} = t()
+  const { profilePicDeleted, profilePicDeleteError } = t();
 
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -210,6 +215,8 @@ export function useUpdateGroupChatMutation({
   const { startUpload: startAvatarUpload } =
     useUploadThing("group-chat-avatar");
   const { user } = useSession();
+
+  const { groupUpdated, groupUpdateError } = t();
 
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -287,15 +294,14 @@ export function useUpdateGroupChatMutation({
       router.refresh();
 
       toast({
-        description: "Le groupe a été mis à jour avec succèss",
+        description: groupUpdated,
       });
     },
     onError: (error) => {
       console.error(error);
       toast({
         variant: "destructive",
-        description:
-          "Une erreur est survenue lors de la mise à jour des paramètres du groupe",
+        description: groupUpdateError,
       });
     },
   });
@@ -305,6 +311,7 @@ export function useUpdateGroupChatMutation({
 export function useDeleteGroupChatAvatarMutation() {
   const { toast } = useToast();
   const { user } = useSession();
+  const { groupIconDeleted, groupIconDeleteError } = t();
 
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -354,15 +361,14 @@ export function useDeleteGroupChatAvatarMutation() {
       router.refresh();
 
       toast({
-        description: "Vous venez de supprimer l'icône du groupe.",
+        description: groupIconDeleted,
       });
     },
     onError: (error) => {
       console.error(error);
       toast({
         variant: "destructive",
-        description:
-          "Impossible de supprimer l'icône du groupe veuillez réessayer.",
+        description: groupIconDeleteError,
       });
     },
   });

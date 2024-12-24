@@ -15,6 +15,7 @@ import { useMenuBar } from "@/context/MenuBarContext";
 import { useEffect, useState } from "react";
 import { useActiveChannel } from "@/context/ChatContext";
 import { usePathname, useRouter } from "next/navigation";
+import { t } from "@/context/LanguageContext";
 
 interface ChatProps {
   channelId: string | null;
@@ -29,6 +30,9 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [prevPathname, setPrevPathname] = useState(pathname);
+
+  const { unableToLoadChat } = t();
+
 
   useEffect(() => {
     setIsVisible(false);
@@ -79,10 +83,14 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
     refetchOnWindowFocus: false,
   });
 
+  const channelName = channel.name || channelId || "Chat"
   if (isChannelError) {
     toast({
       variant: "destructive",
-      description: `Impossible de charger la conversation ${channel.name || channelId}`,
+      description: unableToLoadChat.replace(
+        "[name]",
+        channelName,
+      ),
     });
     onClose();
   }
@@ -108,7 +116,10 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
   if (!loggedUser) {
     toast({
       variant: "destructive",
-      description: "Impossible de charger la conversation " + channelId,
+      description: unableToLoadChat.replace(
+        "[name]",
+        channelName,
+      ),
     });
     setActiveChannelId(null);
     onClose();

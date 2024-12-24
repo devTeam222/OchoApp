@@ -18,9 +18,11 @@ import {
   submitMessage,
 } from "./actions";
 import { ChannelsSection, MessagesSection } from "@/lib/types";
+import { t } from "@/context/LanguageContext";
 
 export function useSubmitMessageMutation() {
   const { toast } = useToast();
+  const { unableToSendThisMessage } = t();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -141,7 +143,7 @@ export function useSubmitMessageMutation() {
       console.error(error);
       toast({
         variant: "destructive",
-        description: "Impossible d'envoyer ce message. Veuillez réessayer.",
+        description: unableToSendThisMessage,
       });
     },
   });
@@ -151,6 +153,7 @@ export function useSubmitMessageMutation() {
 
 export function useSaveMessageMutation() {
   const { toast } = useToast();
+  const { youCanChat, somethingWentWrong } = t();
 
   const queryClient = useQueryClient();
   const mutation = useMutation({
@@ -159,7 +162,7 @@ export function useSaveMessageMutation() {
       const queryKey = ["chat-channels", userId];
       await queryClient.invalidateQueries({ queryKey });
       toast({
-        description: "Vous pouvez maintenent discuter",
+        description: youCanChat,
       });
       return newChannel;
     },
@@ -167,7 +170,7 @@ export function useSaveMessageMutation() {
       console.error(error);
       toast({
         variant: "destructive",
-        description: "Quelque chose s'est n'a pas marché. Veuillez réessayer",
+        description: somethingWentWrong,
       });
     },
   });
@@ -176,33 +179,35 @@ export function useSaveMessageMutation() {
 
 export function useDeleteMessageMutation() {
   const { toast } = useToast();
+  const { unableToDeleteMessage } = t();
 
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-      mutationFn: deleteMessage,
-      onSuccess: async (deletedMessage) => {
-          const queryKey: QueryKey = ["messages", deletedMessage.channelId];
+    mutationFn: deleteMessage,
+    onSuccess: async (deletedMessage) => {
+      const queryKey: QueryKey = ["messages", deletedMessage.channelId];
 
-          const readsKey: QueryKey = ["reads-info", deletedMessage.id];
+      const readsKey: QueryKey = ["reads-info", deletedMessage.id];
 
-          await queryClient.cancelQueries({ queryKey:readsKey });
-          await queryClient.invalidateQueries({ queryKey });
-      },
-      onError(error) {
-          console.error(error);
-          toast({
-              variant: "destructive",
-              description: "Echec de suppression. Veuillez réessayer."
-          })
-      },
-  })
+      await queryClient.cancelQueries({ queryKey: readsKey });
+      await queryClient.invalidateQueries({ queryKey });
+    },
+    onError(error) {
+      console.error(error);
+      toast({
+        variant: "destructive",
+        description: unableToDeleteMessage,
+      });
+    },
+  });
 
   return mutation;
 }
 
 export function useCreateChatChannelMutation() {
   const { toast } = useToast();
+  const {youCanChat, somethingWentWrong} = t()
 
   const queryClient = useQueryClient();
   const mutation = useMutation({
@@ -212,7 +217,7 @@ export function useCreateChatChannelMutation() {
       await queryClient.invalidateQueries({ queryKey });
 
       toast({
-        description: "Vous pouvez maintenent discuter",
+        description: youCanChat,
       });
       return newChannel;
     },
@@ -220,7 +225,7 @@ export function useCreateChatChannelMutation() {
       console.error(error);
       toast({
         variant: "destructive",
-        description: "Quelque chose s'est mal passé. Veuillez réessayer",
+        description: somethingWentWrong,
       });
     },
   });
@@ -228,6 +233,7 @@ export function useCreateChatChannelMutation() {
 }
 export function useAddMemberMutation() {
   const { toast } = useToast();
+  const { somethingWentWrong, groupAddError, groupAddSuccess } = t()
 
   const queryClient = useQueryClient();
   const mutation = useMutation({
@@ -239,14 +245,14 @@ export function useAddMemberMutation() {
         toast({
           variant: "destructive",
           description:
-            "Vous ne pouvez pas ajouter de nouveaux membres à ce groupe",
+            groupAddError,
         });
         return;
       }
       queryClient.invalidateQueries({ queryKey });
 
       toast({
-        description: "Les utilisateurs selectionnes ont bien été ajoutés",
+        description: groupAddSuccess,
       });
       return { newMembersList };
     },
@@ -254,7 +260,7 @@ export function useAddMemberMutation() {
       console.error(error);
       toast({
         variant: "destructive",
-        description: "Quelque chose s'est mal passé. Veuillez réessayer",
+        description: somethingWentWrong,
       });
     },
   });
@@ -262,6 +268,7 @@ export function useAddMemberMutation() {
 }
 export function useAddAdminMutation() {
   const { toast } = useToast();
+  const { somethingWentWrong } = t()
 
   const mutation = useMutation({
     mutationFn: addAdmin,
@@ -272,7 +279,7 @@ export function useAddAdminMutation() {
       console.error(error);
       toast({
         variant: "destructive",
-        description: "Quelque chose s'est mal passé. Veuillez réessayer",
+        description: somethingWentWrong,
       });
     },
   });
@@ -280,6 +287,7 @@ export function useAddAdminMutation() {
 }
 export function useRemoveMemberMutation() {
   const { toast } = useToast();
+  const { somethingWentWrong } = t()
 
   const mutation = useMutation({
     mutationFn: removeMember,
@@ -287,7 +295,7 @@ export function useRemoveMemberMutation() {
       console.error(error);
       toast({
         variant: "destructive",
-        description: "Quelque chose s'est mal passé. Veuillez réessayer",
+        description: somethingWentWrong,
       });
     },
   });
@@ -295,6 +303,7 @@ export function useRemoveMemberMutation() {
 }
 export function useBanMemberMutation() {
   const { toast } = useToast();
+  const { somethingWentWrong } = t()
 
   const mutation = useMutation({
     mutationFn: banMember,
@@ -302,7 +311,7 @@ export function useBanMemberMutation() {
       console.error(error);
       toast({
         variant: "destructive",
-        description: "Quelque chose s'est mal passé. Veuillez réessayer",
+        description: somethingWentWrong,
       });
     },
   });
@@ -310,6 +319,7 @@ export function useBanMemberMutation() {
 }
 export function useRestoreMemberMutation() {
   const { toast } = useToast();
+  const { somethingWentWrong } = t()
 
   const mutation = useMutation({
     mutationFn: restoreMember,
@@ -317,7 +327,7 @@ export function useRestoreMemberMutation() {
       console.error(error);
       toast({
         variant: "destructive",
-        description: "Quelque chose s'est mal passé. Veuillez réessayer",
+        description: somethingWentWrong,
       });
     },
   });
@@ -326,6 +336,7 @@ export function useRestoreMemberMutation() {
 
 export function useLeaveGroupMutation() {
   const { toast } = useToast();
+  const { somethingWentWrong } = t()
 
   const mutation = useMutation({
     mutationFn: leaveGroup,
@@ -333,7 +344,7 @@ export function useLeaveGroupMutation() {
       console.error(error);
       toast({
         variant: "destructive",
-        description: "Quelque chose s'est mal passé. Veuillez réessayer",
+        description: somethingWentWrong,
       });
     },
   });

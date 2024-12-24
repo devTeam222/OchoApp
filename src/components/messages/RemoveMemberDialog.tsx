@@ -13,6 +13,7 @@ import { useRemoveMemberMutation } from "./mutations";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../ui/use-toast";
 import LoadingButton from "../LoadingButton";
+import { t } from "@/context/LanguageContext";
 
 interface RemoveMemberDialogProps {
   memberId: string;
@@ -27,6 +28,7 @@ export default function RemoveMemberDialog({
   const queryClient = useQueryClient();
 
   const { toast } = useToast();
+  const { groupRemoveSuccess } = t();
 
   function onClose() {
     setIsOpen(false);
@@ -50,7 +52,9 @@ export default function RemoveMemberDialog({
           queryClient.invalidateQueries({ queryKey });
 
           toast({
-            description: `Vous avez retiré ${member?.user?.displayName || "un utilisateur"} de ${channel.name || "ce groupe"}`,
+            description: groupRemoveSuccess
+              .replace("[name]", member?.user?.displayName || "un utilisateur")
+              .replace("[group]", channel.name || "ce groupe"),
           });
           onClose();
         },
