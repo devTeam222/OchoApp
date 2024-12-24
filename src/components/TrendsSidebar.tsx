@@ -25,9 +25,7 @@ export default function TrendsSidebar() {
 
 async function WhoToFollow() {
   const { user } = await validateRequest();
-  const vocabulary: VocabularyKey[] = ["whoToFollow", "noOneToFollow"];
-
-  const { whoToFollow, noOneToFollow } = await getTranslation(vocabulary);
+  const { whoToFollow, noOneToFollow } = await getTranslation();
   if (!user) return null;
 
   const loggedInUserData = await prisma.user.findFirst({
@@ -144,14 +142,7 @@ const getTrendingTopics = unstable_cache(
 
 async function TrendingTopics() {
   const trendingTopics = await getTrendingTopics();
-  const vocabulary: VocabularyKey[] = [
-    "trending",
-    "noTrends",
-    "aPost",
-    "posts",
-  ];
-
-  const { trending, noTrends, aPost, posts } = await getTranslation(vocabulary);
+  const { trending, noTrends, aPost, posts } = await getTranslation();
 
   return (
     <div className="space-y-5 bg-card p-5 shadow-sm sm:rounded-2xl">

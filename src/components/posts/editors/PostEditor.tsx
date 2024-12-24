@@ -33,14 +33,7 @@ export default function PostEditor() {
     reset: resetMediaUpload,
   } = useMediaUpload();
 
-  const vocabulary: VocabularyKey[] = [
-    "wtsup",
-    "chooseBackground",
-    "removeBackground",
-    "post",
-  ];
-
-  const { wtsup, chooseBackground, removeBackground, post } = t(vocabulary);
+  const { wtsup, chooseBackground, removeBackground, post } = t();
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: startUpload,

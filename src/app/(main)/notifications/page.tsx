@@ -1,21 +1,26 @@
 import { Metadata } from "next";
 import Notifications from "./Notifications";
 import TrendsSidebar from "@/components/TrendsSidebar";
+import { getTranslation } from "@/lib/language";
 
-export const metadata: Metadata = {
-  title: "Notifications",
-};
+export async function generateMetadata() {
+  const { notifications } = await getTranslation();
+  return {
+    title: notifications,
+  };
+}
 
-export default function Page() {
+export default async function Page() {
+  const { activityCenter } = await getTranslation();
   return (
-    <main className="flex w-full min-w-0 gap-5 max-sm:p-4">
-      <div className="w-full min-w-0 space-y-5">
+    <>
+      <div className="w-full min-w-0 max-w-lg space-y-5">
         <div className="rounded-2xl bg-card p-5 shadow-sm">
-          <h2 className="text-center text-2xl font-bold">Centre d&apos;activités</h2>
+          <h2 className="text-center text-2xl font-bold">{activityCenter}</h2>
         </div>
         <Notifications />
       </div>
       <TrendsSidebar />
-    </main>
+    </>
   );
 }

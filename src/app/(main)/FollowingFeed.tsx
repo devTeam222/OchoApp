@@ -6,18 +6,14 @@ import PostsLoadingSkeleton from "@/components/posts/PostsLoadingSkeleton";
 import { t } from "@/context/LanguageContext";
 import kyInstance from "@/lib/ky";
 import { PostsPage } from "@/lib/types";
-import { VocabularyKey } from "@/lib/vocabulary";
+import { VocabularyObject } from "@/lib/vocabulary";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Frown, Loader2, SmilePlus } from "lucide-react";
 
 export default function FollowingFeed() {
   
-  const vocabulary: VocabularyKey[] = [
-    "noPostOnFollowing",
-    "dataError",
-  ];
 
-  const { noPostOnFollowing, dataError } = t(vocabulary);
+  const { noPostOnFollowing, dataError } : VocabularyObject = t();
 
   const {
     data,

@@ -85,6 +85,7 @@ export const english = {
   profilePicture: "Profile picture",
   fullName: "Display name",
   yourFullName: "Your display name",
+  bio: "Bio",
   tellUsAboutYou: "Tell us a little bit about yourself",
   save: "Save",
   clickToSelectImage: "Click to select an image",
@@ -95,6 +96,7 @@ export const english = {
   profilePicDeleteError:
     "Unable to delete your profile picture. Please try again.",
   crop: "Crop",
+  cropImage: "Crop image",
   account: "Account",
   privacy: "Privacy and security",
   display: "Display",
@@ -195,6 +197,7 @@ export const french: Vocabulary = {
   profilePicture: "Photo de profil",
   fullName: "Nom complet",
   yourFullName: "Votre nom complet",
+  bio: "Bio",
   tellUsAboutYou: "Parlez nous un peu de vous",
   save: "Enregistrer",
   clickToSelectImage: "Cliquez pour selectioner une image",
@@ -206,6 +209,7 @@ export const french: Vocabulary = {
   profilePicDeleteError:
     "Impossible de supprimer votre photo de profil. Veuillez réessayer.",
   crop: "Rogner",
+  cropImage: "Rogner l'image",
   account: "Compte",
   privacy: "Confidentialité et sécurité",
   display: "Affichage",

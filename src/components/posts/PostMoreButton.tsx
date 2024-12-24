@@ -23,11 +23,7 @@ export default function PostMoreButton({
 }: PostMoreButtonProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-   const vocabulary: VocabularyKey[] = [
-    "delete",
-  ];
-
-  const { delete: deleteText  } = t(vocabulary);
+  const { delete: deleteText  } = t();
 
   return (
     <>

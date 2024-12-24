@@ -3,6 +3,7 @@
 import InfiniteScrollContainer from "@/components/InfiniteScrollContainer";
 import Post from "@/components/posts/Post";
 import PostsLoadingSkeleton from "@/components/posts/PostsLoadingSkeleton";
+import { t } from "@/context/LanguageContext";
 import kyInstance from "@/lib/ky";
 import { PostsPage } from "@/lib/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -13,6 +14,8 @@ interface SearchResultsProps {
 }
 
 export default function SearchResults({ query }: SearchResultsProps) {
+  const { noSearchResultFor, tryNewSearch, dataError, } = t();
+
   const {
     data,
     fetchNextPage,
@@ -46,17 +49,15 @@ export default function SearchResults({ query }: SearchResultsProps) {
     return (
       <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
         <SearchX size={150} />
-        <h2 className="text-xl">
-          Il n&apos;y a pas de resultats pour &quot;{query}&quot;.{" "}
-        </h2>
-        <h2 className="text-xl">Essayez une nouvelle recherche. </h2>
+        <h2 className="text-xl">{noSearchResultFor.replace("[q]", query)}</h2>
+        <h2 className="text-xl">{tryNewSearch}</h2>
       </div>
     );
   }
   if (status === "error") {
     <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
       <Frown size={150} />
-      <h2 className="text-xl">Quelque chose s&apos;est mal passé.</h2>
+      <h2 className="text-xl">{dataError}</h2>
     </div>;
   }
 

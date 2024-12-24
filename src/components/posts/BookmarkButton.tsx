@@ -22,22 +22,13 @@ export default function BookmarkButton({
   initialState,
 }: BookmarkButtonProps) {
   const { toast } = useToast();
-
-  const vocabulary: VocabularyKey[] = [
-    "addToBookmarks",
-    "addedToBookmarks",
-    "removeFromBookmarks",
-    "removedFromBookmarks",
-    "somethingWentWrong"
-  ];
-
   const {
     addToBookmarks,
     addedToBookmarks,
     removeFromBookmarks,
     removedFromBookmarks,
     somethingWentWrong
-  } = t(vocabulary);
+  } = t();
 
   const queryClient = useQueryClient();
 

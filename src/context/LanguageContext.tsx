@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
-import { allVocabularyKeys, vocabulary, VocabularyKey } from "@/lib/vocabulary";
+import { allVocabularyKeys, vocabulary, VocabularyKey, VocabularyObject } from "@/lib/vocabulary";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { useSession } from "@/app/(main)/SessionProvider";
@@ -66,7 +66,7 @@ export const useLanguage = () => useContext(LanguageContext);
 // Fonction pour récupérer une ou plusieurs traductions côté client
 export const t = (
   keys: VocabularyKey | VocabularyKey[] = allVocabularyKeys,
-): Record<string, string> => {
+): VocabularyObject => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { language } = useLanguage();
 

@@ -41,14 +41,7 @@ export default function Post({ post }: PostProps) {
 
   const [showComment, setShowComment] = useState(false);
   const [targetComment, setTargetComment] = useState<string | null>(null);
-  const vocabulary: VocabularyKey[] = [
-    "hideComments",
-    "comment",
-    "comments",
-    "viewUserSProfile"
-  ];
-
-  const { hideComments, comment: commentText, comments: commentsText, viewUserSProfile  } = t(vocabulary);
+  const { hideComments, comment: commentText, comments: commentsText, viewUserSProfile  } = t();
 
   const searchParams = useSearchParams();
   const comment = searchParams.get("comment");
@@ -497,12 +490,7 @@ interface CommentButtonProps {
   comments: number;
 }
 function CommentButton({ comments, onClick }: CommentButtonProps) {
-  const vocabulary: VocabularyKey[] = [
-    "comment",
-    "comments"
-  ];
-
-  const { comment: commentText, comments: commentsText } = t(vocabulary);
+  const { comment: commentText, comments: commentsText } = t();
   return (
     <button
       title={commentsText}

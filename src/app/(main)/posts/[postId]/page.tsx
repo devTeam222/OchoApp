@@ -49,7 +49,7 @@ export async function generateMetadata({ params: { postId } }: PageProps) {
   const post = await getPost(postId, user.id);
 
   return {
-    title: `${post.user.displayName} : ${post.content.slice(0, 50)}${post.content.length > 50 ? "..." : ""}`,
+    title: `${post.content.slice(0, 50)}${post.content.length > 50 ? "..." : ""}`,
   };
 }
 

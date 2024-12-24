@@ -1,16 +1,10 @@
 import SetNavigation from "@/components/SetNavigation";
 import TrendsSidebar from "@/components/TrendsSidebar";
 import Options from "./Options";
-import { VocabularyKey, getVocabularyObject } from "@/lib/vocabulary";
 import { getTranslation } from "@/lib/language";
 
 export default async function page() {
-  const vocabulary: VocabularyKey[] = ["settings"];
-
-  const vocabularyObject = getVocabularyObject(vocabulary);
-  type VocabularyObject = typeof vocabularyObject;
-
-  const { settings }: VocabularyObject = await getTranslation(vocabulary);
+  const { settings } = await getTranslation();
   return (
     <>
       <SetNavigation navPage="settings" />

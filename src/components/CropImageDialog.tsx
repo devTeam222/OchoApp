@@ -8,7 +8,8 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 import { Button } from "./ui/button";
-import "cropperjs/dist/cropper.css"
+import "cropperjs/dist/cropper.css";
+import { t } from "@/context/LanguageContext";
 
 interface CropImageDialogProps {
   src: string;
@@ -24,6 +25,7 @@ export default function CropImageDialog({
   onClose,
 }: CropImageDialogProps) {
   const cropperRef = useRef<ReactCropperElement>(null);
+  const { crop: cropText, cropImage, cancel } = t();
 
   function crop() {
     const cropper = cropperRef.current?.cropper;
@@ -38,7 +40,7 @@ export default function CropImageDialog({
     <Dialog open onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Rogner l&apos;image</DialogTitle>
+          <DialogTitle>{cropImage}</DialogTitle>
         </DialogHeader>
         <Cropper
           src={src}
@@ -50,9 +52,9 @@ export default function CropImageDialog({
         />
         <DialogFooter>
           <Button variant="secondary" onClick={onClose}>
-            Annuler
+            {cancel}
           </Button>
-          <Button onClick={crop}>Rogner</Button>
+          <Button onClick={crop}>{cropText}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

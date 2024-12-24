@@ -1,8 +1,6 @@
 import SetNavigation from "@/components/SetNavigation";
 import TrendsSidebar from "@/components/TrendsSidebar";
 import Options from "../Options";
-import { t } from "@/context/LanguageContext";
-import { VocabularyKey, getVocabularyObject } from "@/lib/vocabulary";
 import { getTranslation } from "@/lib/language";
 
 interface PageProps {
@@ -11,15 +9,8 @@ interface PageProps {
 
 export default async function page({ params: { setting } } : PageProps) {
 
-  const vocabulary: VocabularyKey[] = [
-    "settings",
-  ];
-
-  const vocabularyObject = getVocabularyObject(vocabulary);
-  type VocabularyObject = typeof vocabularyObject;
-
-  const { settings }: VocabularyObject =
-    await getTranslation(vocabulary);
+  const { settings } =
+    await getTranslation();
         
   return (
     <>

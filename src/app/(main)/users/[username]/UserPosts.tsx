@@ -17,12 +17,7 @@ interface UserPostsProps {
 
 export default function UserPosts({ userId, name }: UserPostsProps) {
 
-   const vocabulary: VocabularyKey[] = [
-    "noPostOnProfile",
-    "dataError",
-  ];
-
-  const { noPostOnProfile, dataError } = t(vocabulary);
+  const { noPostOnProfile, dataError } = t();
 
   const {
     data,

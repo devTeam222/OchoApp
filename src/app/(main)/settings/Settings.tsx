@@ -30,17 +30,9 @@ export default function Settings({
   options,
 }: SettingsProps) {
   const { user } = useSession();
-
-    const vocabulary: VocabularyKey[] = [
-    "viewProfile",
-  ];
-
-  const vocabularyObject = getVocabularyObject(vocabulary);
-  type VocabularyObject = typeof vocabularyObject;
-
   const {
     viewProfile
-  }: VocabularyObject = t(vocabulary);
+  } = t();
 
   if (!user) return null;
 

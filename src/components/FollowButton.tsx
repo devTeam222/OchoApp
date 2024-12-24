@@ -19,15 +19,6 @@ export default function FollowButton({
   initialState,
 }: FollowButtonProps) {
   const { toast } = useToast();
-  const vocabulary: VocabularyKey[] = [
-    "somethingWentWrong",
-    "friend",
-    "follow",
-    "following",
-    "followBack",
-    "unFollow",
-  ];
-
   const {
     somethingWentWrong,
     friend,
@@ -35,7 +26,7 @@ export default function FollowButton({
     following,
     followBack,
     unFollow,
-  } = t(vocabulary);
+  } = t();
 
   const queryClient = useQueryClient();
 

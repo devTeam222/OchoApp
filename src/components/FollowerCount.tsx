@@ -3,6 +3,7 @@
 import useFollowerInfo from "@/hooks/useFollowerInfo";
 import { FollowerInfo } from "@/lib/types";
 import FormattedInt from "./FormattedInt";
+import { t } from "@/context/LanguageContext";
 
 interface FollowerCountProps {
   userId: string;
@@ -14,13 +15,14 @@ export default function FollowerCount({
   initialState,
 }: FollowerCountProps) {
   const { data } = useFollowerInfo(userId, initialState);
+  const {follower, followers} = t()
 
   return (
     <span>
       <span className="font-semibold">
         <FormattedInt number={data.followers} />
       </span>{" "}
-      Follower{data.followers > 1 ? "s" : ""}
+      {data.followers > 1 ? followers : follower}
     </span>
   );
 }

@@ -40,27 +40,6 @@ export default function Options({
   const { theme, setTheme } = useTheme();
   const { language, setLanguage } = useLanguage();
 
-  const vocabulary: VocabularyKey[] = [
-    "account",
-    "privacy",
-    "display",
-    "language",
-    "logout",
-    "birthday",
-    "password",
-    "username",
-    "exportMyData",
-    "disableMyAccount",
-    "deleteMyAccount",
-    "onlineStatus",
-    "system",
-    "light",
-    "dark",
-  ];
-
-  const vocabularyObject = getVocabularyObject(vocabulary);
-  type VocabularyObject = typeof vocabularyObject;
-
   const {
     account,
     privacy,
@@ -77,7 +56,7 @@ export default function Options({
     system,
     light,
     dark,
-  }: VocabularyObject = t(vocabulary);
+  } = t();
 
   const queryClient = useQueryClient();
 

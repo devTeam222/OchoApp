@@ -26,13 +26,7 @@ export default function DeletePostDialog({
 }: DeletePostDialogProps) {
   const mutation = useDeletePostMutation();
 
-  const vocabulary: VocabularyKey[] = [
-    "delete",
-    "cancel",
-    "deleteConfirmPrompt",
-  ];
-
-  const { delete: deleteText, cancel, deleteConfirmPrompt } = t(vocabulary);
+  const { delete: deleteText, cancel, deleteConfirmPrompt } = t();
 
   function handleOpenChange(open: boolean) {
     if (!open || !mutation.isPending) {

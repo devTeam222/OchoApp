@@ -10,7 +10,7 @@ import { useNavigation } from "@/context/NavigationContext";
 import { cn } from "@/lib/utils";
 import MessagesButton from "./MessagesButton";
 import { t } from "@/context/LanguageContext";
-import { VocabularyKey } from "@/lib/vocabulary";
+import { VocabularyObject } from "@/lib/vocabulary";
 
 interface MenuBarProps {
   className?: string;
@@ -20,16 +20,6 @@ export default function MenuBar({ className }: MenuBarProps) {
   const { user } = useSession();
   const { setSearchActive } = useSearch();
   const { currentNavigation, setCurrentNavigation } = useNavigation();
-  const vocabulary: VocabularyKey[] = [
-      "home",
-      "explore",
-      "search",
-      "activity",
-      "notifications",
-      "messages",
-      "settings",
-      "menu",
-    ];
   
     const {
       home,
@@ -40,7 +30,7 @@ export default function MenuBar({ className }: MenuBarProps) {
       dark,
       settings,
       menu
-    } = t(vocabulary);
+    } : VocabularyObject = t();
 
   if (!user) return null;
 

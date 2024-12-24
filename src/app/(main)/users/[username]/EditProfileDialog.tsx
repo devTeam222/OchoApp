@@ -31,6 +31,7 @@ import avatarPlaceholder from "@/assets/avatar-placeholder.png";
 import { Camera } from "lucide-react";
 import CropImageDialog from "@/components/CropImageDialog";
 import Resizer from "react-image-file-resizer";
+import { t } from "@/context/LanguageContext";
 
 interface EditProfileDialogProps {
   user: UserData;
@@ -43,6 +44,15 @@ export default function EditProfileDialog({
   open,
   onOpenChange,
 }: EditProfileDialogProps) {
+  const {
+    editProfile,
+    profilePicture,
+    fullName,
+    yourFullName,
+    bio,
+    tellUsAboutYou,
+    save,
+  } = t();
   const form = useForm<UpdateUserProfileValues>({
     resolver: zodResolver(updateUserProfileSchema),
     defaultValues: {
@@ -77,10 +87,10 @@ export default function EditProfileDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Modifier le profil</DialogTitle>
+          <DialogTitle>{editProfile}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center gap-1.5">
-          <Label>Avatar</Label>
+          <Label>{profilePicture}</Label>
           <AvatarInput
             src={
               croppedAvatar
@@ -97,9 +107,9 @@ export default function EditProfileDialog({
               name="displayName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nom Complet</FormLabel>
+                  <FormLabel>{fullName}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Votre nom complet" {...field} />
+                    <Input placeholder={yourFullName} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -110,12 +120,13 @@ export default function EditProfileDialog({
               name="bio"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Bio</FormLabel>
+                  <FormLabel>{bio}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Parlez nous un peu de vous..."
+                      placeholder={tellUsAboutYou}
                       {...field}
                       className="resize-none"
+                      rows={4}
                     />
                   </FormControl>
                   <FormMessage />
@@ -124,7 +135,7 @@ export default function EditProfileDialog({
             />
             <DialogFooter>
               <LoadingButton type="submit" loading={mutation.isPending}>
-                Enregistrer
+                {save}
               </LoadingButton>
             </DialogFooter>
           </form>
@@ -141,6 +152,8 @@ interface AvatarInputProps {
 
 function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
   const [imageToCrop, setImageToCrop] = useState<File>();
+
+  const {profilePicture, clickToSelectImage, } = t()
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -167,13 +180,13 @@ function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
         onChange={(e) => onImageSelected(e.target.files?.[0])}
         ref={fileInputRef}
         className="sr-only hidden"
-        title="Avatar"
+        title={profilePicture}
       />
       <button
         type="button"
         onClick={() => fileInputRef.current?.click()}
         className="group relative block"
-        title="Cliquez pour selectioner une image"
+        title={clickToSelectImage}
       >
         <Image
           src={src}

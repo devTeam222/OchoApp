@@ -8,12 +8,8 @@ import { VocabularyKey } from "@/lib/vocabulary";
 import { getTranslation } from "@/lib/language";
 
 export default async function Home() {
-  const vocabulary: VocabularyKey[] = [
-    "forYou",
-    "followings",
-  ];
 
-  const { forYou, followings } = await getTranslation(vocabulary);
+  const { forYou, followings } = await getTranslation();
   return (
     <>
       <SetNavigation navPage="home" />

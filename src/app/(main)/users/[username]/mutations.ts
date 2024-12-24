@@ -25,6 +25,7 @@ import {
 import { useUploadThing } from "@/lib/uploadthing";
 import kyInstance from "@/lib/ky";
 import { useSession } from "../../SessionProvider";
+import { t } from "@/context/LanguageContext";
 
 async function uploadAvatar(file: File) {
   const formData = new FormData();
@@ -75,6 +76,8 @@ export function useUpdateProfileMutation() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
+  const {profileUpdated, profileUpdateError} = t()
+
   const mutation = useMutation({
       mutationFn: async ({ values, avatar }: { values: UpdateUserProfileValues, avatar?: File }) => {
           const [updatedUser, avatarUrl] = await Promise.all([
@@ -123,14 +126,14 @@ export function useUpdateProfileMutation() {
           router.refresh();
 
           toast({
-              description: "Votre profil a été mis à jour avec succès"
+              description: profileUpdated
           });
       },
       onError: (error) => {
           console.error(error);
           toast({
               variant: "destructive",
-              description: "Une erreur est survenue lors de la mise à jour de votre profil",
+              description: profileUpdateError,
           });
       }
   });
@@ -140,6 +143,8 @@ export function useUpdateProfileMutation() {
 
 export function useDeleteAvatarMutation() {
   const { toast } = useToast();
+
+  const {profilePicDeleted, profilePicDeleteError} = t()
 
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -180,14 +185,14 @@ export function useDeleteAvatarMutation() {
       router.refresh();
 
       toast({
-        description: "Vous venez de supprimer votre avatar.",
+        description: profilePicDeleted,
       });
     },
     onError: (error) => {
       console.error(error);
       toast({
         variant: "destructive",
-        description: "Impossible de supprimer votre avatar veuillez réessayer.",
+        description: profilePicDeleteError,
       });
     },
   });

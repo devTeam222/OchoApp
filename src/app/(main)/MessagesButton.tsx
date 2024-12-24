@@ -5,7 +5,7 @@ import { t } from "@/context/LanguageContext";
 import kyInstance from "@/lib/ky";
 import { NotificationCountInfo } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { VocabularyKey } from "@/lib/vocabulary";
+import { VocabularyKey, VocabularyObject } from "@/lib/vocabulary";
 import { useQuery } from "@tanstack/react-query";
 import { MessageCircleMore, MessageSquareMore } from "lucide-react";
 import Link from "next/link";
@@ -22,13 +22,9 @@ export default function MessagesButton({
 }: MessagesButtonProps) {
   const isProduction = process.env.NODE_ENV === "production";
 
-   const vocabulary: VocabularyKey[] = [
-        "messages",
-      ];
-    
       const {
         messages,
-      } = t(vocabulary);
+      } = t();
 
   const { data } = useQuery({
     queryKey: ["unread-chat-messages"],

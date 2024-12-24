@@ -19,10 +19,7 @@ interface LikeButtonProps {
 
 export default function LikeButton({ postId, initialState }: LikeButtonProps) {
   const { toast } = useToast();
-
-  const vocabulary: VocabularyKey[] = ["like", "likes", "unLike"];
-
-  const { like: likeText, likes: likesText, unLike } = t(vocabulary);
+  const { like: likeText, likes: likesText, unLike } = t();
 
   const queryClient = useQueryClient();
 

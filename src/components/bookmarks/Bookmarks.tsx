@@ -11,13 +11,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { BookmarkIcon, Frown, Loader2 } from "lucide-react";
 
 export default function Bookmarks() {
-
-  const vocabulary: VocabularyKey[] = [
-    "noBookmark",
-    "dataError",
-  ];
-
-  const { noBookmark, dataError } = t(vocabulary);
+  const { noBookmark, dataError } = t();
 
   const {
     data,

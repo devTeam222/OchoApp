@@ -21,10 +21,7 @@ export default function NotificationsButton({
   ...props
 }: NotificationsButtonProps) {
   const isProduction = process.env.NODE_ENV === "production";
-
-  const vocabulary: VocabularyKey[] = ["activity", "activityCenter", "notifications"];
-
-  const { activity, activityCenter, notifications } = t(vocabulary);
+  const { activity, activityCenter, notifications } = t();
 
   const { data } = useQuery({
     queryKey: ["unread-notifications"],

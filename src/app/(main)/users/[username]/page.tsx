@@ -18,6 +18,7 @@ import SetNavigation from "@/components/SetNavigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Bookmarks from "../../../../components/bookmarks/Bookmarks";
 import { PostLoadingSkeleton } from "@/components/posts/PostsLoadingSkeleton";
+import { getTranslation } from "@/lib/language";
 
 interface PageProps {
   params: { username: string };
@@ -92,12 +93,13 @@ interface ProfileProps {
 
 async function Profile({ username }: ProfileProps) {
   const { user: loggedInUser } = await validateRequest();
+  const { dataError, posts, bookmarks } = await getTranslation();
 
   if (!loggedInUser)
     return (
       <div className="my-8 flex w-full select-none flex-col items-center gap-2 text-center text-muted-foreground">
         <Frown size={150} />
-        <h2 className="text-xl">Quelque chose s&apos;est mal passé.</h2>
+        <h2 className="text-xl">{dataError}</h2>
       </div>
     );
 
@@ -115,18 +117,21 @@ async function Profile({ username }: ProfileProps) {
         />
         {user.id !== loggedInUser.id && (
           <div className="bg-card/50 p-5 shadow-sm sm:rounded-2xl sm:bg-card">
-            <h2 className="text-center text-2xl font-bold">Publications</h2>
+            <h2 className="text-center text-2xl font-bold">{posts}</h2>
           </div>
         )}
         {user.id === loggedInUser.id ? (
           <>
             <Tabs defaultValue="posts">
               <TabsList>
-                <TabsTrigger value="posts">Publications</TabsTrigger>
-                <TabsTrigger value="bookmarks">Favoris</TabsTrigger>
+                <TabsTrigger value="posts">{posts}</TabsTrigger>
+                <TabsTrigger value="bookmarks">{bookmarks}</TabsTrigger>
               </TabsList>
               <TabsContent value="posts" className="pb-2">
-                <UserPosts userId={user.id} name={user.displayName.split(" ")[0]}/>
+                <UserPosts
+                  userId={user.id}
+                  name={user.displayName.split(" ")[0]}
+                />
               </TabsContent>
               <TabsContent value="bookmarks" className="pb-2">
                 <Bookmarks />
@@ -134,7 +139,7 @@ async function Profile({ username }: ProfileProps) {
             </Tabs>
           </>
         ) : (
-          <UserPosts userId={user.id}  name={user.displayName.split(" ")[0]}/>
+          <UserPosts userId={user.id} name={user.displayName.split(" ")[0]} />
         )}
       </div>
       <TrendsSidebar />
@@ -153,6 +158,7 @@ async function UserProfile({
   loggedInUserId,
   loggedInUser,
 }: UserProfileProps) {
+  const { memberSince, posts, aPost } = await getTranslation();
   const followerInfo: FollowerInfo = {
     followers: user._count.followers,
     isFollowedByUser: user.followers.some(
@@ -180,14 +186,14 @@ async function UserProfile({
             <div className="text-muted-foreground">@{user.username}</div>
           </div>
           <div>
-            Membre depuis <Time time={user.createdAt} long />
+            {memberSince} <Time time={user.createdAt} long />
           </div>
           <div className="flex items-center gap-3">
             <span>
               <span className="font-semibold">
                 <FormattedInt number={user._count.posts} />
               </span>{" "}
-              Posts
+              {user._count.posts > 1 ? posts : aPost}
             </span>
 
             <FollowerCount userId={user.id} initialState={followerInfo} />
@@ -201,7 +207,7 @@ async function UserProfile({
       </div>
       {user.bio && (
         <>
-          <hr />
+          <hr className="h-0.5 w-full" />
           <Linkify>
             <p className="overflow-hidden whitespace-pre-line break-words">
               {user.bio}
