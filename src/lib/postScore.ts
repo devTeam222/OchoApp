@@ -3,36 +3,27 @@ import prisma from "./prisma";
 import { getPostDataIncludes, PostData, UserData } from "./types";
 
 export const calculateRelevanceScore = cache(
-  async (
+  (
     post: PostData,
     user: UserData,
     latestPostId?: string, // Paramètre facultatif
-  ): Promise<number> => {
+  ): number => {
     const postId = post.id;
     const userId = user.id;
-
-    // Récupération des commentaires associés au post
-    const comments = await prisma.comment.findMany({
-      where: {
-        postId,
-      },
-      select: {
-        id: true,
-      },
-    });
+    const comments = post._count.comments;
 
     const now = new Date();
     const timeFactor =
       1 / (1 + (now.getTime() - post.createdAt.getTime()) / (1000 * 60 * 60)); // Pondération pour les posts récents
     const engagementScore =
-      post.likes.length * 2 + comments.length * 3 + post.bookmarks.length * 1.5;
+      post.likes.length * 2 + comments * 3 + post.bookmarks.length * 1.5;
     const proximityScore = post.user.followers.some(
       (follower) => follower.followerId === userId,
     )
       ? 5
       : 0; // Bonus si l'utilisateur suit l'auteur
     const typeFactor =
-      post.attachments.length > 0 && post.content.length ? 1.5 : 1; // Bonus si le post contient des médias
+      post.attachments.length > 0 ? (post.content.length ? 1.5 : 1.25) : 1; // Bonus si le post contient des médias
 
     const gradientFactor =
       !post.attachments.length && post.content.length < 100 && post.gradient
@@ -59,7 +50,7 @@ export const calculateAndStoreScoresForUser = cache(async (user: UserData) => {
 
   await Promise.all(
     posts.map(async (post) => {
-      const score = await calculateRelevanceScore(post, user);
+      const score = calculateRelevanceScore(post, user);
 
       const postId = post.id;
 

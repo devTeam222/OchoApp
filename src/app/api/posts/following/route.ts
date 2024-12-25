@@ -53,33 +53,16 @@ export async function GET(req: NextRequest) {
       }),
     );
 
-    const postsWithScores = await Promise.all(
-      posts.slice(0, pageSize).map(async (post) => {
-        const score = await prisma.postUserScore.findUnique({
-          where: {
-            postId_userId: {
-              postId: post.id,
-              userId: user.id,
-            },
-          },
-          select: {
-            relevanceScore: true,
-          },
-        });
-        if (!score) {
-          calculateAndStoreScoresForUser(user);
-          return {
-            ...post,
-            relevanceScore: 0,
-          };
-        }
-
-        return {
-          ...post,
-          relevanceScore: score.relevanceScore,
-        };
-      }),
-    );
+    const postsWithScores = posts.slice(0, pageSize).map((post) => {
+      return {
+        ...post,
+        relevanceScore: calculateRelevanceScore(
+          post,
+          user,
+          posts[0]?.id || undefined,
+        ),
+      };
+    });
 
     const sortedPosts = postsWithScores
       .sort((a, b) => b.relevanceScore - a.relevanceScore)
