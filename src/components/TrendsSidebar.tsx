@@ -10,8 +10,6 @@ import FollowButton from "./FollowButton";
 import { getUserDataSelect } from "@/lib/types";
 import UserTooltip from "./UserTooltip";
 import { getTranslation } from "@/lib/language";
-import { VocabularyKey } from "@/lib/vocabulary";
-import Verified from "./Verified";
 
 export default function TrendsSidebar() {
   return (
@@ -53,6 +51,11 @@ async function WhoToFollow() {
       },
     },
     select: getUserDataSelect(user.id),
+    orderBy: {
+      followers: {
+        _count: "desc",
+      }
+    },
     take: 5,
   });
 

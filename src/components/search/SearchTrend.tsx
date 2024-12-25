@@ -52,7 +52,12 @@ async function WhoToFollow() {
       },
     },
     select: getUserDataSelect(user.id),
-    take: 5,
+    orderBy: {
+      followers: {
+        _count: "desc",
+      }
+    },
+    take: 10,
   });
 
   return (

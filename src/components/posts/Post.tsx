@@ -115,12 +115,15 @@ export default function Post({ post }: PostProps) {
           </UserTooltip>
           <div>
             <UserTooltip user={post.user}>
-              <Link
-                href={`/users/${post.user.username}`}
-                className={cn("block font-medium hover:underline", isVerified && "flex items-center gap-1")}
-              >
-                {post.user.displayName}{verifiedCheck}
-              </Link>
+              <span className={cn(isVerified && "flex items-center gap-1")}>
+                <Link
+                  href={`/users/${post.user.username}`}
+                  className="block font-medium hover:underline"
+                >
+                  {post.user.displayName}
+                </Link>
+                {verifiedCheck}
+              </span>
             </UserTooltip>
             <Link
               href={`/posts/${post.id}`}

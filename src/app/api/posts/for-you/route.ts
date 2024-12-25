@@ -1,6 +1,9 @@
 import { validateRequest } from "@/auth";
+import { calculateRelevanceScore } from "@/lib/postScore";
 import prisma from "@/lib/prisma";
 import { getPostDataIncludes, PostsPage } from "@/lib/types";
+import { $Enums } from "@prisma/client";
+import { User } from "lucia";
 import { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -15,6 +18,7 @@ export async function GET(req: NextRequest) {
       return Response.json({ error: "Action non autorisée" }, { status: 401 });
     }
 
+    // Recuperer les utilisateurs pour les verifier
     const postsUser = await prisma.post.findMany({
       include: getPostDataIncludes(user.id),
       orderBy: { createdAt: "desc" },
@@ -43,10 +47,21 @@ export async function GET(req: NextRequest) {
       }),
     );
 
+    const postsWithScores = await Promise.all(
+      posts.slice(0, pageSize).map(async (post) => ({
+        ...post,
+        relevanceScore: await calculateRelevanceScore(post, user, posts[0]?.id || undefined),
+      })),
+    );
+
+    const sortedPosts = postsWithScores
+      .sort((a, b) => b.relevanceScore - a.relevanceScore)
+      .map(({ relevanceScore, ...post }) => post);
+
     const nextCursor = posts.length > pageSize ? posts[pageSize].id : null;
 
     const data: PostsPage = {
-      posts: posts.slice(0, pageSize),
+      posts: sortedPosts,
       nextCursor,
     };
 
