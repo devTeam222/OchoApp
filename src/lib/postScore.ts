@@ -32,7 +32,7 @@ export async function calculateRelevanceScore(
 
   const gradientFactor =
     !post.attachments.length && post.content.length < 100 && post.gradient
-      ? 1.75
+      ? 1.5
       : 1; // Bonus si le post a un gradient et peu de contenu
 
   // Priorisation explicite pour le post le plus récent (si fourni)
