@@ -8,7 +8,7 @@ import { useSession } from "@/app/(main)/SessionProvider";
 import PostMoreButton from "./PostMoreButton";
 import Linkify from "../Linkify";
 import UserTooltip from "../UserTooltip";
-import { Media } from "@prisma/client";
+import { Media, VerifiedType } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import LikeButton from "./LikeButton";
@@ -29,6 +29,7 @@ import Zoomable from "../Zoomable";
 import { t } from "@/context/LanguageContext";
 import { VocabularyKey } from "@/lib/vocabulary";
 import { comment } from "postcss";
+import Verified from "../Verified";
 
 interface PostProps {
   post: PostData;
@@ -82,6 +83,17 @@ export default function Post({ post }: PostProps) {
     !post.attachments.length &&
     post.content.length <= maxGradientLength &&
     post.gradient;
+  const expiresAt = post.user.verified?.[0]?.expiresAt;
+  const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
+
+  const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
+
+  const isVerified = !!post.user.verified[0] && !expired;
+  const verifiedType: VerifiedType = isVerified
+    ? post.user.verified[0].type
+    : "STANDARD";
+
+  const verifiedCheck = isVerified ? <Verified type={verifiedType} /> : null;
 
   return (
     <article className="group/post flex flex-col bg-card/50 p-0.5 shadow-sm sm:rounded-md sm:bg-card">
@@ -105,9 +117,9 @@ export default function Post({ post }: PostProps) {
             <UserTooltip user={post.user}>
               <Link
                 href={`/users/${post.user.username}`}
-                className="block font-medium hover:underline"
+                className={cn("block font-medium hover:underline", isVerified && "flex items-center gap-1")}
               >
-                {post.user.displayName}
+                {post.user.displayName}{verifiedCheck}
               </Link>
             </UserTooltip>
             <Link

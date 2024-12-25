@@ -4,6 +4,7 @@ import { Lucia, Session, User } from "lucia";
 import { cache } from "react";
 import { cookies } from "next/headers";
 import { Facebook, GitHub, Google } from "arctic";
+import { VerifiedType } from "@prisma/client";
 
 const adapter = new PrismaAdapter(prisma.session, prisma.user);
 
@@ -15,9 +16,15 @@ export const lucia = new Lucia(adapter, {
     },
   },
   getUserAttributes(databaseUserAttributes) {
-    const followers = databaseUserAttributes.followers ? [...databaseUserAttributes.followers] : [];
-    const following = databaseUserAttributes.following ? [...databaseUserAttributes.following] : [];
-    
+    const followers = databaseUserAttributes.followers
+      ? [...databaseUserAttributes.followers]
+      : [];
+    const following = databaseUserAttributes.following
+      ? [...databaseUserAttributes.following]
+      : [];
+    const verified = databaseUserAttributes.verified
+      ? [...databaseUserAttributes.verified]
+      : [];
 
     return {
       id: databaseUserAttributes.id,
@@ -33,8 +40,9 @@ export const lucia = new Lucia(adapter, {
         followers: databaseUserAttributes._count?.followers ?? 0,
         posts: databaseUserAttributes._count?.posts ?? 0,
       },
+      verified,
       createdAt: databaseUserAttributes.createdAt,
-      lastSeen: databaseUserAttributes.lastSeen
+      lastSeen: databaseUserAttributes.lastSeen,
     };
   },
 });
@@ -57,13 +65,17 @@ interface DatabaseUserAttributes {
   followers: {
     followerId: string;
   }[];
-  following:{
+  following: {
     followerId: string;
   }[];
   _count: {
     followers: number;
     posts: number;
   };
+  verified: {
+    type: VerifiedType,
+    expiresAt: Date,
+  }[];
   createdAt: Date;
   lastSeen: Date;
 }
@@ -83,8 +95,10 @@ export const facebook = new Facebook(
 export const github = new GitHub(
   process.env.GITHUB_CLIENT_ID!,
   process.env.GITHUB_CLIENT_SECRET!,
-  {redirectURI:`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback/github`},
-)
+  {
+    redirectURI: `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback/github`,
+  },
+);
 
 export const validateRequest = cache(
   async (): Promise<

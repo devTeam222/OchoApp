@@ -42,7 +42,7 @@ export default function AppLogo({
       <div
         className={`flex select-none items-center ${size <= 80 ? `h-[${size}px]` : `w-[${size}px] flex-col`} gap-1 text-primary`}
       >
-        {shouldShowLogo() ? <LogoXmas size={size} /> : <Logo size={size} />}
+        {logoEl}
         <span
           className={`text-[${size > 48 ? size * 1.25 : size}px] font-bold`}
         >

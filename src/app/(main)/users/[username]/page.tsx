@@ -19,6 +19,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Bookmarks from "../../../../components/bookmarks/Bookmarks";
 import { PostLoadingSkeleton } from "@/components/posts/PostsLoadingSkeleton";
 import { getTranslation } from "@/lib/language";
+import Verified from "@/components/Verified";
+import { VerifiedType } from "@prisma/client";
+import { cn } from "@/lib/utils";
 
 interface PageProps {
   params: { username: string };
@@ -32,7 +35,7 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
         mode: "insensitive",
       },
     },
-    select: getUserDataSelect(loggedInUserId),
+    select: getUserDataSelect(loggedInUserId, username),
   });
 
   if (!user) notFound();
@@ -172,6 +175,18 @@ async function UserProfile({
       loggedInUser.followers.some(({ followerId }) => followerId === user.id),
   };
 
+  const expiresAt = user.verified?.[0]?.expiresAt;
+  const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
+
+  const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
+
+  const isVerified = !!user.verified[0] && !expired;
+  const verifiedType: VerifiedType = isVerified
+    ? user.verified[0].type
+    : "STANDARD";
+
+  const verifiedCheck = isVerified ? <Verified type={verifiedType} /> : null;
+
   return (
     <div className="flex h-fit w-full flex-col items-center gap-5 bg-card/50 p-5 shadow-sm sm:rounded-2xl sm:bg-card">
       <UserAvatar
@@ -182,7 +197,15 @@ async function UserProfile({
       <div className="flex w-full flex-wrap gap-3 sm:flex-nowrap">
         <div className="me-auto space-y-3">
           <div>
-            <h1 className="text-3xl font-bold">{user.displayName}</h1>
+            <h1
+              className={cn(
+                "text-3xl font-bold",
+                isVerified && "flex items-center gap-1.5",
+              )}
+            >
+              {user.displayName}
+              {verifiedCheck}
+            </h1>
             <div className="text-muted-foreground">@{user.username}</div>
           </div>
           <div>

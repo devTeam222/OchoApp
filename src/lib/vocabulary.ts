@@ -1,5 +1,5 @@
 export const english = {
-  appUser: "OchoApp User", 
+  appUser: "OchoApp User",
   language: "Language",
   search: "Search",
   searches: "Search",
@@ -41,7 +41,8 @@ export const english = {
   postError: "Failed to publish your post. Please try again.",
   postDeleted: "Post deleted",
   unableToDeletePost: "Unable to delete the post. Please try again.",
-  fileMaxSizeReached: "The file [name] has exceeded the maximum size of [size].",
+  fileMaxSizeReached:
+    "The file [name] has exceeded the maximum size of [size].",
   fileMaxLenReached: "You cannot upload more than [len] attachments at a time.",
   fileUploadError: "An error occurred while uploading the attachment.",
   whoToFollow: "Who to follow",
@@ -151,7 +152,7 @@ export const english = {
   // New chat section
   startNewChat: "Start a new chat",
   wait: "Wait",
-  messageYourself: "Message yourself", 
+  messageYourself: "Message yourself",
   suggestion: "Suggestion",
   suggestions: "Suggestions",
   groupNameOptional: "Group name (optional)",
@@ -178,8 +179,11 @@ export const english = {
   reactedMemberMessage: "[name] reacted [r] to [member]'s message",
   noPreview: "Preview not available",
   deletedChat: "Chat deleted",
-  canNoLongerInteract: "You can no longer interact", 
+  canNoLongerInteract: "You can no longer interact",
   noMessage: "No message",
+  // Verified
+  veriFiedPrompt:
+    "Verified badge accounts have been authenticated. These can be paid subscribers or notable people/brands.",
 };
 export type Vocabulary = typeof english;
 export const french: Vocabulary = {
@@ -224,10 +228,13 @@ export const french: Vocabulary = {
   postSuccess: "Votre publilcation a été publié avec succès.",
   postError: "Echec de publilcation. Veuillez réessayer.",
   postDeleted: "Publication supprimé",
-  unableToDeletePost: "Impossible de supprimer la publication. Veuillez réessayer.",
+  unableToDeletePost:
+    "Impossible de supprimer la publication. Veuillez réessayer.",
   fileMaxSizeReached: "Le fichier [name] dépassé la taille maximale de [size].",
-  fileMaxLenReached: "Vous ne pouvez pas téléverser plus de [len] pièces jointes à la fois.",
-  fileUploadError: "Une erreur est survenue lors du téléversement de la pièce jointe.",
+  fileMaxLenReached:
+    "Vous ne pouvez pas téléverser plus de [len] pièces jointes à la fois.",
+  fileUploadError:
+    "Une erreur est survenue lors du téléversement de la pièce jointe.",
   whoToFollow: "Suggestions pour vous",
   noOneToFollow: "Aucune suggestion pour le moment",
   trending: "Tendances",
@@ -275,9 +282,11 @@ export const french: Vocabulary = {
   invalidInput: "Entrée incorrecte. Veuillez vérifier vos informations",
   maxLenReached: "Vous avez atteint la limite de caractères ([len] caractères)",
   commentSent: "Commentaire envoyé",
-  unaBleToSendComment: "Impossible d'envoyer le commentaire. Veuillez réessayer.",
+  unaBleToSendComment:
+    "Impossible d'envoyer le commentaire. Veuillez réessayer.",
   commentDeleted: "Commentaire supprimé",
-  unableToDeleteComment: "Impossible de supprimer le commentaire. Veuillez réessayer.",
+  unableToDeleteComment:
+    "Impossible de supprimer le commentaire. Veuillez réessayer.",
   memberSince: "Membre depuis",
   editProfile: "Modifier le profil",
   profilePicture: "Photo de profil",
@@ -312,15 +321,20 @@ export const french: Vocabulary = {
   messageCopied: "Message copié dans le presse-papiers !",
   unableToCopyMessage: "Erreur lors de la copie dans le presse-papiers !",
   unableToSendMessage: "Impossible d'envoyer un message",
-  unableToSendThisMessage: "Impossible d'envoyer ce message. Veuillez réessayer.",
-  unableToDeleteMessage: "Impossible de supprimer le message. Veuillez réessayer.",
+  unableToSendThisMessage:
+    "Impossible d'envoyer ce message. Veuillez réessayer.",
+  unableToDeleteMessage:
+    "Impossible de supprimer le message. Veuillez réessayer.",
   cantSelectMoreUsers: "Vous ne pouvez pas selectionner d'autres utilisateurs",
   unableToCreateGroup: "Impossible de creer ce groupe",
-  mustSelectGroupUser: "Vous devez sélectionner des utilisateurs pour créer un groupe",
+  mustSelectGroupUser:
+    "Vous devez sélectionner des utilisateurs pour créer un groupe",
   groupUpdated: "Le groupe a été mis à jour avec succèss",
-  groupUpdateError: "Une erreur est survenue lors de la mise à jour des paramètres du groupe",
+  groupUpdateError:
+    "Une erreur est survenue lors de la mise à jour des paramètres du groupe",
   groupIconDeleted: "Vous venez de supprimer l'icône du groupe.",
-  groupIconDeleteError: "Impossible de supprimer l'icône du groupe. Veuillez réessayer.",
+  groupIconDeleteError:
+    "Impossible de supprimer l'icône du groupe. Veuillez réessayer.",
   groupAddSuccess: "Les utilisateurs selectionnes ont bien été ajoutés",
   groupAddError: "Vous ne pouvez pas ajouter de nouveaux membres à ce groupe",
   groupRemoveSuccess: "Vous avez retiré [name] de [group]",
@@ -333,7 +347,8 @@ export const french: Vocabulary = {
   selectChatToStart: "Sélectionnez une discussion pour commencer.",
   newChat: "Nouvelle discussion",
   newGroup: "Nouveau groupe",
-  noChat: "Aucune discussion disponible. Cliquez sur [pen] pour créer une nouvelle discussion",
+  noChat:
+    "Aucune discussion disponible. Cliquez sur [pen] pour créer une nouvelle discussion",
   // New chat section
   startNewChat: "Démarrer une nouvelle discussion",
   wait: "Patientez",
@@ -366,7 +381,9 @@ export const french: Vocabulary = {
   noPreview: "Aperçu non disponible",
   deletedChat: "Discussion supprimée",
   canNoLongerInteract: "Vous ne pouvez plus interagir",
-  noMessage: "Aucun message"
+  noMessage: "Aucun message",
+  // Verified
+  veriFiedPrompt: "Les comptes avec un badge Vérifié ont été authentifiés. Il peut s’agir de personnes payant un abonnement ou de personnes ou de marques notables."
 };
 
 export const vocabulary = {

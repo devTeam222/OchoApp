@@ -19,9 +19,16 @@ interface PageProps {
 
 // Ajoutez une vérification pour le commentaire cible
 const getPost = cache(async (postId: string, loggedInUserId: string, targetComment?: string) => {
+  const postUser = await prisma.post.findUnique({
+    where: { id: postId },
+    select: {
+      user: true
+    },
+  });
+  const username = postUser?.user.username
   const post = await prisma.post.findUnique({
     where: { id: postId },
-    include: getPostDataIncludes(loggedInUserId),
+    include: getPostDataIncludes(loggedInUserId, username),
   });
 
   if (!post) notFound();

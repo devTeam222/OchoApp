@@ -90,11 +90,15 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
     (member) => member.userId === loggedinUser.id,
   );
 
+  const otherUserFirstName = otherUser?.displayName.split(" ")[0] || appUser;
+  const senderFirstName = messagePreview.sender?.displayName.split(" ")[0] || appUser;
+  const recipientFirstName = messagePreview.recipient?.displayName.split(" ")[0] || appUser;
+
   const sender = isSender
     ? you
     : channel.isGroup
-      ? messagePreview.sender?.displayName.split(" ")[0]
-      : otherUser?.displayName.split(" ")[0];
+      ? senderFirstName
+      : otherUserFirstName;
   const recipient = channel?.messages[0]?.recipient || null;
   let newMemberMsg, oldMemberMsg;
 
@@ -142,8 +146,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
     }
   }
   const showUserPreview = channel.isGroup || isSender;
-
-  const recipientFirstName = messagePreview.recipient?.displayName.split(" ")[0]
+;
 
   const contentsTypes = {
     CREATE: channel.isGroup
@@ -152,7 +155,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
         : createdGroup.replace("[name]", sender || appUser)
       : canChatWithYou.replace(
           "[name]",
-          otherUser?.displayName.split(" ")[0] || appUser,
+          otherUserFirstName || appUser,
         ),
     CONTENT: `${showUserPreview ? sender || appUser : ""}${showUserPreview ? ": " : ""}${messagePreview.content.length > 100 ? messagePreview.content.slice(0, 100) : messagePreview.content}`,
     CLEAR: noPreview,

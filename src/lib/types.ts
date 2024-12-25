@@ -34,6 +34,17 @@ export function getUserDataSelect(loggedInUserId: string, username: string| unde
     bio: true,
     createdAt: true,
     lastSeen: true,
+    verified: {
+      where: {
+        user: {
+          username
+        }
+      },
+      select: {
+        type: true,
+        expiresAt: true,
+      }
+    },
     followers: {
       where: {
         followerId: loggedInUserId,
@@ -65,7 +76,7 @@ export type UserData = Prisma.UserGetPayload<{
   select: ReturnType<typeof getUserDataSelect>;
 }>;
 
-export function getChatChannelDataInclude() {
+export function getChatChannelDataInclude(userId: string | undefined = undefined) {
   return {
     members: {
       select: {
@@ -79,6 +90,15 @@ export function getChatChannelDataInclude() {
             bio: true,
             createdAt: true,
             lastSeen: true,
+            verified: {
+              where: {
+                userId
+              },
+              select: {
+                type: true,
+                expiresAt: true,
+              }
+            },
             followers: {
               select: {
                 followerId: true,
@@ -88,8 +108,7 @@ export function getChatChannelDataInclude() {
               select: {
                 followerId:true,
               }
-            }
-            ,
+            },
             _count: {
               select: {
                 posts: true,
@@ -196,10 +215,10 @@ export interface MessagesSection {
   nextCursor: string | null;
 }
 
-export function getPostDataIncludes(loggedInUserId: string) {
+export function getPostDataIncludes(loggedInUserId: string, username: string | undefined = undefined) {
   return {
     user: {
-      select: getUserDataSelect(loggedInUserId),
+      select: getUserDataSelect(loggedInUserId, username),
     },
     attachments: true,
     likes: {

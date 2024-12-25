@@ -40,9 +40,10 @@ model User {
   receivedNotification Notification[]  @relation("Recipient")
   issuedNotification   Notification[]  @relation("Issuer")
 
-  lastSeen  DateTime   @default(now())
-  createdAt DateTime   @default(now())
+  lastSeen  DateTime        @default(now())
+  createdAt DateTime        @default(now())
   Reaction  Reaction[]
+  verified  VerifiedUsers[]
 
   @@map("users")
 }
@@ -54,6 +55,21 @@ model Session {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
+}
+
+model VerifiedUsers {
+  id        String       @id
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      VerifiedType @default(STANDARD)
+  expiresAt DateTime?
+
+  @@map("verified_users")
+}
+
+enum VerifiedType {
+  STANDARD
+  GOLDEN
 }
 
 model Follow {

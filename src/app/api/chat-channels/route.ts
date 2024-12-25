@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
       where: {
         id: loggedInUser.id,
       },
-      select: getUserDataSelect(loggedInUser.id),
+      select: getUserDataSelect(loggedInUser.id, loggedInUser.username),
     });
 
     if (!user) {
