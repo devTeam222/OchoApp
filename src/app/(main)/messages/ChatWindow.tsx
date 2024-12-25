@@ -71,14 +71,15 @@ export default function ChatWindow() {
           />
         ) : (
           <div className="flex h-full select-none flex-col items-center justify-center px-4 text-center">
-            <AppLogo
-              logo="LOGO"
-              size={150}
-              className="text-muted-foreground/50"
-            />
+            <div className="text-muted-foreground/50">
+              <AppLogo
+                logo="LOGO"
+                size={150}
+                className="text-muted-foreground/50"
+              />
+            </div>
             <h2 className="text-xl">{messagesOnApp}</h2>
-            <p className="text-muted-foreground">{selectChatToStart}
-            </p>
+            <p className="text-muted-foreground">{selectChatToStart}</p>
           </div>
         )}
         <NewChat

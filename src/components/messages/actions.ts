@@ -182,7 +182,7 @@ export async function createChatChannel(input: {
     include: getChatChannelDataInclude(), // Inclure les données requises
   });
 
-  await prisma.message.create({
+  const createMessage = await prisma.message.create({
     data: {
       content: "created",
       channelId: newChannel.id,
@@ -214,6 +214,9 @@ export async function createChatChannel(input: {
       if (!member?.user) {
         return;
       }
+      if(!newChannel.isGroup){
+        return createMessage;
+      } 
       const message = await prisma.message.create({
         data: {
           content: "add-" + member.user.id,

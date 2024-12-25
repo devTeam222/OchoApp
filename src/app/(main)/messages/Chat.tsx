@@ -45,7 +45,6 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
 
   const handlePopState = () => {
     const currentPathname = window.location.pathname;
-    console.log(prevPathname, currentPathname);
 
     if (prevPathname === "/messages/chat" && currentPathname === "/messages") {
       onClose();
@@ -151,6 +150,8 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
         ?.user || null
     : null;
 
+    
+
   return (
     <div className="absolute flex h-full w-full flex-1 flex-col max-sm:bg-card/30">
       <div className="flex w-full items-center gap-2 px-4 py-3 max-sm:bg-card/50">
@@ -178,20 +179,13 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
         }
       >
         {status === "pending" && <MessagesLoadingSkeleton />}
-        {status === "success" && !messages.length && (
+        {status === "success" &&  !hasNextPage && !messages.length && (
           <p className="my-auto flex w-full flex-1 select-none items-center justify-center px-2 text-center italic text-muted-foreground">
             Aucun message à afficher. Envoyez un nouveau message.
           </p>
         )}
         {status === "success" &&
           messages.map((message, index) => {
-            if (
-              !channel.isGroup &&
-              message.type === "CREATE" &&
-              messages.length > 1
-            ) {
-              return null;
-            }
             const showTime =
               index === messages.length - 1 ||
               (index % 20 === 0 && index !== 0);

@@ -101,13 +101,14 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
       : otherUserFirstName;
   const recipient = channel?.messages[0]?.recipient || null;
   let newMemberMsg, oldMemberMsg;
+  const memberName = recipient?.displayName.split(" ")[0] || appUser;
 
   if (recipient && channel.isGroup) {
-    const memberName = recipient.displayName.split(" ")[0];
     // Check if message type is info of added member
     if (messageType === "NEWMEMBER") {
       newMemberMsg = newMember.replace("[name]", memberName);
       if (channel?.messages[0].sender) {
+        
         channel?.messages[0].sender.id === loggedinUser.id
           ? (newMemberMsg = youAddedMember.replace("[name]", memberName))
           : (newMemberMsg =
@@ -210,6 +211,8 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
     });
     router.push("/messages/chat");
   };
+  console.log(newMember.replace("[name]", memberName));
+  
 
   return (
     <li
