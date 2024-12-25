@@ -16,7 +16,7 @@ export const calculateRelevanceScore = cache(
     const timeFactor =
       1 / (1 + (now.getTime() - post.createdAt.getTime()) / (1000 * 60 * 60)); // Pondération pour les posts récents
     const engagementScore =
-      post.likes.length * 2 + comments * 3 + post.bookmarks.length * 1.5;
+      post._count.likes * 2 + comments * 3 + post.bookmarks.length * 1.5;
     const proximityScore = post.user.followers.some(
       (follower) => follower.followerId === userId,
     )
