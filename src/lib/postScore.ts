@@ -1,5 +1,11 @@
+import { validateRequest } from "@/auth";
 import prisma from "./prisma";
-import { getCommentDataIncludes, PostData, UserData } from "./types";
+import {
+  getCommentDataIncludes,
+  getPostDataIncludes,
+  PostData,
+  UserData,
+} from "./types";
 
 export async function calculateRelevanceScore(
   post: PostData,
@@ -44,5 +50,25 @@ export async function calculateRelevanceScore(
     typeFactor +
     gradientFactor +
     latestPostBonus
+  );
+}
+export async function calculateAndStoreScoresForUser(user: UserData) {
+  const userId = user.id;
+  const posts = await prisma.post.findMany({
+    include: getPostDataIncludes(userId),
+  });
+
+  await Promise.all(
+    posts.map(async (post) => {
+      const score = await calculateRelevanceScore(post, user);
+
+      const postId = post.id;
+
+      await prisma.postUserScore.upsert({
+        where: { postId_userId: { postId, userId } },
+        update: { relevanceScore: score },
+        create: { postId: post.id, userId, relevanceScore: score },
+      });
+    }),
   );
 }

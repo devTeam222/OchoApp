@@ -1,5 +1,8 @@
 import { validateRequest } from "@/auth";
-import { calculateRelevanceScore } from "@/lib/postScore";
+import {
+  calculateAndStoreScoresForUser,
+  calculateRelevanceScore,
+} from "@/lib/postScore";
 import prisma from "@/lib/prisma";
 import { getPostDataIncludes, PostsPage } from "@/lib/types";
 import { $Enums } from "@prisma/client";
@@ -48,10 +51,31 @@ export async function GET(req: NextRequest) {
     );
 
     const postsWithScores = await Promise.all(
-      posts.slice(0, pageSize).map(async (post) => ({
-        ...post,
-        relevanceScore: await calculateRelevanceScore(post, user),
-      })),
+      posts.slice(0, pageSize).map(async (post) => {
+        const score = await prisma.postUserScore.findUnique({
+          where: {
+            postId_userId: {
+              postId: post.id,
+              userId: user.id,
+            },
+          },
+          select: {
+            relevanceScore: true,
+          },
+        });
+        if (!score) {
+          calculateAndStoreScoresForUser(user);
+          return {
+            ...post,
+            relevanceScore: 0,
+          };
+        }
+
+        return {
+          ...post,
+          relevanceScore: score.relevanceScore,
+        };
+      }),
     );
 
     const sortedPosts = postsWithScores

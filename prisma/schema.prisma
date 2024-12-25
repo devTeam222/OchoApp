@@ -40,10 +40,11 @@ model User {
   receivedNotification Notification[]  @relation("Recipient")
   issuedNotification   Notification[]  @relation("Issuer")
 
-  lastSeen  DateTime        @default(now())
-  createdAt DateTime        @default(now())
-  Reaction  Reaction[]
-  verified  VerifiedUsers[]
+  lastSeen       DateTime        @default(now())
+  createdAt      DateTime        @default(now())
+  Reaction       Reaction[]
+  verified       VerifiedUsers[]
+  relevanceScore PostUserScore[]
 
   @@map("users")
 }
@@ -58,7 +59,7 @@ model Session {
 }
 
 model VerifiedUsers {
-  id        String       @id
+  id        String       @id @default(cuid())
   userId    String
   user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   type      VerifiedType @default(STANDARD)
@@ -83,7 +84,7 @@ model Follow {
 }
 
 model Channel {
-  id             String          @id @default(uuid())
+  id             String          @id @default(cuid())
   name           String?
   description    String?
   groupAvatarUrl String?
@@ -103,7 +104,7 @@ enum Privilege {
 }
 
 model ChannelMember {
-  id        String     @id @default(uuid())
+  id        String     @id @default(cuid())
   channel   Channel    @relation(fields: [channelId], references: [id], onDelete: Cascade)
   channelId String
   user      User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
@@ -125,7 +126,7 @@ enum MemberType {
 }
 
 model Message {
-  id          String      @id @default(uuid())
+  id          String      @id @default(cuid())
   content     String
   sender      User?       @relation("Sender", fields: [senderId], references: [id], onDelete: SetNull)
   senderId    String?
@@ -157,7 +158,7 @@ enum MessageType {
 }
 
 model Read {
-  id        String  @id @default(uuid())
+  id        String  @id @default(cuid())
   userId    String
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   messageId String
@@ -170,7 +171,7 @@ model Read {
 }
 
 model Reaction {
-  id              String    @id @default(uuid())
+  id              String    @id @default(cuid())
   userId          String
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   messageId       String
@@ -196,9 +197,22 @@ model Post {
   bookmarks           Bookmark[]
   linkedNotifications Notification[]
 
-  createdAt DateTime @default(now())
+  createdAt      DateTime        @default(now())
+  relevanceScore PostUserScore[]
 
   @@map("posts")
+}
+
+model PostUserScore {
+  id             String @id @default(cuid())
+  postId         String
+  userId         String
+  relevanceScore Float
+  post           Post   @relation(fields: [postId], references: [id])
+  user           User   @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId])
+  @@map("post_user_scores")
 }
 
 model Media {
