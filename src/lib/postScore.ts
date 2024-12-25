@@ -30,10 +30,19 @@ export async function calculateRelevanceScore(
   const typeFactor =
     post.attachments.length > 0 && post.content.length ? 1.5 : 1; // Bonus si le post contient des médias
 
+  const gradientFactor =
+    !post.attachments.length && post.content.length < 100 && post.gradient
+      ? 1.75
+      : 1; // Bonus si le post a un gradient et peu de contenu
+
   // Priorisation explicite pour le post le plus récent (si fourni)
   const latestPostBonus = latestPostId && post.id === latestPostId ? 100 : 0;
 
   return (
-    engagementScore * timeFactor + proximityScore + typeFactor + latestPostBonus
+    engagementScore * timeFactor +
+    proximityScore +
+    typeFactor +
+    gradientFactor +
+    latestPostBonus
   );
 }
