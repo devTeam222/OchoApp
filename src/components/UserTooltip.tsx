@@ -17,12 +17,18 @@ import FollowerCount from "./FollowerCount";
 import { Button } from "./ui/button";
 import { UserCircle2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { cn } from "@/lib/utils";
 
 interface UserTooltipProps extends PropsWithChildren {
   user: UserData;
+  verified?: JSX.Element | null;
 }
 
-export default function UserTooltip({ children, user }: UserTooltipProps) {
+export default function UserTooltip({
+  children,
+  user,
+  verified,
+}: UserTooltipProps) {
   const { user: loggedInUser } = useSession();
 
   const followerState: FollowerInfo = {
@@ -69,8 +75,14 @@ export default function UserTooltip({ children, user }: UserTooltipProps) {
           )}
         </div>
         <Link href={`/users/${user.username}`}>
-          <div className="text-lg font-semibold hover:underline">
+          <div
+            className={cn(
+              "text-lg font-semibold hover:underline",
+              !!verified && "flex items-center gap-1",
+            )}
+          >
             {user.displayName}
+            {verified}
           </div>
           <div className="text-muted-foreground hover:underline">
             @{user.username}

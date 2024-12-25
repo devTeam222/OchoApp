@@ -99,7 +99,7 @@ export default function Post({ post }: PostProps) {
     <article className="group/post flex flex-col bg-card/50 p-0.5 shadow-sm sm:rounded-md sm:bg-card">
       <div className="flex justify-between gap-3 p-5">
         <div className="flex flex-wrap gap-3">
-          <UserTooltip user={post.user}>
+          <UserTooltip user={post.user} verified={verifiedCheck}>
             <Link
               href={`/users/${post.user.username}`}
               title={viewUserSProfile.replace(
@@ -114,17 +114,17 @@ export default function Post({ post }: PostProps) {
             </Link>
           </UserTooltip>
           <div>
-            <UserTooltip user={post.user}>
-              <span className={cn(isVerified && "flex items-center gap-1")}>
+            <span className={cn(isVerified && "flex items-center gap-1")}>
+              <UserTooltip user={post.user} verified={verifiedCheck}>
                 <Link
                   href={`/users/${post.user.username}`}
                   className="block font-medium hover:underline"
                 >
                   {post.user.displayName}
                 </Link>
-                {verifiedCheck}
-              </span>
-            </UserTooltip>
+              </UserTooltip>
+              {verifiedCheck}
+            </span>
             <Link
               href={`/posts/${post.id}`}
               className="block text-sm text-muted-foreground hover:underline"

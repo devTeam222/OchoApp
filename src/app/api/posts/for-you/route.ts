@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
     const postsWithScores = await Promise.all(
       posts.slice(0, pageSize).map(async (post) => ({
         ...post,
-        relevanceScore: await calculateRelevanceScore(post, user, posts[0]?.id || undefined),
+        relevanceScore: await calculateRelevanceScore(post, user),
       })),
     );
 
