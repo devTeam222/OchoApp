@@ -23,11 +23,11 @@ export const calculateRelevanceScore = cache(
     // Définir les fourchettes pour le facteur temporel
     let timeFactor = 1; // Par défaut pour les posts récents
     if (postAgeHours > 24 && postAgeHours <= 72) {
-      timeFactor = 0.9; // Post récent (1 à 3 jours)
+      timeFactor = 0.95; // Post récent (1 à 3 jours)
     } else if (postAgeHours > 72 && postAgeHours <= 168) {
-      timeFactor = engagementScore > 0 ? 0.8 : 0.6; // Post modérément ancien (3 à 7 jours)
+      timeFactor = engagementScore > 0 ? 0.9 : 0.8; // Post modérément ancien (3 à 7 jours)
     } else if (postAgeHours > 168) {
-      timeFactor = engagementScore > 0 ? 0.7 : 0.4; // Post ancien (> 7 jours)
+      timeFactor = engagementScore > 0 ? 0.85 : 0.6; // Post ancien (> 7 jours)
     }
 
     // Calcul du score de proximité
