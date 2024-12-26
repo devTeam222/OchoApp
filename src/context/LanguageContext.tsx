@@ -1,13 +1,17 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
-import { allVocabularyKeys, vocabulary, VocabularyKey, VocabularyObject } from "@/lib/vocabulary";
+import {
+  allVocabularyKeys,
+  Language,
+  vocabulary,
+  VocabularyKey,
+  VocabularyObject,
+} from "@/lib/vocabulary";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { useSession } from "@/app/(main)/SessionProvider";
 
-// Types des langues
-type Language = "en" | "fr";
 type LanguageContextType = {
   language: Language;
   setLanguage: (lang: Language) => void;

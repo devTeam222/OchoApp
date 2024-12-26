@@ -2,6 +2,7 @@
 import { useToast } from "@/components/ui/use-toast";
 import { t } from "@/context/LanguageContext";
 import { useUploadThing } from "@/lib/uploadthing";
+import { VocabularyObject } from "@/lib/vocabulary";
 import { useState } from "react";
 
 export interface Attachment {
@@ -111,8 +112,8 @@ export default function useMediaUpload() {
     });
   }
 
-  async function handleStartUpload(files: File[]) {
-    const { fileMaxSizeReached } = t();
+  async function handleStartUpload(files: File[], t :VocabularyObject) {
+    const { fileMaxSizeReached } = t;
     setIsUploading(true);
     const newAttachments: Attachment[] = [];
 

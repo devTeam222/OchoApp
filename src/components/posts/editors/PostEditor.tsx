@@ -13,9 +13,8 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useDropzone } from "@uploadthing/react";
 import { Textarea } from "@/components/ui/textarea";
-import { text } from "node:stream/consumers";
-import { VocabularyKey } from "@/lib/vocabulary";
 import { t } from "@/context/LanguageContext";
+import { VocabularyObject } from "@/lib/vocabulary";
 
 export default function PostEditor() {
   const [clear, setClear] = useState(false);
@@ -33,10 +32,20 @@ export default function PostEditor() {
     reset: resetMediaUpload,
   } = useMediaUpload();
 
-  const { wtsup, chooseBackground, removeBackground, post } = t();
+  const {
+    wtsup,
+    chooseBackground,
+    removeBackground,
+    post,
+    fileMaxSizeReached,
+  } = t();
+
+  function uploadFiles(files: File[]) {
+    startUpload(files, { fileMaxSizeReached } as VocabularyObject);
+  }
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: startUpload,
+    onDrop: uploadFiles,
   });
 
   const { onClick, ...rootProps } = getRootProps();
@@ -70,22 +79,24 @@ export default function PostEditor() {
   const canShowGradient =
     input.length <= maxGradientLength && !!gradient && !attachments.length;
 
-  function onPaste(e: ClipboardEvent<HTMLTextAreaElement>) {
+  function onPaste(e: ClipboardEvent) {
     const files = Array.from(e.clipboardData.items)
       .filter((item) => item.kind === "file")
       .map((item) => item.getAsFile()) as File[];
     if (files.length > 0) {
       e.preventDefault();
-      startUpload(files);
+      uploadFiles(files);
     }
   }
 
-  const placeholder = wtsup.replace("[name]", user.displayName.split(" ")[0])
+  const placeholder = wtsup.replace("[name]", user.displayName.split(" ")[0]);
 
   return (
-    <div className="flex flex-col gap-5 bg-card/50 p-5 shadow-sm max-sm:border-t-8 max-sm:border-solid max-sm:border-background sm:rounded-md sm:bg-card">
+    <div
+      {...rootProps}
+      className="flex flex-col gap-5 bg-card/50 p-5 shadow-sm max-sm:border-t-8 max-sm:border-solid max-sm:border-background sm:rounded-md sm:bg-card"
+    >
       <div
-        {...rootProps}
         className={cn(
           "flex h-max gap-2 rounded-3xl border border-input bg-background p-1 transition-all duration-75",
           isDragActive
@@ -93,6 +104,7 @@ export default function PostEditor() {
             : "items-endring-primary ring-offset-background has-[textarea:focus-visible]:outline-none has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring has-[textarea:focus-visible]:ring-offset-2",
           !gradient && "items-end",
         )}
+        onPaste={onPaste}
       >
         <div className="flex flex-col justify-between">
           {!!gradient && (
@@ -121,7 +133,6 @@ export default function PostEditor() {
           <Textarea
             ref={textareaRef}
             placeholder={placeholder}
-            onPaste={onPaste}
             className={cn(
               "max-h-[15rem] min-h-10 w-full overflow-y-auto rounded-none border-none bg-transparent px-0 ring-offset-transparent placeholder:text-gray-500 focus-visible:ring-transparent",
               canShowGradient && "max-w-fit text-center",
@@ -171,7 +182,7 @@ export default function PostEditor() {
             <Loader2 className="size-5 animate-spin text-primary" />
           )}
           <AddAttachmentButton
-            onFilesSelected={startUpload}
+            onFilesSelected={uploadFiles}
             disabled={isUploading || attachments.length >= 5}
             clear={clear}
           />
