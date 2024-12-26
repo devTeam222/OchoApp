@@ -65,6 +65,7 @@ export default function GroupChatSettingsDialog({
     changeGroupName,
     groupDescription,
     describeThisGroup,
+    save,
     dataError,
   } = t();
 
@@ -170,7 +171,7 @@ export default function GroupChatSettingsDialog({
             />
             <DialogFooter>
               <LoadingButton type="submit" loading={mutation.isPending}>
-                Enregistrer
+                {save}
               </LoadingButton>
             </DialogFooter>
           </form>
