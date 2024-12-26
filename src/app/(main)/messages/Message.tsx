@@ -13,6 +13,7 @@ import UserTooltip from "@/components/UserTooltip";
 import kyInstance from "@/lib/ky";
 import MessageMoreButton from "@/components/messages/MessageMoreButton";
 import Reaction from "@/components/Reaction";
+import { t } from "@/context/LanguageContext";
 
 type MessageProps = {
   message: MessageData;
@@ -37,6 +38,37 @@ export default function Message({
     "bottom",
   );
   const messageRef = useRef<HTMLDivElement>(null);
+  const {
+    appUser,
+    newMember,
+    youAddedMember,
+    addedYou,
+    addedMember,
+    memberLeft,
+    youRemovedMember,
+    removedYou,
+    removedMember,
+    memberBanned,
+    youBannedMember,
+    bannedYou,
+    bannedMember,
+    youCreatedGroup,
+    createdGroup,
+    canChatWithYou,
+    youReactedToYourMessage,
+    youReactedToMessage,
+    reactedToMessage,
+    reactedMemberMessage,
+    messageYourself,
+    sent,
+    seenBy,
+    seenByAnd,
+    noPreview,
+    unavailableMessage,
+    deletedChat,
+  } = t();
+
+  const seen = seenByAnd.match(/-(.*?)-/)?.[1] || "Seen";
 
   useEffect(() => {
     if (!messageRef.current) return;
@@ -147,6 +179,7 @@ export default function Message({
     .filter((read) => read.id !== loggedUser.id)
     .filter((read) => read.id !== message.senderId)
     .map((read) => read.displayName.split(" ")[0]);
+  const hasSeen = reads.find((read) => read.id === loggedUser.id);
 
   const otherUser =
     channel.id === `saved-${loggedUser.id}`
@@ -160,8 +193,8 @@ export default function Message({
     message.sender?.id === loggedUser.id
       ? "Vous"
       : channel.isGroup
-        ? (message.sender?.displayName.split(" ")[0] || "")
-        : (otherUser?.user?.displayName.split(" ")[0] || "");
+        ? message.sender?.displayName.split(" ")[0] || ""
+        : otherUser?.user?.displayName.split(" ")[0] || "";
   const recipient = message.recipient;
   let newMemberMsg, oldMemberMsg;
 
@@ -169,50 +202,86 @@ export default function Message({
     (member) => member.userId === message.sender?.id,
   );
 
+  const otherUserFirstName =
+    otherUser?.user?.displayName.split(" ")[0] || appUser;
+  const senderFirstName = message.sender?.displayName.split(" ")[0] || appUser;
+  const recipientFirstName =
+    message.recipient?.displayName.split(" ")[0] || appUser;
+  const isSender = message.sender?.id === loggedUser.id;
+  const isRecipient = message.recipient?.id === loggedUser.id;
+
   if (recipient && channel.isGroup) {
-    const memberName = recipient.displayName.split(" ")[0];
+    const memberName = recipientFirstName;
 
     // Check if message type is info of added member
     if (messageType === "NEWMEMBER") {
-      newMemberMsg = `Nouveau membre : ${memberName}`;
+      newMemberMsg = newMember.replace("[name]", memberName);
       if (message.sender) {
-        message.sender.id === loggedUser.id
-          ? (newMemberMsg = `Vous avez ajouté ${memberName} au groupe.`)
-          : (newMemberMsg = `${sender} ${recipient.id === loggedUser.id ? "vous a ajouté" : `a ajouté ${memberName}`} au groupe.`);
+        isSender
+          ? (newMemberMsg = youAddedMember.replace("[name]", memberName))
+          : (newMemberMsg = isRecipient
+              ? addedYou.replace("[name]", senderFirstName)
+              : addedMember
+                  .replace("[name]", senderFirstName)
+                  .replace("[member]", memberName));
       }
     }
     if (messageType === "LEAVE") {
-      oldMemberMsg = `${memberName} est parti`;
-      if (message?.sender) {
-        message.sender.id === loggedUser.id
-          ? (oldMemberMsg = `Vous avez retiré ${memberName} du groupe.`)
-          : (oldMemberMsg = `${sender} ${recipient.id === loggedUser.id ? "vous a retiré" : `a retiré ${memberName}`} du groupe.`);
+      oldMemberMsg = memberLeft.replace("[name]", memberName);
+      if (message.sender) {
+        isSender
+          ? (oldMemberMsg = youRemovedMember.replace("[name]", memberName))
+          : (oldMemberMsg = isRecipient
+              ? removedYou.replace("[name]", senderFirstName)
+              : removedMember
+                  .replace("[name]", senderFirstName)
+                  .replace("[member]", memberName));
       }
     }
     if (messageType === "BAN") {
-      oldMemberMsg = `${memberName} a été suspendu`;
-      if (message?.sender) {
-        message.sender.id === loggedUser.id
-          ? (oldMemberMsg = `Vous avez suspendu ${memberName} du groupe.`)
-          : (oldMemberMsg = `${sender} ${recipient.id === loggedUser.id ? "vous a suspendu" : `a suspendu ${memberName}`} du groupe.`);
+      oldMemberMsg = memberBanned.replace("[name]", memberName);
+      if (message.sender) {
+        isSender
+          ? (oldMemberMsg = youBannedMember.replace("[name]", memberName))
+          : (oldMemberMsg = isRecipient
+              ? bannedYou.replace("[name]", senderFirstName)
+              : bannedMember
+                  .replace("[name]", senderFirstName)
+                  .replace("[member]", memberName));
       }
     }
   }
 
   const contentsTypes = {
     CREATE: channel.isGroup
-      ? `${sender || ""} ${message.sender?.id === loggedUser.id ? "avez" : "a"} créé ce groupe`
-      : otherUser.userId === loggedUser.id
-        ? "Envoyez-vous un message"
-        : `${otherUser.user?.displayName?.split(" ")[0] || ""} peut vous envoyer un message`,
+      ? isSender
+        ? youCreatedGroup.replace("[name]", senderFirstName)
+        : createdGroup.replace("[name]", senderFirstName)
+      : canChatWithYou.replace("[name]", otherUserFirstName || appUser),
     CONTENT: message.content,
-    CLEAR: "Historique effacé",
-    DELETE: "Discussion supprimée",
-    SAVED: "Envoyez-vous un message",
+    CLEAR: noPreview,
+    DELETE: deletedChat,
+    SAVED: messageYourself,
     NEWMEMBER: newMemberMsg,
     LEAVE: oldMemberMsg,
     BAN: oldMemberMsg,
-    REACTION: `${sender || ""} a réagi "${message.content}" à votre message`,
+    REACTION: isSender
+      ? isRecipient
+        ? youReactedToYourMessage
+            .replace("[name]", senderFirstName)
+            .replace("[r]", message.content)
+        : youReactedToMessage
+            .replace("[name]", senderFirstName)
+            .replace("[r]", message.content)
+            .replace("[member]", recipientFirstName)
+      : isRecipient
+        ? reactedToMessage
+            .replace("[name]", senderFirstName)
+            .replace("[r]", message.content)
+        : reactedMemberMessage
+            .replace("[name]", senderFirstName)
+            .replace("[r]", message.content)
+            .replace("[member]", recipientFirstName),
   };
 
   if (
@@ -352,7 +421,7 @@ export default function Message({
                   )}
                 >
                   {message.content ?? (
-                    <span className="italic">Message non disponibe</span>
+                    <span className="italic">{unavailableMessage}</span>
                   )}
                 </p>
               </Linkify>
@@ -389,19 +458,32 @@ export default function Message({
         <p
           className={cn(
             showDetail ? "animate-appear-b" : "hidden",
-            "max-h-40 w-fit max-w-[50%] text-ellipsis text-start *:font-bold",
+            "max-h-40 w-fit max-w-[50%] text-ellipsis text-start",
           )}
         >
           {!!views.length ? (
             channel.isGroup ? (
-              <>
-                <span>Vu</span> par {views.join(", ")}
-              </>
+              <span>
+                <span className="font-bold">{seen}</span>
+                {views.length > 1
+                  ? seenByAnd
+                      .replace(/-.*?-/, "")
+                      .replace(
+                        "[names]",
+                        views.slice(0, views.length - 1).join(", "),
+                      )
+                      .replace("[name]", views[views.length - 1])
+                  : seenBy
+                      .replace(/-.*?-/, "")
+                      .replace("[name]", views[views.length - 1])}
+              </span>
             ) : (
-              <span>Vu</span>
+              <span className="font-bold">{seen}</span>
             )
           ) : (
-            <span>{message.senderId === loggedUser.id ? "Envoyé" : "Vu"}</span>
+            <span className="font-bold">
+              {(isSender) ? sent : seen}
+            </span>
           )}
         </p>
       </div>

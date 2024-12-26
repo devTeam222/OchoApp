@@ -12,6 +12,7 @@ import LoadingButton from "../LoadingButton";
 import { MemberType } from "@prisma/client";
 import UsersList from "./UsersList";
 import { Skeleton } from "../ui/skeleton";
+import { t } from "@/context/LanguageContext";
 
 interface AddMemberFormProps {
   onAdd: () => void;
@@ -23,6 +24,8 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
   const [inputValue, setInputValue] = useState<string>("");
   const [selectedUsers, setSelectedUsers] = useState<UserData[]>([]);
   const queryClient = useQueryClient();
+
+  const { add, availableUsers, noAvailableUser, dataError, searchUsers } = t();
 
   const mutation = useAddMemberMutation();
 
@@ -127,13 +130,13 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
   };
 
   return (
-    <div className="space-y-4 w-full max-w-full overflow-hidden">
+    <div className="w-full max-w-full space-y-4 overflow-hidden">
       {!!selectedUsers.length && (
         <>
           <div className="sticky top-0 flex w-full animate-scale gap-2 overflow-y-auto p-3 px-4">
             {selectedUsers.map((user, index) => (
               <div
-                className="flex flex-col items-center gap-1 flex-shrink-0"
+                className="flex flex-shrink-0 flex-col items-center gap-1"
                 key={index}
                 onClick={() => removeUser(user)}
               >
@@ -156,7 +159,7 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
               disabled={!selectedUsers.length}
               className="w-full rounded-lg"
             >
-              Ajouter {!!selectedUsers.length && ` (${selectedUsers.length})`}
+              {add} {!!selectedUsers.length && ` (${selectedUsers.length})`}
             </LoadingButton>
           </div>
         </>
@@ -170,7 +173,7 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
           }}
         >
           <Input
-            placeholder="Rechercher des utilisateurs"
+            placeholder={searchUsers}
             className="rounded-3xl pe-10 ps-4"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
@@ -186,14 +189,16 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
         {status === "error" && (
           <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
             <Frown size={100} />
-            <h2 className="text-xl">Quelque chose s&apos;est mal passé.</h2>
+            <h2 className="text-xl">{dataError}</h2>
           </div>
         )}
         {status === "pending" && !!query && <UsersListSkeleton />}
         {status === "success" && !users.length && !hasNextPage && (
           <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
             <Meh size={100} />
-            <h2 className="text-xl">Nous n&apos;avons pas trouvé d&apos;utilisateur à ajouter.</h2>
+            <h2 className="text-xl">
+              {noAvailableUser}
+            </h2>
           </div>
         )}
         {status !== "success" && !query && <UsersListSkeleton />}
@@ -201,7 +206,7 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
           <UsersList
             query={userQuery}
             onSelect={addUser}
-            title="Utilisateurs disponibles"
+            title={availableUsers}
             selectedUsers={selectedUsers}
             canSelect={status === "success"}
           />
@@ -213,12 +218,12 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
 
 function UsersListSkeleton() {
   return (
-    <ul className="max-h-[60vh] flex-1 overflow-y-auto animate-pulse">
+    <ul className="max-h-[60vh] flex-1 animate-pulse overflow-y-auto">
       <li className="cursor-pointer p-3 px-4">
         <div className="flex flex-shrink-0 items-center gap-2">
           <Skeleton className="h-10 w-10 rounded-full" />
           <div className="flex-1 space-y-1">
-            <Skeleton className="h-3.5 w-20 rounded" />
+            <Skeleton className="h-3.5 w-[60%] min-w-20 rounded" />
             <Skeleton className="h-3 w-[80%] rounded" />
           </div>
         </div>
@@ -227,7 +232,7 @@ function UsersListSkeleton() {
         <div className="flex flex-shrink-0 items-center gap-2">
           <Skeleton className="h-10 w-10 rounded-full" />
           <div className="flex-1 space-y-1">
-            <Skeleton className="h-3.5 w-24 rounded" />
+            <Skeleton className="h-3.5 w-[60%] min-w-24 rounded" />
           </div>
         </div>
       </li>
@@ -235,7 +240,7 @@ function UsersListSkeleton() {
         <div className="flex flex-shrink-0 items-center gap-2">
           <Skeleton className="h-10 w-10 rounded-full" />
           <div className="flex-1 space-y-1">
-            <Skeleton className="h-3.5 w-24 rounded" />
+            <Skeleton className="h-3.5 w-[60%] min-w-24 rounded" />
             <Skeleton className="h-3 w-[70%] rounded" />
           </div>
         </div>
@@ -244,7 +249,7 @@ function UsersListSkeleton() {
         <div className="flex flex-shrink-0 items-center gap-2">
           <Skeleton className="h-10 w-10 rounded-full" />
           <div className="flex-1 space-y-1">
-            <Skeleton className="h-3.5 w-24 rounded" />
+            <Skeleton className="h-3.5 w-[60%] min-w-24 rounded" />
             <Skeleton className="h-3 w-[50%] rounded" />
           </div>
         </div>

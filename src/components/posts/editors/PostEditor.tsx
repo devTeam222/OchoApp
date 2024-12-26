@@ -80,6 +80,8 @@ export default function PostEditor() {
     }
   }
 
+  const placeholder = wtsup.replace("[name]", user.displayName.split(" ")[0])
+
   return (
     <div className="flex flex-col gap-5 bg-card/50 p-5 shadow-sm max-sm:border-t-8 max-sm:border-solid max-sm:border-background sm:rounded-md sm:bg-card">
       <div
@@ -118,7 +120,7 @@ export default function PostEditor() {
         >
           <Textarea
             ref={textareaRef}
-            placeholder={wtsup}
+            placeholder={placeholder}
             onPaste={onPaste}
             className={cn(
               "max-h-[15rem] min-h-10 w-full overflow-y-auto rounded-none border-none bg-transparent px-0 ring-offset-transparent placeholder:text-gray-500 focus-visible:ring-transparent",

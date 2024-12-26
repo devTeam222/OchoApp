@@ -58,7 +58,15 @@ export default function GroupChatSettingsDialog({
 }: GroupChatSettingsDialogProps) {
   const [croppedAvatar, setCroppedAvatar] = useState<Blob | null>(null);
   const { toast } = useToast();
-  const { dataError } = t();
+  const {
+    changeGroupSettings,
+    groupIcon,
+    groupName,
+    changeGroupName,
+    groupDescription,
+    describeThisGroup,
+    dataError,
+  } = t();
 
   const mutation = useUpdateGroupChatMutation({ channelId: channel.id });
 
@@ -102,16 +110,16 @@ export default function GroupChatSettingsDialog({
       <DialogTrigger
         asChild
         className={cn("cursor-pointer", className)}
-        title="Modifier les parametres du groupe"
+        title={changeGroupSettings}
       >
         {children}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Modifier les parametres du groupe</DialogTitle>
+          <DialogTitle>{changeGroupSettings}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center gap-1.5">
-          <Label>Icône de groupe</Label>
+          <Label>{groupIcon}</Label>
           <AvatarInput
             channelId={channel.id}
             src={
@@ -129,10 +137,10 @@ export default function GroupChatSettingsDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nom du groupe</FormLabel>
+                  <FormLabel>{groupName}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Changer le nom du groupe"
+                      placeholder={changeGroupName}
                       {...field}
                       autoFocus={focus === "name"}
                     />
@@ -146,13 +154,14 @@ export default function GroupChatSettingsDialog({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>{groupDescription}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Decrivez ce groupe..."
+                      placeholder={describeThisGroup}
                       {...field}
                       className="resize-none"
                       autoFocus={focus === "description"}
+                      rows={4}
                     />
                   </FormControl>
                   <FormMessage />
@@ -181,6 +190,8 @@ function AvatarInput({ channelId, src, onImageCropped }: AvatarInputProps) {
   const [imageToCrop, setImageToCrop] = useState<File>();
 
   const mutation = useDeleteGroupChatAvatarMutation();
+
+  const { profilePicture, groupIcon, clickToSelectImage, removePic } = t();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -211,13 +222,13 @@ function AvatarInput({ channelId, src, onImageCropped }: AvatarInputProps) {
         onChange={(e) => onImageSelected(e.target.files?.[0])}
         ref={fileInputRef}
         className="sr-only hidden"
-        title="Avatar"
+        title={groupIcon}
       />
       <button
         type="button"
         onClick={() => fileInputRef.current?.click()}
         className="group relative block"
-        title="Cliquez pour selectioner une image"
+        title={clickToSelectImage}
       >
         <GroupAvatar avatarUrl={src} size={150} className="flex-none" />
         <span className="absolute inset-0 m-auto flex size-12 items-center justify-center rounded-full bg-black bg-opacity-30 text-white transition-colors duration-200 group-hover:bg-opacity-25">
@@ -230,7 +241,7 @@ function AvatarInput({ channelId, src, onImageCropped }: AvatarInputProps) {
           loading={mutation.isPending}
           onClick={deleteAvatar}
         >
-          <Trash2 size={20} /> Supprimer la photo
+          <Trash2 size={20} /> {removePic}
         </LoadingButton>
       )}
       {imageToCrop && (

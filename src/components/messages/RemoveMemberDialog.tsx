@@ -28,7 +28,15 @@ export default function RemoveMemberDialog({
   const queryClient = useQueryClient();
 
   const { toast } = useToast();
-  const { groupRemoveSuccess } = t();
+  const {
+    appUser,
+    removeFromGroup,
+    groupRemovePrompt,
+    cancel,
+    remove,
+    groupRemoveSuccess,
+    thisGroup,
+  } = t();
 
   function onClose() {
     setIsOpen(false);
@@ -53,8 +61,8 @@ export default function RemoveMemberDialog({
 
           toast({
             description: groupRemoveSuccess
-              .replace("[name]", member?.user?.displayName || "un utilisateur")
-              .replace("[group]", channel.name || "ce groupe"),
+              .replace("[name]", member?.user?.displayName || appUser)
+              .replace("[group]", channel.name || thisGroup),
           });
           onClose();
         },
@@ -69,26 +77,26 @@ export default function RemoveMemberDialog({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" className="flex w-full justify-center gap-3">
-          <LogOut size={24} /> Retirer du groupe
+          <LogOut size={24} />
+          {removeFromGroup}
         </Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogTitle>Supprimer un membre</DialogTitle>
+        <DialogTitle>{removeFromGroup}</DialogTitle>
         <p>
-          Vous êtes sur le point de supprimer{" "}
-          {member?.user?.displayName || "un utilisateur"} de{" "}
-          {channel.name || "ce groupe"}
+          {groupRemovePrompt.replace("[name]", member?.user?.displayName || appUser)
+              .replace("[group]", channel.name || thisGroup)}
         </p>
         <DialogFooter>
           <Button variant="secondary" onClick={onClose}>
-            Annuler
+            {cancel}
           </Button>
           <LoadingButton
             loading={mutation.isPending}
             variant="destructive"
             onClick={handleSubmit}
           >
-            Supprimer
+            {remove}
           </LoadingButton>
         </DialogFooter>
       </DialogContent>

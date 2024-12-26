@@ -51,7 +51,7 @@ export default function Reaction({
     position,
   );
 
-  const { somethingWentWrong } = t();
+  const { reactions: reactionsText, addReaction, somethingWentWrong } = t();
 
   useEffect(() => {
     setReactionPosition(position);
@@ -252,7 +252,7 @@ export default function Reaction({
               "-bottom-[40%] flex items-center gap-1 p-1 px-2",
             reactionsStatus !== "success" && !children && "hidden",
           )}
-          title="Ajouter une reaction"
+          title={addReaction}
         >
           {children || !allReactions?.length ? (
             <SmilePlusIcon size={size} />
@@ -357,6 +357,7 @@ function AllReactions({
 }: AllReactionsProps) {
   const [showQuickReaction, setShowQuickReaction] = useState(open);
   const { user: loggedinUser } = useSession();
+  const { reactions: reactionsText, tapToReact, you, add, all, more } = t();
 
   const MAX_VISIBLE_REACTIONS = 2; // Nombre maximum de réactions visibles dans les onglets principaux
 
@@ -423,7 +424,7 @@ function AllReactions({
         className,
       )}
     >
-      <h3 className="text-lg font-semibold">Réactions</h3>
+      <h3 className="text-lg font-semibold">{reactionsText}</h3>
       <Tabs
         defaultValue="all"
         className="relative flex h-full flex-1 flex-col gap-1"
@@ -453,7 +454,7 @@ function AllReactions({
                   <div className="flex flex-1 flex-col items-start justify-center">
                     <span>{loggedinUser.displayName} (Vous)</span>
                     <span className={cn("text-muted-foreground", "text-xs")}>
-                      Appuyez ou cliquez pour ajouter une réaction
+                      {tapToReact}
                     </span>
                   </div>
                   <span className="text-xl">
@@ -511,27 +512,27 @@ function AllReactions({
 
         <TabsList className="bg-transparent shadow-none">
           {!loading && (
-            <TabsTrigger value="you">
-              <span className="text-xs">
-                {userReaction ? "Vous" : "Ajouter"}
-              </span>
-            </TabsTrigger>
-          )}
-          <TabsTrigger value="all">
-            <span className="text-xs">Tout</span>
-          </TabsTrigger>
-          {reactions.length > 1 &&
-            visibleReactions.map(([content, { count }]) => (
-              <TabsTrigger key={content} value={content}>
-                <span className="text-xs">
-                  {content}{" "}
-                  <span className="text-muted-foreground">{count}</span>
-                </span>
+            <>
+              <TabsTrigger value="you">
+                <span className="text-xs">{userReaction ? you : add}</span>
               </TabsTrigger>
-            ))}
+              <TabsTrigger value="all">
+                <span className="text-xs">{all}</span>
+              </TabsTrigger>
+              {reactions.length > 1 &&
+                visibleReactions.map(([content, { count }]) => (
+                  <TabsTrigger key={content} value={content}>
+                    <span className="text-xs">
+                      {content}{" "}
+                      <span className="text-muted-foreground">{count}</span>
+                    </span>
+                  </TabsTrigger>
+                ))}
+            </>
+          )}
           {reactions.length > 1 && remainingReactions.length > 0 && (
             <TabsTrigger value="more">
-              <span className="text-xs">Plus</span>
+              <span className="text-xs">{more}</span>
             </TabsTrigger>
           )}
         </TabsList>
@@ -553,6 +554,7 @@ interface ReactionUsersProps {
 
 function ReactionUsers({ users, content, onReact }: ReactionUsersProps) {
   const { user: loggedinUser } = useSession();
+  const { tapToUnreact } = t();
 
   // Vérifier si des utilisateurs sont présents
   if (users.length > 0) {
@@ -581,7 +583,7 @@ function ReactionUsers({ users, content, onReact }: ReactionUsersProps) {
                 )}
               >
                 {user.id === loggedinUser.id
-                  ? "Appuyez ou cliquez pour supprimer"
+                  ? tapToUnreact
                   : `@${user.username}`}
               </span>
             </div>

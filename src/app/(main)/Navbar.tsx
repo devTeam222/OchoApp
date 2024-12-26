@@ -11,7 +11,7 @@ export default function Navbar() {
           href="/"
           className="text-2xl font-bold text-primary max-sm:hidden"
         >
-          <AppLogo logo="TEXT" />
+          <AppLogo size={70} />
         </Link>
         <Link href="/" className="text-2xl font-bold text-primary sm:hidden">
           <AppLogo logo="LOGO" size={70} />

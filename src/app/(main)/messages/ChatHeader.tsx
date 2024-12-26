@@ -20,12 +20,14 @@ import { useActiveChannel } from "@/context/ChatContext";
 import LeaveGroupDialog from "@/components/messages/LeaveGroupDialog";
 import GroupChatSettingsDialog from "@/components/messages/GroupChatSettingsDialog";
 import { cn } from "@/lib/utils";
+import { t } from "@/context/LanguageContext";
 
 interface ChatHeaderProps {
   channel: ChannelData;
+  onDelete: ()=>void;
 }
 
-export default function ChatHeader({ channel }: ChatHeaderProps) {
+export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
   const [active, setActive] = useState(false);
   const [expandMembers, setExpandMembers] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
@@ -33,7 +35,33 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
     null,
   );
   const { activeChannelId } = useActiveChannel();
+  const {
+    group,
+    groupChat,
+    appUser,
+    you,
+    online,
+    activeText,
+    viewProfile,
+    created,
+    member,
+    members: membersText,
+    namesAndName,
+    namesAndOthers,
+    settings,
+    addAMember,
+    addMembers,
+    addDescription,
+    noDescription,
+    joined,
+    seeAllMore,
+    hide,
+    memberSince,
+    thisAccountDeleted,
+  } = t();
 
+  const aMember = addAMember.match(/-(.*?)-/)?.[1] || "a member";
+  const addAM = addAMember.replace(/-.*?-/, "");
   const { user: loggedUser } = useSession();
 
   useEffect(() => {
@@ -50,11 +78,10 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
   const chatName = !!channel?.name?.trim()
     ? channel.name
     : (channel.id === `saved-${loggedUser.id}`
-        ? loggedUser.displayName + " (vous)"
+        ? loggedUser.displayName + ` (${you})`
         : channel?.members.filter(
             (member) => member.userId !== loggedUser.id,
-          )[0].user?.displayName) ||
-      (channel.isGroup ? "Groupe de discussion" : "Utilisateur OchoApp");
+          )[0].user?.displayName) || (channel.isGroup ? groupChat : appUser);
 
   const weekAgo = new Date(
     channel.createdAt.getTime() - 6 * 24 * 60 * 60 * 1000,
@@ -117,10 +144,10 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
     !active &&
     (channel.id === `saved-${loggedUser.id}` ||
       (!!otherUser?.lastSeen &&
-        new Date(otherUser.lastSeen).getTime() - 40 * 1000 > now));
+        new Date(otherUser.lastSeen).getTime() - 40_000 > now));
 
   const lastSeenTimeStamp = otherUser?.lastSeen
-    ? new Date(new Date(otherUser.lastSeen).getTime() - 40 * 1000).getTime()
+    ? new Date(new Date(otherUser.lastSeen).getTime() - 30_000).getTime()
     : null;
 
   return (
@@ -190,27 +217,61 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
             >
               {channel.isGroup ? (
                 <div>
-                  <span className="group-hover/head:hidden">{`${allMembers.length} membre${allMembers.length > 1 ? "s" : ""}`}</span>
-                  <span className="hidden group-hover/head:inline">
-                    {channel.members
-                      .filter((member) => member.userId !== loggedUser.id)
-                      .slice(0, 5)
-                      .map((member) => member.user?.displayName.split(" ")[0])
-                      .join(", ")}
-                      {channel.members.length === 6 && ` et ${channel.members[5].user?.displayName.split(" ")[0]}`}
-                    {channel.members.length > 6 &&
-                      ` et ${channel.members.length - 5} autres`}
+                  <span className="max-sm:hidden sm:group-hover/head:hidden">{`${allMembers.length} ${allMembers.length > 1 ? membersText.toLowerCase() : member.toLowerCase()}`}</span>
+                  <span className="text-ellipsis max-sm:line-clamp-1 sm:hidden sm:group-hover/head:inline">
+                    {channel.members.length === 1
+                      ? channel.members[0].user?.displayName.split(" ")[0]
+                      : channel.members.length > 2
+                        ? channel.members.length > 6
+                          ? namesAndOthers
+                              .replace(
+                                "[names]",
+                                channel.members
+                                  .filter(
+                                    (member) => member.userId !== loggedUser.id,
+                                  )
+                                  .slice(0, 5)
+                                  .map(
+                                    (member) =>
+                                      member.user?.displayName.split(" ")[0],
+                                  )
+                                  .join(", "),
+                              )
+                              .replace("[len]", `${channel.members.length - 6}`)
+                          : namesAndName
+                              .replace(
+                                "[names]",
+                                channel.members
+                                  .filter(
+                                    (member) => member.userId !== loggedUser.id,
+                                  )
+                                  .slice(0, channel.members.length - 2)
+                                  .map(
+                                    (member) =>
+                                      member.user?.displayName.split(" ")[0],
+                                  )
+                                  .join(", "),
+                              )
+                              .replace(
+                                "[name]",
+                                channel.members[
+                                  channel.members.length - 1
+                                ].user?.displayName.split(" ")[0] || appUser,
+                              )
+                        : channel.members[
+                            channel.members.length - 1
+                          ].user?.displayName.split(" ")[0] || appUser}
                   </span>
                 </div>
               ) : (
                 <span className="">
-                  {isUserOnline ? (
-                    "En ligne"
-                  ) : lastSeenTimeStamp && lastSeenTimeStamp - 40_000 < now ? (
+                  {isUserOnline || otherUser?.id === loggedUser.id ? (
+                    online
+                  ) : lastSeenTimeStamp && lastSeenTimeStamp < now ? (
                     <>
-                      Actif{" "}
+                      {activeText}{" "}
                       <Time
-                        time={new Date(lastSeenTimeStamp - 30_000)}
+                        time={new Date(lastSeenTimeStamp + 10_000)}
                         relative
                         long={false}
                       />
@@ -225,19 +286,19 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
           {active && (
             <div className="text-muted-foreground">
               {channel.isGroup ? (
-                <span className="">{`Groupe • ${allMembers.length} membre${allMembers.length > 1 ? "s" : ""}`}</span>
+                <span className="">{`${group} • ${allMembers.length} ${allMembers.length > 1 ? membersText.toLowerCase() : member}`}</span>
               ) : (
                 <span>
                   <div>@{otherUser?.username || "ochoapp-user"}</div>
                   <div className="text-center">
-                    {isUserOnline
-                      ? "En ligne"
+                    {isUserOnline || otherUser?.id === loggedUser.id
+                      ? online
                       : lastSeenTimeStamp &&
-                        lastSeenTimeStamp - 40_000 < now && (
+                        lastSeenTimeStamp < now && (
                           <>
-                            Actif{" "}
+                            {activeText}{" "}
                             <Time
-                              time={new Date(lastSeenTimeStamp - 30_000)}
+                              time={new Date(lastSeenTimeStamp + 10_000)}
                               relative
                               long={false}
                             />
@@ -264,8 +325,8 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                         >
                           <UserRoundPlus size={35} />
                           <span>
-                            Ajouter{" "}
-                            <span className="max-sm:hidden">un membre</span>
+                            {addAM}{" "}
+                            <span className="max-sm:hidden">{aMember}</span>
                           </span>
                         </Button>
                       </AddMemberDialog>
@@ -287,24 +348,21 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                           className="flex h-fit w-full flex-col gap-2"
                         >
                           <Settings2 size={35} />
-                          <span>
-                            Parametres{" "}
-                            <span className="max-sm:hidden">du groupe</span>
-                          </span>
+                          <span>{settings}</span>
                         </Button>
                       </GroupChatSettingsDialog>
                     )}
                   </div>
                 ) : (
                   <Link href={`/users/${otherUser?.username || "-"}`}>
-                    <Button variant="outline" className="space-x-2">
-                      <UserCircle2 /> afficher le profil
+                    <Button variant="outline" className="flex gap-1">
+                      <UserCircle2 /> {viewProfile}
                     </Button>
                   </Link>
                 )}
               </div>
               <hr className="w-full" />
-              <div className="px-2">
+              <div>
                 <Linkify>
                   {channel.isGroup ? (
                     <>
@@ -315,43 +373,45 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                         <Button
                           variant="link"
                           className="py-0"
-                          title="Ajouter une description au groupe"
+                          title={addDescription}
                           onClick={() => {
                             setDialogFocus("description");
                             setShowDialog(true);
                           }}
                         >
-                          Ajouter une description
+                          {addDescription}
                         </Button>
                       ) : (
                         <span className="text-muted-foreground">
-                          Aucune description
+                          {noDescription}
                         </span>
                       )}
                     </>
                   ) : (
-                    <p>{!!otherUser?.bio && otherUser.bio}</p>
+                    !!otherUser?.bio && <p>{otherUser.bio}</p>
                   )}
                 </Linkify>
               </div>
-              <hr className="w-full" />
+              {(!!otherUser?.bio?.trim() || channel.isGroup) && (
+                <hr className="w-full" />
+              )}
               <span className="text-muted-foreground">
                 {channel.isGroup ? (
                   <span>
-                    Créé{" "}
+                    {created}{" "}
                     <Time time={channel.createdAt} relative={!isWeekAgo} long />
                   </span>
                 ) : (
                   <span>
                     {otherUser?.id ? (
                       <>
-                        Membre depuis{" "}
+                        {channel.isGroup ? joined : memberSince}{" "}
                         {!!otherUser?.createdAt && (
                           <Time time={otherUser.createdAt} long />
                         )}
                       </>
                     ) : (
-                      <>Ce compte a été supprimé</>
+                      thisAccountDeleted
                     )}
                   </span>
                 )}
@@ -364,7 +424,7 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
           <div className="flex w-full flex-1 flex-col gap-3">
             {channel.isGroup && loggedinMember?.type !== "BANNED" && (
               <ul className="flex w-full flex-col py-3">
-                <li className="select-none px-4 text-xs font-bold text-muted-foreground">{`${allMembers.length} membres`}</li>
+                <li className="select-none px-4 text-xs font-bold text-muted-foreground">{`${allMembers.length} ${membersText.toLowerCase()}`}</li>
                 {loggedinMember?.type !== "OLD" && (
                   <AddMemberDialog channel={channel}>
                     <li className="cursor-pointer p-4 active:bg-muted/30">
@@ -377,7 +437,7 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
                             size={35 - 16}
                           />
                         </div>
-                        <p>Ajouter des membres</p>
+                        <p>{addMembers}</p>
                       </div>
                     </li>
                   </AddMemberDialog>
@@ -451,21 +511,19 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
 
                 {!!lastPage.length && !expandMembers && (
                   <li
-                    className="cursor-pointer text-primary hover:underline flex px-4 py-2 max-sm:justify-center"
+                    className="flex cursor-pointer px-4 py-2 text-primary hover:underline max-sm:justify-center"
                     onClick={() => setExpandMembers(true)}
                   >
-                    Tout voir{" ("}
-                    {lastPage.length}
-                    {" de plus)"}
+                    {seeAllMore.replace("[len]", `${lastPage.length}`)}
                   </li>
                 )}
 
                 {expandMembers && (
                   <li
-                    className="cursor-pointer text-primary hover:underline flex px-4 py-2 max-sm:justify-center"
+                    className="flex cursor-pointer px-4 py-2 text-primary hover:underline max-sm:justify-center"
                     onClick={() => setExpandMembers(false)}
                   >
-                    Masquer
+                    {hide}
                   </li>
                 )}
               </ul>
@@ -475,7 +533,7 @@ export default function ChatHeader({ channel }: ChatHeaderProps) {
               loggedinMember?.type !== "BANNED" && (
                 <ul className="flex w-full select-none flex-col py-3">
                   <li className="cursor-pointer p-4 text-red-500 active:bg-muted/30">
-                    <LeaveGroupDialog channel={channel} />
+                    <LeaveGroupDialog channel={channel} onDelete={onDelete}/>
                   </li>
                 </ul>
               )}

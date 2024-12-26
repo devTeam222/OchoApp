@@ -8,7 +8,7 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import { Button } from "../ui/button";
-import { LogOutIcon } from "lucide-react";
+import { LogOutIcon, LucideAlignVerticalDistributeStart } from "lucide-react";
 import { useLeaveGroupMutation } from "./mutations";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../ui/use-toast";
@@ -18,15 +18,25 @@ import { t } from "@/context/LanguageContext";
 
 interface LeaveGroupDialogProps {
   channel: ChannelData;
+  onDelete: ()=>void;
 }
 
-export default function LeaveGroupDialog({ channel }: LeaveGroupDialogProps) {
+export default function LeaveGroupDialog({ channel,onDelete }: LeaveGroupDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [deleteGroup, setDeleteGroup] = useState(false);
   const { user: loggedUser } = useSession();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { groupLeftSuccess } = t();
+  const {
+    leave,
+    leaveAndDelete,
+    cancel,
+    leaveGroup,
+    leaveGroupPrompt,
+    leaveGroupInfo,
+    thisGroup,
+    groupLeftSuccess,
+  } = t();
 
   const memberId = loggedUser.id;
 
@@ -38,10 +48,36 @@ export default function LeaveGroupDialog({ channel }: LeaveGroupDialogProps) {
   function onClose() {
     setIsOpen(false);
   }
+  function leaveAndDeleteGroup() {
+    setDeleteGroup(true);
+    mutation.mutate(
+      { channelId, deleteGroup: true },
+      {
+        onSuccess: () => {
+          const queryKey = ["chat", channelId];
+
+          queryClient.invalidateQueries({ queryKey });
+
+          toast({
+            description: groupLeftSuccess.replace(
+              "[name]",
+              channel.name || "ce groupe",
+            ),
+          });
+          onClose();
+        },
+        onError(error) {
+          console.error(error);
+        },
+      },
+    );
+    onDelete()
+  }
 
   function handleSubmit() {
+    setDeleteGroup(false)
     mutation.mutate(
-      { channelId, deleteGroup },
+      { channelId, deleteGroup: false },
       {
         onSuccess: () => {
           const queryKey = ["chat", channelId];
@@ -75,39 +111,36 @@ export default function LeaveGroupDialog({ channel }: LeaveGroupDialogProps) {
               size={35 - 16}
             />
           </div>
-          <p>Quitter le groupe</p>
+          <p>{leaveGroup}</p>
         </div>
       </DialogTrigger>
       <DialogContent>
-        <DialogTitle>Quitter le groupe</DialogTitle>
-        <p>Êtes-vous sûr de vouloir quitter {channel.name || "ce groupe"} ?</p>
-        {member?.type === "OWNER" && (
-          <p>
-            Si vous quittez sans supprimer le groupe le membre le plus ancien
-            recevra vos privileges
-          </p>
-        )}
+        <DialogTitle>{leaveGroup}</DialogTitle>
+        <p>
+          {leaveGroupPrompt.replace(
+            "[name]",
+            channel.name || thisGroup.toLowerCase(),
+          )}
+        </p>
+        {member?.type === "OWNER" && <p>{leaveGroupInfo}</p>}
         <DialogFooter className="p-2">
           <Button variant="secondary" onClick={onClose}>
-            Annuler
+            {cancel}
           </Button>
           <LoadingButton
-            loading={mutation.isPending}
+            loading={mutation.isPending && !deleteGroup}
             variant="destructive"
             onClick={handleSubmit}
           >
-            Quitter
+            {leave}
           </LoadingButton>
           {member?.type === "OWNER" && (
             <LoadingButton
-              loading={mutation.isPending}
+              loading={mutation.isPending && deleteGroup}
               variant="destructive"
-              onClick={() => {
-                setDeleteGroup(true);
-                handleSubmit();
-              }}
+              onClick={leaveAndDeleteGroup}
             >
-              Quitter et supprimer le groupe
+              {leaveAndDelete}
             </LoadingButton>
           )}
         </DialogFooter>

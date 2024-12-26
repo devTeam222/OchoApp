@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import UserAvatar from "../UserAvatar";
-import { ChannelData, FollowerInfo, UserData } from "@/lib/types";
+import { ChannelData, UserData } from "@/lib/types";
 import Linkify from "../Linkify";
 import { useSession } from "@/app/(main)/SessionProvider";
 
@@ -15,6 +15,7 @@ import RestoreMemberButton from "./RestoreMemberButton";
 import Time from "../Time";
 import MessageButton from "./MessageButton";
 import { Button } from "../ui/button";
+import { t } from "@/context/LanguageContext";
 
 interface GroupUserPopover extends PropsWithChildren {
   user: UserData;
@@ -31,6 +32,8 @@ export default function GroupUserPopover({
   const { user: loggedInUser } = useSession();
   const isMember = type !== "OLD" && type !== "BANNED";
   const member = channel.members.find((member) => member.userId === user.id);
+
+  const { groupAdmin, groupOwner, joined, leftSince, profile } = t();
 
   const joinedAt: Date | null = member?.joinedAt ?? null;
   const leftAt: Date | null = member?.leftAt ?? null;
@@ -50,24 +53,24 @@ export default function GroupUserPopover({
     <Popover>
       <PopoverTrigger asChild className="cursor-pointer">
         {children ?? (
-        <li className="cursor-pointer px-4 py-2 active:bg-muted/30">
-          <div className="flex items-center space-x-2">
-            <UserAvatar avatarUrl={user?.avatarUrl} size={35} />
-            <div className="flex-1 select-none">
-              <p className="">
-                {user.id === loggedInUser?.id ? "Vous" : user?.displayName}
-              </p>
-              <p className="text-sm text-muted-foreground">@{user?.username}</p>
+          <li className="cursor-pointer px-4 py-2 active:bg-muted/30">
+            <div className="flex items-center space-x-2">
+              <UserAvatar avatarUrl={user?.avatarUrl} size={35} />
+              <div className="flex-1 select-none">
+                <p className="">
+                  {user.id === loggedInUser?.id ? "Vous" : user?.displayName}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  @{user?.username}
+                </p>
+              </div>
+              {isMember && type !== "MEMBER" && (
+                <span className="rounded bg-primary/30 p-[2px] text-xs">
+                  {type === "ADMIN" ? groupAdmin : groupOwner}
+                </span>
+              )}
             </div>
-            {isMember && type !== "MEMBER" && (
-              <span className="rounded bg-primary/30 p-[2px] text-xs">
-                {type === "ADMIN"
-                  ? "Admin du groupe"
-                  : "Proprietaire du groupe"}
-              </span>
-            )}
-          </div>
-        </li>
+          </li>
         )}
       </PopoverTrigger>
       <PopoverContent>
@@ -92,27 +95,29 @@ export default function GroupUserPopover({
             </div>
             {user.bio && (
               <Linkify>
-                <p className="line-clamp-4 whitespace-pre-line px-2">{user.bio}</p>
+                <p className="line-clamp-4 whitespace-pre-line p-2">
+                  {user.bio}
+                </p>
               </Linkify>
             )}
             {joinedAt && (
               <p className="px-3 text-sm font-semibold text-muted-foreground">
-                Membre depuis <Time time={joinedAt} long />
+                {joined} <Time time={joinedAt} long />
               </p>
             )}
             {joinedAt && leftAt && leftAt > joinedAt && (
               <p className="px-3 text-sm font-semibold text-muted-foreground">
-                Est parti depuis <Time time={leftAt} long />
+                {leftSince} <Time time={leftAt} long />
               </p>
             )}
           </div>
           <div className="grid grid-cols-2 gap-2">
             <Link href={`/users/${user.username}`}>
-              <Button variant="secondary" className="w-full">
-                <UserCircle2 /> Profil
+              <Button variant="secondary" className="w-full flex gap-1">
+                <UserCircle2 /> {profile}
               </Button>
             </Link>
-            <MessageButton userId={user.id}/>
+            <MessageButton userId={user.id} />
           </div>
           {user.id !== loggedInUser.id &&
             loggedMember?.type != "MEMBER" &&

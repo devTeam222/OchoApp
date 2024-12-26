@@ -24,7 +24,16 @@ export default function BanDialog({ memberId, channel }: BanDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { groupBanSuccess } = t();
+  const {
+    appUser,
+    banFromGroup,
+    groupBanPrompt,
+    groupBanInfo,
+    cancel,
+    ban,
+    thisGroup,
+    groupBanSuccess,
+  } = t();
 
   function onClose() {
     setIsOpen(false);
@@ -68,27 +77,27 @@ export default function BanDialog({ memberId, channel }: BanDialogProps) {
           variant="destructive"
           className="flex w-full justify-center gap-3"
         >
-          <CircleX size={24} /> Suspendre
+          <CircleX size={24} /> {banFromGroup}
         </Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogTitle>Suspendre du groupe</DialogTitle>
+        <DialogTitle>{banFromGroup}</DialogTitle>
         <p>
-          Vous êtes sur le point de suspendre{" "}
-          {member?.user?.displayName || "un utilisateur"} de{" "}
-          {channel.name || "ce groupe"}
+          {groupBanPrompt
+            .replace("[name]", member?.user?.displayName || appUser)
+            .replace("[group]", channel.name || thisGroup)}
         </p>
-        <p>Les autres administrateurs peuvent reintegrer le membre</p>
+        <p>{groupBanInfo}</p>
         <DialogFooter>
           <Button variant="secondary" onClick={onClose}>
-            Annuler
+            {cancel}
           </Button>
           <LoadingButton
             loading={mutation.isPending}
             variant="destructive"
             onClick={handleSubmit}
           >
-            Suspendre
+            {ban}
           </LoadingButton>
         </DialogFooter>
       </DialogContent>

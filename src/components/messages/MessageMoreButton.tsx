@@ -34,7 +34,13 @@ export default function MessageMoreButton({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { user: loggedinUser } = useSession();
   const { toast } = useToast();
-  const { messageCopied, unableToCopyMessage } = t();
+  const {
+    reactText,
+    copy,
+    messageCopied,
+    unableToCopyMessage,
+    delete: deleteText,
+  } = t();
 
   if (!loggedinUser) {
     return null;
@@ -75,14 +81,14 @@ export default function MessageMoreButton({
             <DropdownMenuItem onClick={onReactOpen}>
               <span className="flex items-center gap-3">
                 <Smile className="size-4" />
-                Reagir
+                {reactText}
               </span>
             </DropdownMenuItem>
           )}
           <DropdownMenuItem onClick={copyToClipboard}>
             <span className="flex items-center gap-3">
               <Copy className="size-4" />
-              Copier
+              {copy}
             </span>
           </DropdownMenuItem>
 
@@ -90,7 +96,7 @@ export default function MessageMoreButton({
             <DropdownMenuItem onClick={() => setShowDeleteDialog(true)}>
               <span className="flex items-center gap-3 text-destructive">
                 <Trash2 className="size-4" />
-                Supprimer
+                {deleteText}
               </span>
             </DropdownMenuItem>
           )}

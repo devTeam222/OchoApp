@@ -41,7 +41,10 @@ export default function NewChat({ onClose, className }: NewChatProps) {
     newChat,
     newGroup,
     startNewChat,
+    you,
     wait,
+    create,
+    cancel,
     messageYourself,
     friends,
     followers,
@@ -264,7 +267,9 @@ export default function NewChat({ onClose, className }: NewChatProps) {
               <div className="flex items-center gap-2">
                 <UserAvatar avatarUrl={loggedinUser.avatarUrl} size={35} />
                 <div>
-                  <p>{loggedinUser.displayName} (Vous)</p>
+                  <p>
+                    {loggedinUser.displayName} ({you})
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     {messageYourself}
                   </p>
@@ -350,17 +355,22 @@ export default function NewChat({ onClose, className }: NewChatProps) {
                   </div>
                 </li>
                 <li className="sticky top-0 flex w-full animate-scale gap-2 px-2 max-sm:hidden">
-                  <LoadingButton loading={isPending} className="flex-1">
-                    Créer
-                  </LoadingButton>
                   <Button
                     variant="secondary"
                     className="flex-1"
                     onClick={disableGroup}
                     disabled={isPending}
                   >
-                    Annuler
+                    {cancel}
                   </Button>
+                  <LoadingButton
+                    loading={isPending}
+                    className="flex-1"
+                    disabled={isPending}
+                    onClick={()=>handleChatStart()}
+                  >
+                    {create}
+                  </LoadingButton>
                 </li>
               </>
             )}
@@ -380,7 +390,7 @@ export default function NewChat({ onClose, className }: NewChatProps) {
                 />
                 <UsersList
                   query={followersQuery}
-                  title="Followers"
+                  title={followers}
                   isGroup
                   selectedUsers={selectedUsers}
                   onSelect={addUser}

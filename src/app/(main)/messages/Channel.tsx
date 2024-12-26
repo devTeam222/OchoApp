@@ -1,7 +1,7 @@
 "use client";
 
 import UserAvatar from "@/components/UserAvatar";
-import { ChannelData, NotificationCountInfo } from "@/lib/types";
+import { ChannelData, NotificationCountInfo, UserData } from "@/lib/types";
 import { useSession } from "../SessionProvider";
 import GroupAvatar from "@/components/GroupAvatar";
 import { MessageType } from "@prisma/client";
@@ -23,6 +23,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
   const { user: loggedinUser } = useSession();
   const {
     appUser,
+    groupChat,
     you,
     newMember,
     youAddedMember,
@@ -67,7 +68,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
 
   const { unreadCount } = data;
 
-  const otherUser =
+  const otherUser : UserData | null =
     channel.id === `saved-${loggedinUser.id}`
       ? loggedinUser
       : channel?.members.filter(
@@ -211,7 +212,12 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
     });
     router.push("/messages/chat");
   };
-  console.log(newMember.replace("[name]", memberName));
+
+  const chatName = channel.name ||
+  `${otherUser?.displayName || appUser} ${channel.id === `saved-${loggedinUser.id}` ? `(${you})` : ""}` ||
+  (channel.isGroup
+    ? groupChat
+    : appUser)
   
 
   return (
@@ -233,11 +239,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
         )}
         <div className="">
           <span className="font-semibold">
-            {channel.name ||
-              `${otherUser?.displayName || appUser} ${channel.id === `saved-${loggedinUser.id}` ? "(vous)" : ""}` ||
-              (channel.isGroup
-                ? "Groupe de discussion"
-                : appUser)}
+            {chatName}
           </span>
           <div className="flex w-fit max-w-full flex-shrink-0 items-center gap-1 text-sm text-muted-foreground">
             <span

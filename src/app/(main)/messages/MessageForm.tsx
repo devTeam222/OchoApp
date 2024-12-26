@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import React from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Textarea } from "@/components/ui/textarea";
+import { t } from "@/context/LanguageContext";
 
 interface MessageFormProps {
   channelId: string;
@@ -19,7 +20,7 @@ export default function MessageForm({ channelId }: MessageFormProps) {
   const queryClient = useQueryClient();
   const mutation = useSubmitMessageMutation();
 
-
+  const {typeMessage} = t()
 
   function onSubmit() {
     mutation.mutate(
@@ -43,7 +44,7 @@ export default function MessageForm({ channelId }: MessageFormProps) {
       
         <div className="relative flex w-full items-end gap-1 rounded-3xl border border-input bg-background p-1 ring-primary ring-offset-background transition-all duration-75 has-[textarea:focus-visible]:outline-none has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring has-[textarea:focus-visible]:ring-offset-2">
           <Textarea
-            placeholder="Écrivez un message..."
+            placeholder={typeMessage}
             className="max-h-[10rem] min-h-10 w-full overflow-y-auto rounded-none border-none bg-transparent px-4 py-2 pr-0.5 ring-offset-transparent focus-visible:ring-transparent"
             rows={1}
             value={input}

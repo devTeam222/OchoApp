@@ -32,7 +32,7 @@ export default function UsersList({
   onSelect,
 }: UsersListProps) {
   const { toast } = useToast();
-  const { cantSelectMoreUsers } = t();
+  const { cantSelectMoreUsers, showMore } = t();
 
   if (!data?.pages?.length) return null;
 
@@ -98,7 +98,7 @@ export default function UsersList({
           className="flex w-full cursor-pointer justify-center pb-2 text-primary hover:underline max-sm:underline"
           onClick={fetchNextPage}
         >
-          Afficher plus
+          {showMore}
         </li>
       )}
     </>

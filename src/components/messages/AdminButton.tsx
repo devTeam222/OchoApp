@@ -8,6 +8,7 @@ import LoadingButton from "../LoadingButton";
 import { cn } from "@/lib/utils";
 import React from "react";
 import { MemberType } from "@prisma/client";
+import { t } from "@/context/LanguageContext";
 
 interface AdminButtonProps {
   member: string;
@@ -24,6 +25,7 @@ export default function AdminButton({
   const queryClient = useQueryClient();
 
   const { user: loggedInUser } = useSession();
+  const { makeGroupAdmin, dismissAsAdmin } = t();
 
   const channelId = channel.id;
 
@@ -78,12 +80,12 @@ export default function AdminButton({
       >
         {isAdmin ? (
           <>
-            <ShieldBan size={24} className="fill-primary-foreground" />
-            Supprimer des admins
+            <ShieldBan size={24} className="fill-primary-foreground" />{" "}
+            {dismissAsAdmin}
           </>
         ) : (
           <>
-            <ShieldPlus size={24} /> Nommer admin
+            <ShieldPlus size={24} /> {makeGroupAdmin}
           </>
         )}
       </LoadingButton>

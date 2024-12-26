@@ -162,7 +162,7 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
         >
           <ArrowLeft size={35} className="sm:hidden" />
         </div>
-        <ChatHeader channel={channel} />
+        <ChatHeader channel={channel} onDelete={onClose}/>
         <div
           className="flex cursor-pointer hover:text-red-500"
           onClick={onClose}
