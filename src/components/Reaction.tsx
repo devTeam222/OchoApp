@@ -452,7 +452,7 @@ function AllReactions({
                 >
                   <UserAvatar avatarUrl={loggedinUser.avatarUrl} size={32} />
                   <div className="flex flex-1 flex-col items-start justify-center">
-                    <span>{loggedinUser.displayName} (Vous)</span>
+                    <span>{loggedinUser.displayName} ({you})</span>
                     <span className={cn("text-muted-foreground", "text-xs")}>
                       {tapToReact}
                     </span>
@@ -554,7 +554,7 @@ interface ReactionUsersProps {
 
 function ReactionUsers({ users, content, onReact }: ReactionUsersProps) {
   const { user: loggedinUser } = useSession();
-  const { tapToUnreact } = t();
+  const { tapToUnreact, you, appUser } = t();
 
   // Vérifier si des utilisateurs sont présents
   if (users.length > 0) {
@@ -574,7 +574,7 @@ function ReactionUsers({ users, content, onReact }: ReactionUsersProps) {
             <UserAvatar avatarUrl={user.avatarUrl} size={32} />
             <div className="flex flex-1 flex-col items-start justify-center">
               <span>
-                {user.id === loggedinUser.id ? "Vous" : user.displayName}
+                {user.id === loggedinUser.id ? you : user.displayName || appUser}
               </span>
               <span
                 className={cn(
