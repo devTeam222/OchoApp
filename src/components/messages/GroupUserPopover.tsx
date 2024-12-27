@@ -33,7 +33,7 @@ export default function GroupUserPopover({
   const isMember = type !== "OLD" && type !== "BANNED";
   const member = channel.members.find((member) => member.userId === user.id);
 
-  const { groupAdmin, groupOwner, joined, leftSince, profile } = t();
+  const { groupAdmin, groupOwner, joined, leftSince, profile, you } = t();
 
   const joinedAt: Date | null = member?.joinedAt ?? null;
   const leftAt: Date | null = member?.leftAt ?? null;
@@ -58,7 +58,7 @@ export default function GroupUserPopover({
               <UserAvatar avatarUrl={user?.avatarUrl} size={35} />
               <div className="flex-1 select-none">
                 <p className="">
-                  {user.id === loggedInUser?.id ? "Vous" : user?.displayName}
+                  {user.id === loggedInUser?.id ? you : user?.displayName}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   @{user?.username}

@@ -7,7 +7,7 @@ import LoadingButton from "../LoadingButton";
 import { Send } from "lucide-react";
 import { useToast } from "../ui/use-toast";
 import { useActiveChannel } from "@/context/ChatContext";
-import { useRouter } from "next/navigation";  // Importation de useRouter
+import { useRouter } from "next/navigation"; // Importation de useRouter
 import { ButtonProps } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { t } from "@/context/LanguageContext";
@@ -16,14 +16,18 @@ interface MessageButtonProps extends ButtonProps {
   userId: string;
 }
 
-export default function MessageButton({ userId, className, ...props }: MessageButtonProps) {
+export default function MessageButton({
+  userId,
+  className,
+  ...props
+}: MessageButtonProps) {
   const mutation = useCreateChatChannelMutation();
   const saveMsgMutation = useSaveMessageMutation();
   const { setActiveChannelId } = useActiveChannel();
   const { user: loggedinUser } = useSession();
   const { toast } = useToast();
   const { unableToSendMessage, message } = t();
-  const router = useRouter();  // Utilisation de useRouter
+  const router = useRouter(); // Utilisation de useRouter
 
   const handleSubmit = () => {
     if (loggedinUser.id === userId) {
@@ -32,7 +36,7 @@ export default function MessageButton({ userId, className, ...props }: MessageBu
         {
           onSuccess: ({ newChannel }) => {
             setActiveChannelId(newChannel.id);
-            router.push("/messages");  // Utilisation de router.push au lieu de redirect
+            router.push("/messages"); // Utilisation de router.push au lieu de redirect
           },
           onError(error) {
             console.error(error);
@@ -54,14 +58,14 @@ export default function MessageButton({ userId, className, ...props }: MessageBu
       {
         onSuccess: ({ newChannel }) => {
           setActiveChannelId(newChannel.id);
-          router.push("/messages"); 
+          router.push("/messages");
         },
         onError(error) {
-            console.error(error);
-            toast({
-                variant: "destructive",
-                description: unableToSendMessage,
-            })
+          console.error(error);
+          toast({
+            variant: "destructive",
+            description: unableToSendMessage,
+          });
         },
       },
     );
@@ -73,7 +77,8 @@ export default function MessageButton({ userId, className, ...props }: MessageBu
       className={cn("bg-primary", className)}
       onClick={handleSubmit}
     >
-      <Send size={24} /> {message}
+      {!(saveMsgMutation.isPending || mutation.isPending) && <Send size={24} />}{" "}
+      {message}
     </LoadingButton>
   );
 }
