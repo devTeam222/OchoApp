@@ -95,6 +95,9 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
       "STANDARD"
     : "STANDARD";
 
+    console.log(otherUser);
+    
+
   const verifiedCheck = isVerified ? <Verified type={verifiedType} /> : null;
 
   const chatName = !!channel?.name?.trim()
