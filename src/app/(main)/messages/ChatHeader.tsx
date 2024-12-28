@@ -21,10 +21,12 @@ import LeaveGroupDialog from "@/components/messages/LeaveGroupDialog";
 import GroupChatSettingsDialog from "@/components/messages/GroupChatSettingsDialog";
 import { cn } from "@/lib/utils";
 import { t } from "@/context/LanguageContext";
+import Verified from "@/components/Verified";
+import { VerifiedType } from "@prisma/client";
 
 interface ChatHeaderProps {
   channel: ChannelData;
-  onDelete: ()=>void;
+  onDelete: () => void;
 }
 
 export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
@@ -68,12 +70,32 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
     setActive(false);
   }, [activeChannelId]);
 
+  const isSaved = channel.id === `saved-${loggedUser.id}`;
+
   const otherUser =
     channel.members.length === 1 && channel.members[0].userId === loggedUser.id
       ? channel?.members.filter((member) => member.userId === loggedUser.id)[0]
           .user
       : channel?.members.filter((member) => member.userId !== loggedUser.id)[0]
           .user;
+
+  const expiresAt = isSaved
+    ? loggedUser.verified?.[0]?.expiresAt
+    : otherUser?.verified?.[0]?.expiresAt;
+  const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
+
+  const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
+
+  const isVerified =
+    (isSaved ? !!loggedUser.verified[0] : !!otherUser?.verified[0]) &&
+    !expired &&
+    !channel.isGroup;
+  const verifiedType: VerifiedType = isVerified
+    ? (isSaved ? loggedUser.verified[0].type : otherUser?.verified[0].type) ||
+      "STANDARD"
+    : "STANDARD";
+
+  const verifiedCheck = isVerified ? <Verified type={verifiedType} /> : null;
 
   const chatName = !!channel?.name?.trim()
     ? channel.name
@@ -200,7 +222,10 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
             (loggedinMember?.type === "ADMIN" ||
               loggedinMember?.type === "OWNER") ? (
               <div
-                className="cursor-pointer text-xl font-bold sm:hover:text-primary sm:hover:underline"
+                className={cn(
+                  "cursor-pointer text-xl font-bold sm:hover:text-primary sm:hover:underline",
+                  isVerified && "flex items-center gap-1",
+                )}
                 title="Modifier le nom du groupe"
                 onClick={() => {
                   setDialogFocus("name");
@@ -208,6 +233,7 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
                 }}
               >
                 {chatName}
+                {verifiedCheck}
               </div>
             ) : (
               <div className="text-xl font-bold">{chatName}</div>
@@ -533,7 +559,7 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
               loggedinMember?.type !== "BANNED" && (
                 <ul className="flex w-full select-none flex-col py-3">
                   <li className="cursor-pointer p-4 text-red-500 active:bg-muted/30">
-                    <LeaveGroupDialog channel={channel} onDelete={onDelete}/>
+                    <LeaveGroupDialog channel={channel} onDelete={onDelete} />
                   </li>
                 </ul>
               )}

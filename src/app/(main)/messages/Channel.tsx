@@ -76,7 +76,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
         .user;
 
   const expiresAt = isSaved
-    ? loggedinUser.verified[0].expiresAt
+    ? loggedinUser.verified?.[0]?.expiresAt
     : otherUser?.verified?.[0]?.expiresAt;
   const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
 
