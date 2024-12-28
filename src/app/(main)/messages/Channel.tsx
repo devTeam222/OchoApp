@@ -4,7 +4,7 @@ import UserAvatar from "@/components/UserAvatar";
 import { ChannelData, NotificationCountInfo, UserData } from "@/lib/types";
 import { useSession } from "../SessionProvider";
 import GroupAvatar from "@/components/GroupAvatar";
-import { MessageType } from "@prisma/client";
+import { MessageType, VerifiedType } from "@prisma/client";
 import Time from "@/components/Time";
 import { cn } from "@/lib/utils";
 import { QueryKey, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -12,6 +12,7 @@ import kyInstance from "@/lib/ky";
 import FormattedInt from "@/components/FormattedInt";
 import { usePathname, useRouter } from "next/navigation";
 import { t } from "@/context/LanguageContext";
+import Verified from "@/components/Verified";
 
 interface ChannelProps {
   channel: ChannelData;
@@ -74,6 +75,19 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
       : channel?.members.filter(
           (member) => member.userId !== loggedinUser.id,
         )[0].user;
+
+  
+        const expiresAt = otherUser?.verified?.[0]?.expiresAt;
+  const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
+
+  const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
+
+  const isVerified = !!otherUser?.verified[0] && !expired && !channel.isGroup;
+  const verifiedType: VerifiedType = isVerified
+    ? otherUser?.verified[0].type
+    : "STANDARD";
+
+      const verifiedCheck = isVerified ? <Verified type={verifiedType} /> : null;
 
   const messagePreview = channel?.messages[0] || {
     id: "",
@@ -238,8 +252,8 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
           />
         )}
         <div className="">
-          <span className="font-semibold">
-            {chatName}
+          <span className={cn("font-semibold", isVerified && "flex items-center gap-1")}>
+            {chatName}{verifiedCheck}
           </span>
           <div className="flex w-fit max-w-full flex-shrink-0 items-center gap-1 text-sm text-muted-foreground">
             <span
