@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
       return Response.json({ error: "Action non autorisée" }, { status: 401 });
     }
 
-    const bookmarksUser = await prisma.bookmark.findMany({
+    const bookmarks = await prisma.bookmark.findMany({
       where: {
         userId: user.id,
       },
@@ -28,31 +28,6 @@ export async function GET(req: NextRequest) {
       take: pageSize + 1,
       cursor: cursor ? { id: cursor } : undefined,
     });
-
-    // Utilise Promise.all pour récupérer les posts avec leurs usernames
-    const bookmarks = await Promise.all(
-        bookmarksUser.map(async (bookmark) => {
-          // Vérifie si les données nécessaires existent
-          const username = bookmark.post?.user?.username || null;
-      
-          if (!bookmark.post || !username) {
-            // Si le post ou le username est manquant, retourne le bookmark tel quel
-            return bookmark;
-          }
-      
-          // Si toutes les données sont présentes, effectue la requête supplémentaire
-          const updatedPost = await prisma.bookmark.findUnique({
-            where: { id: bookmark.id },
-            include: {
-              post: {
-                include: getPostDataIncludes(user.id, username), // Inclut le username dans getPostDataIncludes
-              },
-            },
-          });
-      
-          return updatedPost || bookmark; // Retourne les données enrichies ou le bookmark d'origine
-        })
-      );
 
 
 

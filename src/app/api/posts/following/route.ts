@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
       return Response.json({ error: "Action non autorisée" }, { status: 401 });
     }
 
-    const postsUser = await prisma.post.findMany({
+    const posts = await prisma.post.findMany({
       where: {
         user: {
           followers: {
@@ -31,27 +31,6 @@ export async function GET(req: NextRequest) {
       take: pageSize + 1,
       cursor: cursor ? { id: cursor } : undefined,
     });
-
-    // Utilise Promise.all pour récupérer les posts avec leurs usernames
-    const posts = await Promise.all(
-      postsUser.map(async (post) => {
-        // Vérifie si les données nécessaires existent
-        const username = post?.user?.username || null;
-
-        if (!post || !username) {
-          // Si le post ou le username est manquant, retourne le post tel quel
-          return post;
-        }
-
-        // Si toutes les données sont présentes, effectue la requête supplémentaire
-        const updatedPost = await prisma.post.findUnique({
-          where: { id: post.id },
-          include: getPostDataIncludes(user.id, username),
-        });
-
-        return updatedPost || post; // Retourne les données enrichies ou le post d'origine
-      }),
-    );
 
     const postsWithScores = posts.slice(0, pageSize).map((post) => {
       return {

@@ -2,8 +2,6 @@ import { validateRequest } from "@/auth";
 import { calculateRelevanceScore } from "@/lib/postScore";
 import prisma from "@/lib/prisma";
 import { getPostDataIncludes, PostsPage } from "@/lib/types";
-import { $Enums } from "@prisma/client";
-import { User } from "lucia";
 import { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -19,33 +17,12 @@ export async function GET(req: NextRequest) {
     }
 
     // Recuperer les utilisateurs pour les verifier
-    const postsUser = await prisma.post.findMany({
+    const posts = await prisma.post.findMany({
       include: getPostDataIncludes(user.id),
       orderBy: { createdAt: "desc" },
       take: pageSize + 1,
       cursor: cursor ? { id: cursor } : undefined,
     });
-
-    // Utilise Promise.all pour récupérer les posts avec leurs usernames
-    const posts = await Promise.all(
-      postsUser.map(async (post) => {
-        // Vérifie si les données nécessaires existent
-        const username = post?.user?.username || null;
-
-        if (!post || !username) {
-          // Si le post ou le username est manquant, retourne le post tel quel
-          return post;
-        }
-
-        // Si toutes les données sont présentes, effectue la requête supplémentaire
-        const updatedPost = await prisma.post.findUnique({
-          where: { id: post.id },
-          include: getPostDataIncludes(user.id, username),
-        });
-
-        return updatedPost || post; // Retourne les données enrichies ou le post d'origine
-      }),
-    );
 
     const postsWithScores = posts.slice(0, pageSize).map((post) => {
       return {

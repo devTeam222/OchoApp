@@ -10,7 +10,7 @@ export default function BottomMenuBar() {
   return (
     <MenuBar
       className={cn(
-        `sticky bottom-0 inline-flex min-h-fit w-full max-w-full justify-around gap-0 overflow-x-hidden border-t bg-card p-1 transition-all *:rounded-md sm:hidden`,
+        `sticky bottom-0 inline-flex min-h-fit w-full max-w-full justify-around gap-0 overflow-x-hidden border-t bg-card p-1 transition-[bottom] *:rounded-md sm:hidden`,
         !isVisible && "fixed bottom-[-100%]",
       )}
     />
