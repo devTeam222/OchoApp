@@ -68,26 +68,30 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
   });
 
   const { unreadCount } = data;
+  const isSaved = channel.id === `saved-${loggedinUser.id}`;
 
-  const otherUser : UserData | null =
-    channel.id === `saved-${loggedinUser.id}`
-      ? loggedinUser
-      : channel?.members.filter(
-          (member) => member.userId !== loggedinUser.id,
-        )[0].user;
+  const otherUser: UserData | null = isSaved
+    ? loggedinUser
+    : channel?.members.filter((member) => member.userId !== loggedinUser.id)[0]
+        .user;
 
-  
-        const expiresAt = otherUser?.verified?.[0]?.expiresAt;
+  const expiresAt = isSaved
+    ? loggedinUser.verified[0].expiresAt
+    : otherUser?.verified?.[0]?.expiresAt;
   const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
 
   const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
 
-  const isVerified = !!otherUser?.verified[0] && !expired && !channel.isGroup;
+  const isVerified =
+    (isSaved ? !!loggedinUser.verified[0] : !!otherUser?.verified[0]) &&
+    !expired &&
+    !channel.isGroup;
   const verifiedType: VerifiedType = isVerified
-    ? otherUser?.verified[0].type
+    ? (isSaved ? loggedinUser.verified[0].type : otherUser?.verified[0].type) ||
+      "STANDARD"
     : "STANDARD";
 
-      const verifiedCheck = isVerified ? <Verified type={verifiedType} /> : null;
+  const verifiedCheck = isVerified ? <Verified type={verifiedType} /> : null;
 
   const messagePreview = channel?.messages[0] || {
     id: "",
@@ -106,8 +110,10 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
   );
 
   const otherUserFirstName = otherUser?.displayName.split(" ")[0] || appUser;
-  const senderFirstName = messagePreview.sender?.displayName.split(" ")[0] || appUser;
-  const recipientFirstName = messagePreview.recipient?.displayName.split(" ")[0] || appUser;
+  const senderFirstName =
+    messagePreview.sender?.displayName.split(" ")[0] || appUser;
+  const recipientFirstName =
+    messagePreview.recipient?.displayName.split(" ")[0] || appUser;
 
   const sender = isSender
     ? you
@@ -123,7 +129,6 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
     if (messageType === "NEWMEMBER") {
       newMemberMsg = newMember.replace("[name]", memberName);
       if (channel?.messages[0].sender) {
-        
         channel?.messages[0].sender.id === loggedinUser.id
           ? (newMemberMsg = youAddedMember.replace("[name]", memberName))
           : (newMemberMsg =
@@ -162,17 +167,12 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
     }
   }
   const showUserPreview = channel.isGroup || isSender;
-;
-
   const contentsTypes = {
     CREATE: channel.isGroup
       ? messagePreview.sender?.id === loggedinUser.id
         ? youCreatedGroup.replace("[name]", sender || appUser)
         : createdGroup.replace("[name]", sender || appUser)
-      : canChatWithYou.replace(
-          "[name]",
-          otherUserFirstName || appUser,
-        ),
+      : canChatWithYou.replace("[name]", otherUserFirstName || appUser),
     CONTENT: `${showUserPreview ? sender || appUser : ""}${showUserPreview ? ": " : ""}${messagePreview.content.length > 100 ? messagePreview.content.slice(0, 100) : messagePreview.content}`,
     CLEAR: noPreview,
     DELETE: deletedChat,
@@ -188,10 +188,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
         : youReactedToMessage
             .replace("[name]", sender || appUser)
             .replace("[r]", messagePreview.content)
-            .replace(
-              "[member]",
-              recipientFirstName || appUser,
-            )
+            .replace("[member]", recipientFirstName || appUser)
       : recipient?.id === loggedinUser.id
         ? reactedToMessage
             .replace("[name]", sender || appUser)
@@ -199,10 +196,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
         : reactedMemberMessage
             .replace("[name]", sender || appUser)
             .replace("[r]", messagePreview.content)
-            .replace(
-              "[member]",
-              recipientFirstName || appUser,
-            ),
+            .replace("[member]", recipientFirstName || appUser),
   };
 
   let messagePreviewContent = contentsTypes[messageType];
@@ -215,7 +209,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
   const now = Date.now();
 
   const isUserOnline =
-    channel.id === `saved-${loggedinUser.id}` ||
+    isSaved ||
     (!!otherUser?.lastSeen &&
       new Date(otherUser.lastSeen).getTime() - 40 * 1000 > now);
 
@@ -227,12 +221,10 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
     router.push("/messages/chat");
   };
 
-  const chatName = channel.name ||
-  `${otherUser?.displayName || appUser} ${channel.id === `saved-${loggedinUser.id}` ? `(${you})` : ""}` ||
-  (channel.isGroup
-    ? groupChat
-    : appUser)
-  
+  const chatName =
+    channel.name ||
+    `${otherUser?.displayName || appUser} ${isSaved ? `(${you})` : ""}` ||
+    (channel.isGroup ? groupChat : appUser);
 
   return (
     <li
@@ -252,8 +244,14 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
           />
         )}
         <div className="">
-          <span className={cn("font-semibold", isVerified && "flex items-center gap-1")}>
-            {chatName}{verifiedCheck}
+          <span
+            className={cn(
+              "font-semibold",
+              isVerified && "flex items-center gap-1",
+            )}
+          >
+            {chatName}
+            {verifiedCheck}
           </span>
           <div className="flex w-fit max-w-full flex-shrink-0 items-center gap-1 text-sm text-muted-foreground">
             <span
