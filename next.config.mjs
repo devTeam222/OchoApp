@@ -31,7 +31,7 @@ const nextConfig = {
                 destination: "/search?q=%23:tag"
             },
             {
-                source: "/:username",
+                source: "/user/:username",
                 destination: "/users/:username"
             },
             {
