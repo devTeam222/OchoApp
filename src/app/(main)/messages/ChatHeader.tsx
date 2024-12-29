@@ -242,7 +242,7 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
                 className={cn(
                   "text-xl font-bold",
                   isVerified &&
-                    "flex items-center gap-1 *:line-clamp-1 *:text-ellipsis w-full",
+                    "flex items-center gap-1 *:line-clamp-1 *:text-ellipsis max-w-full",
                 )}
               >
                 <span className="flex-1">{chatName}</span>
