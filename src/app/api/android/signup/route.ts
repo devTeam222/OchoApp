@@ -2,9 +2,11 @@
 
 import { lucia } from "@/auth";
 import prisma from "@/lib/prisma";
+import { UserData } from "@/lib/types";
 import { signupSchema, SignupValues } from "@/lib/validation";
 import { hash } from "@node-rs/argon2";
-import { generateIdFromEntropySize } from "lucia";
+import { VerifiedType } from "@prisma/client";
+import { generateIdFromEntropySize, User } from "lucia";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -12,7 +14,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json(); // Récupérer et parser le corps de la requête
     const credentials: SignupValues = signupSchema.parse(body);
-    const { username, email, password } = signupSchema.parse(credentials);
+    const { username, email, password } = credentials;
 
     const passwordHash = await hash(password, {
       memoryCost: 19456,
@@ -64,7 +66,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const user = await prisma.user.create({
+    const userData = await prisma.user.create({
       data: {
         id: userId,
         username,
@@ -81,6 +83,22 @@ export async function POST(req: NextRequest) {
       sessionCookie.value,
       sessionCookie.attributes,
     );
+
+    const user = {
+      id: userData.id,
+      username: userData.username,
+      displayName: userData.displayName,
+      email: userData.email,
+      avatarUrl: userData.avatarUrl,
+      bio: userData.bio,
+      createdAt: userData.createdAt.getTime(),
+      lastSeen: userData.lastSeen.getTime(),
+      verified: {
+        verified: false,
+        type: null,
+        expiresAt: null,
+      },
+    };
 
     return NextResponse.json(
       {
