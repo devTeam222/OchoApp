@@ -223,7 +223,7 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
               <div
                 className={cn(
                   "cursor-pointer text-ellipsis text-xl font-bold sm:hover:text-primary sm:hover:underline",
-                  isVerified && "flex items-center gap-1",
+                  isVerified && "flex items-center gap-1 line-clamp-1 text-ellipsis",
                 )}
                 title="Modifier le nom du groupe"
                 onClick={() => {
@@ -238,7 +238,7 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
               <div
                 className={cn(
                   "text-xl font-bold",
-                  isVerified && "flex items-center gap-1",
+                  isVerified && "flex items-center gap-1 line-clamp-1 text-ellipsis",
                 )}
               >
                 {chatName}
