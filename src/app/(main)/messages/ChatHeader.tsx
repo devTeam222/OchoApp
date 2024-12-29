@@ -94,7 +94,9 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
     ? otherUser?.verified[0].type || "STANDARD"
     : undefined;
 
-  const verifiedCheck = isVerified ? <Verified type={verifiedType} prompt={active}/> : null;
+  const verifiedCheck = isVerified ? (
+    <Verified type={verifiedType} prompt={active} />
+  ) : null;
 
   const chatName = !!channel?.name?.trim()
     ? channel.name
@@ -223,7 +225,8 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
               <div
                 className={cn(
                   "cursor-pointer text-ellipsis text-xl font-bold sm:hover:text-primary sm:hover:underline",
-                  isVerified && "flex items-center gap-1 line-clamp-1 text-ellipsis",
+                  isVerified &&
+                    "flex items-center gap-1",
                 )}
                 title="Modifier le nom du groupe"
                 onClick={() => {
@@ -231,17 +234,19 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
                   setShowDialog(true);
                 }}
               >
-                {chatName}
+                <span className="flex-1">{chatName}</span>
                 {verifiedCheck}
               </div>
             ) : (
               <div
                 className={cn(
                   "text-xl font-bold",
-                  isVerified && "flex items-center gap-1 line-clamp-1 text-ellipsis",
+                  isVerified &&
+                    "flex items-center gap-1 *:line-clamp-1 *:text-ellipsis w-full",
                 )}
               >
-                {chatName}
+                <span className="flex-1">{chatName}</span>
+
                 {verifiedCheck}
               </div>
             )}
