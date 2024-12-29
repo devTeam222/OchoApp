@@ -73,36 +73,32 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
   const isSaved = channel.id === `saved-${loggedUser.id}`;
 
   const otherUser =
-    channel.members.length === 1 && channel.members[0].userId === loggedUser.id
+    channel.members.length === 1 && isSaved
       ? channel?.members.filter((member) => member.userId === loggedUser.id)[0]
           .user
       : channel?.members.filter((member) => member.userId !== loggedUser.id)[0]
           .user;
 
   const expiresAt = isSaved
-    ? loggedUser.verified?.[0]?.expiresAt
+    ? otherUser?.verified?.[0]?.expiresAt
     : otherUser?.verified?.[0]?.expiresAt;
   const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
 
   const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
 
   const isVerified =
-    (isSaved ? !!loggedUser.verified[0] : !!otherUser?.verified[0]) &&
+    (isSaved ? !!otherUser?.verified[0] : !!otherUser?.verified[0]) &&
     !expired &&
     !channel.isGroup;
-  const verifiedType: VerifiedType = isVerified
-    ? (isSaved ? loggedUser.verified[0].type : otherUser?.verified[0].type) ||
-      "STANDARD"
-    : "STANDARD";
+  const verifiedType: VerifiedType | undefined = isVerified
+    ? otherUser?.verified[0].type || "STANDARD"
+    : undefined;
 
-    console.log(otherUser);
-    
-
-  const verifiedCheck = isVerified ? <Verified type={verifiedType} /> : null;
+  const verifiedCheck = isVerified ? <Verified type={verifiedType} prompt={active}/> : null;
 
   const chatName = !!channel?.name?.trim()
     ? channel.name
-    : (channel.id === `saved-${loggedUser.id}`
+    : (isSaved
         ? loggedUser.displayName + ` (${you})`
         : channel?.members.filter(
             (member) => member.userId !== loggedUser.id,
@@ -226,7 +222,7 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
               loggedinMember?.type === "OWNER") ? (
               <div
                 className={cn(
-                  "cursor-pointer text-xl font-bold sm:hover:text-primary sm:hover:underline",
+                  "cursor-pointer text-ellipsis text-xl font-bold sm:hover:text-primary sm:hover:underline",
                   isVerified && "flex items-center gap-1",
                 )}
                 title="Modifier le nom du groupe"
@@ -239,7 +235,15 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
                 {verifiedCheck}
               </div>
             ) : (
-              <div className="text-xl font-bold">{chatName}</div>
+              <div
+                className={cn(
+                  "text-xl font-bold",
+                  isVerified && "flex items-center gap-1",
+                )}
+              >
+                {chatName}
+                {verifiedCheck}
+              </div>
             )}
             <div
               className={"text-muted-foreground " + (active ? "hidden" : "")}

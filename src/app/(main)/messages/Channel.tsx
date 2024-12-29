@@ -71,27 +71,25 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
   const isSaved = channel.id === `saved-${loggedinUser.id}`;
 
   const otherUser: UserData | null = isSaved
-    ? loggedinUser
+    ? channel.members.find((member) => member.userId === loggedinUser.id)
+        ?.user || null
     : channel?.members.filter((member) => member.userId !== loggedinUser.id)[0]
         .user;
 
-  const expiresAt = isSaved
-    ? loggedinUser.verified?.[0]?.expiresAt
-    : otherUser?.verified?.[0]?.expiresAt;
+  const expiresAt = otherUser?.verified?.[0]?.expiresAt;
   const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
 
   const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
 
   const isVerified =
-    (isSaved ? !!loggedinUser.verified[0] : !!otherUser?.verified[0]) &&
+    (isSaved ? !!otherUser?.verified[0] : !!otherUser?.verified[0]) &&
     !expired &&
     !channel.isGroup;
-  const verifiedType: VerifiedType = isVerified
-    ? (isSaved ? loggedinUser.verified[0].type : otherUser?.verified[0].type) ||
-      "STANDARD"
-    : "STANDARD";
+  const verifiedType: VerifiedType | undefined = isVerified
+    ? otherUser?.verified[0].type || "STANDARD"
+    : undefined;
 
-  const verifiedCheck = isVerified ? <Verified type={verifiedType} /> : null;
+  const verifiedCheck = isVerified ? <Verified type={verifiedType} prompt={false}/> : null;
 
   const messagePreview = channel?.messages[0] || {
     id: "",

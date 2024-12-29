@@ -8,7 +8,7 @@ import { useSession } from "@/app/(main)/SessionProvider";
 import { PlusCircle, UserCircle2 } from "lucide-react";
 import React, { PropsWithChildren } from "react";
 import AdminButton from "./AdminButton";
-import { MemberType } from "@prisma/client";
+import { MemberType, VerifiedType } from "@prisma/client";
 import RemoveMemberDialog from "./RemoveMemberDialog";
 import BanDialog from "./BanDialog";
 import RestoreMemberButton from "./RestoreMemberButton";
@@ -16,6 +16,8 @@ import Time from "../Time";
 import MessageButton from "./MessageButton";
 import { Button } from "../ui/button";
 import { t } from "@/context/LanguageContext";
+import Verified from "../Verified";
+import { cn } from "@/lib/utils";
 
 interface GroupUserPopover extends PropsWithChildren {
   user: UserData;
@@ -40,6 +42,18 @@ export default function GroupUserPopover({
 
   const members = channel.members;
 
+  const expiresAt = member?.user?.verified?.[0]?.expiresAt;
+  const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
+
+  const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
+
+  const isVerified = !!member?.user?.verified?.[0] && !expired;
+  const verifiedType: VerifiedType | undefined = isVerified
+    ? member?.user?.verified?.[0]?.type
+    : undefined;
+
+    const verifiedCheck = isVerified ? <Verified type={verifiedType} /> : null;
+
   //  get the loggedin user values in members
   const loggedMember = members.find(
     (member) => member.userId === loggedInUser.id,
@@ -57,8 +71,8 @@ export default function GroupUserPopover({
             <div className="flex items-center space-x-2">
               <UserAvatar avatarUrl={user?.avatarUrl} size={35} />
               <div className="flex-1 select-none">
-                <p className="">
-                  {user.id === loggedInUser?.id ? you : user?.displayName}
+                <p className={cn(isVerified && "flex items-center gap-1")}>
+                  {user.id === loggedInUser?.id ? you : user?.displayName}{verifiedCheck}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   @{user?.username}
@@ -113,7 +127,7 @@ export default function GroupUserPopover({
           </div>
           <div className="grid grid-cols-2 gap-2">
             <Link href={`/users/${user.username}`}>
-              <Button variant="secondary" className="w-full flex gap-1">
+              <Button variant="secondary" className="flex w-full gap-1">
                 <UserCircle2 /> {profile}
               </Button>
             </Link>
