@@ -16,10 +16,12 @@ export default async function Home() {
       <div className="w-full min-w-0 space-y-2 sm:space-y-2.5 max-w-lg">
         <PostEditor />
         <Tabs defaultValue="for-you">
+          {/* Liste des onglets en haut  */}
           <TabsList>
             <TabsTrigger value="for-you">{forYou}</TabsTrigger>
             <TabsTrigger value="following">{followings}</TabsTrigger>
           </TabsList>
+          {/* Liste des contenus en bas */}
           <TabsContent value="for-you" className="pb-2">
             <ForYouFeed />
           </TabsContent>

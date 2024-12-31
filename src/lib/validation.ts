@@ -34,6 +34,14 @@ export const loginSchema = z.object({
 
 export type LoginValues = z.infer<typeof loginSchema>;
 
+export const sessionSchema = z.object({
+  id: requiredString,
+  userId: requiredString,
+});
+
+export type SessionValues = z.infer<typeof sessionSchema>;
+
+
 export const MessageSchema = z.object({
   content: z.string(),
   channelId: z.string(),
