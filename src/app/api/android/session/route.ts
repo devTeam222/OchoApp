@@ -4,6 +4,7 @@ import { verify } from "@node-rs/argon2";
 import { lucia } from "@/auth";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { ApiResponse, UserSession } from "../utils/dTypes";
 
 export async function POST(req: NextRequest) {
   try {
@@ -64,9 +65,9 @@ export async function POST(req: NextRequest) {
         createdAt: userData.createdAt.getTime(),
         lastSeen: userData.lastSeen.getTime(),
         verified: {
-          verified: false,
-          type: null,
-          expiresAt: null,
+          verified: !!userData.verified?.[0],
+          type: userData.verified?.[0]?.type,
+          expiresAt: userData.verified?.[0]?.expiresAt,
         },
       };
 
@@ -77,7 +78,7 @@ export async function POST(req: NextRequest) {
         user,
         session,
       },
-    });
+    } as ApiResponse<UserSession>);
   } catch (error) {
     console.error(error);
     return NextResponse.json({

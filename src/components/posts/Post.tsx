@@ -14,7 +14,7 @@ import Image from "next/image";
 import LikeButton from "./LikeButton";
 import BookmarkButton from "./BookmarkButton";
 import { useEffect, useRef, useState } from "react";
-import { Maximize2, MessageSquareMore, Minimize2, X } from "lucide-react";
+import { Maximize2, MessageSquareIcon, MessageSquareMore, Minimize2, X } from "lucide-react";
 import Comments from "../comments/Comments";
 import { Button } from "../ui/button";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -531,7 +531,7 @@ function CommentButton({ comments, onClick }: CommentButtonProps) {
       onClick={onClick}
       className="flex items-center gap-2"
     >
-      <MessageSquareMore />
+      {!!comments ? <MessageSquareMore /> : <MessageSquareIcon/>}
       {!!comments && (
         <span className="text-sm font-medium tabular-nums">
           {comments}{" "}

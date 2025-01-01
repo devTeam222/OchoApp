@@ -9,6 +9,7 @@ import { VerifiedType } from "@prisma/client";
 import { generateIdFromEntropySize, User } from "lucia";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { ApiResponse, UserSession } from "../utils/dTypes";
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
           message: "Ce nom d'utilisateur est déjà pris",
           name: "username",
         },
-        { status: 200 },
+        
       );
     }
 
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest) {
             "Cette adresse email est déjà enregistrée. Voulez-vous vous connecter ?",
           name: "email",
         },
-        { status: 200 },
+        
       );
     }
 
@@ -108,8 +109,8 @@ export async function POST(req: NextRequest) {
           user,
           session,
         },
-      },
-      { status: 200 },
+      } as ApiResponse<UserSession>
+      
     );
   } catch (error) {
     console.error(error);
@@ -118,7 +119,7 @@ export async function POST(req: NextRequest) {
         success: false,
         message: "Quelque chose s'est mal passé. Veuillez réessayer.",
       },
-      { status: 200 },
+      
     );
   }
 }

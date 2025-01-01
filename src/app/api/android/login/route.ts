@@ -4,12 +4,13 @@ import { verify } from "@node-rs/argon2";
 import { lucia } from "@/auth";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { ApiResponse, LoginResponse, User, UserSession } from "../utils/dTypes";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json(); // Récupérer et parser le corps de la requête
     const credentials: LoginValues = loginSchema.parse(body);
-    const { username, password } = loginSchema.parse(credentials);
+    const { username, password } = credentials;
 
     const existingUser = await prisma.user.findFirst({
       where: {
@@ -68,23 +69,23 @@ export async function POST(req: NextRequest) {
       sessionCookie.attributes,
     );
 
-    const user = {
+    const user: User = {
         id: userData.id,
         username: userData.username,
         displayName: userData.displayName,
-        email: userData.email,
-        avatarUrl: userData.avatarUrl,
-        bio: userData.bio,
+        email: userData.email || undefined,
+        avatarUrl: userData.avatarUrl || undefined,
+        bio: userData.bio || undefined,
         createdAt: userData.createdAt.getTime(),
         lastSeen: userData.lastSeen.getTime(),
         verified: {
-          verified: false,
-          type: null,
-          expiresAt: null,
+          verified: !!userData.verified?.[0],
+          type: userData.verified?.[0]?.type,
+          expiresAt: userData.verified?.[0]?.expiresAt,
         },
       };
 
-    return NextResponse.json({
+    return NextResponse.json<ApiResponse<UserSession>>({
       success: true,
       message: "Connexion réussie",
       data: {
