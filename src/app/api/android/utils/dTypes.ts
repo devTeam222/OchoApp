@@ -70,6 +70,9 @@ export interface Post {
   createdAt: number;
   attachments: Attachment[];
   gradient?: number;
+  likes: number;
+  comments: number;
+  isLiked: boolean;
 }
 
 export interface PostsPage {

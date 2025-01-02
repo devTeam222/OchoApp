@@ -52,7 +52,9 @@ export default function GroupUserPopover({
     ? member?.user?.verified?.[0]?.type
     : undefined;
 
-    const verifiedCheck = isVerified ? <Verified type={verifiedType} /> : null;
+  const verifiedCheck = isVerified ? (
+    <Verified type={verifiedType} prompt={false} />
+  ) : null;
 
   //  get the loggedin user values in members
   const loggedMember = members.find(
@@ -72,7 +74,8 @@ export default function GroupUserPopover({
               <UserAvatar avatarUrl={user?.avatarUrl} size={35} />
               <div className="flex-1 select-none">
                 <p className={cn(isVerified && "flex items-center gap-1")}>
-                  {user.id === loggedInUser?.id ? you : user?.displayName}{verifiedCheck}
+                  {user.id === loggedInUser?.id ? you : user?.displayName}
+                  {verifiedCheck}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   @{user?.username}
@@ -99,8 +102,14 @@ export default function GroupUserPopover({
                 </Link>
               </div>
               <Link href={`/users/${user.username}`}>
-                <div className="text-lg font-semibold hover:underline">
+                <div
+                  className={cn(
+                    "text-lg font-semibold hover:underline",
+                    isVerified && "flex items-center gap-1",
+                  )}
+                >
                   {user.displayName}
+                  {verifiedCheck}
                 </div>
                 <div className="text-muted-foreground hover:underline">
                   @{user.username}

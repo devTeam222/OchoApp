@@ -110,6 +110,9 @@ export async function GET(req: NextRequest) {
         const content: string = post.content;
         const gradient: number | undefined = post.gradient || undefined;
         const id: string = post.id;
+        const likes = post._count.likes;
+        const comments = post._count.comments;
+        const isLiked = post.likes.some((like) => like.userId === user.id);
         const finalPost: Post = {
           id,
           author,
@@ -117,6 +120,9 @@ export async function GET(req: NextRequest) {
           createdAt,
           attachments,
           gradient,
+          likes,
+          comments,
+          isLiked,
         };
         return finalPost;
       });
