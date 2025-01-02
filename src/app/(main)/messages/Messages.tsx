@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import AppLogo from "@/components/AppLogo";
 import { t } from "@/context/LanguageContext";
 
-export default function ChatWindow() {
+export default function Messages() {
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(
     null,
   );
