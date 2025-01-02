@@ -277,7 +277,7 @@ export const french: Vocabulary = {
   followedYou: "a commencé à te suivre.",
   commented: "a commenté",
   commentPrev: "«[c]»",
-  onYourPost: "on your post",
+  onYourPost: "à votre publication",
   likedYourPost: "a aimé ta publication.",
   taggedYou: "vous a identifié",
   message: "Message",
