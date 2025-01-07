@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
           Authorization: `Bearer ${tokens.accessToken}`,
         },
       })
-      .json<{ id: string; name: string; email: string; }>();
+      .json<{ id: string; name: string; email: string }>();
 
     const existingUser = await prisma.user.findUnique({
       where: { googleId: googleUser.id },
@@ -86,12 +86,10 @@ export async function GET(req: NextRequest) {
         },
       };
 
-      return NextResponse.json<ApiResponse<UserSession>>({
-        success: true,
-        message: "Connexion réussie",
-        data: {
-          user,
-          session,
+      return new Response(null, {
+        status: 302,
+        headers: {
+          Location: `ochoapp://auth/google/${googleUser.id}`,
         },
       });
     }
@@ -141,9 +139,9 @@ export async function GET(req: NextRequest) {
     return new Response(null, {
       status: 302,
       headers: {
-          Location: `ochoapp://auth/google/${googleUser.id}`,
-      }
-  })
+        Location: `ochoapp://auth/google/${googleUser.id}`,
+      },
+    });
   } catch (error) {
     console.error(error);
     return NextResponse.json({
