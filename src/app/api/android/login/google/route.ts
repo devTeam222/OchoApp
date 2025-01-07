@@ -1,4 +1,4 @@
-import { google, lucia } from "@/auth";
+import { lucia } from "@/auth";
 import kyInstance from "@/lib/ky";
 import prisma from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
@@ -6,6 +6,7 @@ import { generateIdFromEntropySize } from "lucia";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { User, ApiResponse, UserSession } from "../../utils/dTypes";
+import { google } from "@/app/(mobile)/android/auth";
 
 export async function GET(req: NextRequest) {
   const code = req.nextUrl.searchParams.get("code");
