@@ -148,22 +148,6 @@ export async function POST(req: NextRequest) {
       sessionCookie.attributes,
     );
 
-    const user = {
-      id: userData.id,
-      username: userData.username,
-      displayName: userData.displayName,
-      email: userData.email,
-      avatarUrl: userData.avatarUrl,
-      bio: userData.bio,
-      createdAt: userData.createdAt.getTime(),
-      lastSeen: userData.lastSeen.getTime(),
-      verified: {
-        verified: false,
-        type: null,
-        expiresAt: null,
-      },
-    };
-
     return new Response(null, {
       status: 302,
       headers: {
