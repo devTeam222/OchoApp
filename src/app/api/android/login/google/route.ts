@@ -1,4 +1,4 @@
-import { lucia } from "@/auth";
+import { google, lucia } from "@/auth";
 import kyInstance from "@/lib/ky";
 import prisma from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
@@ -8,23 +8,35 @@ import { NextRequest, NextResponse } from "next/server";
 import { User, ApiResponse, UserSession } from "../../utils/dTypes";
 
 export async function POST(req: NextRequest) {
-  const token = await req.text();
+  const code = req.nextUrl.searchParams.get("code");
+  const state = req.nextUrl.searchParams.get("state");
 
-  if (!token) {
-    return NextResponse.json({
-      success: false,
-      message: "Quelque chose s'est mal passé. Veuillez réessayer.",
-    });
+  const storedState = cookies().get("state")?.value;
+  const storedCodeVerifier = cookies().get("code_verifier")?.value;
+
+  if (
+    !code ||
+    !state ||
+    !storedState ||
+    !storedCodeVerifier ||
+    state !== storedState
+  ) {
+    return new Response(null, { status: 400 });
   }
 
   try {
+    const tokens = await google.validateAuthorizationCode(
+      code,
+      storedCodeVerifier,
+    );
+
     const googleUser = await kyInstance
       .get("https://www.googleapis.com/oauth2/v1/userinfo/", {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${tokens.accessToken}`,
         },
       })
-      .json<{ id: string; name: string }>();
+      .json<{ id: string; name: string; email: string; }>();
 
     const existingUser = await prisma.user.findUnique({
       where: { googleId: googleUser.id },
@@ -152,14 +164,12 @@ export async function POST(req: NextRequest) {
       },
     };
 
-    return NextResponse.json({
-      success: true,
-      message: "Inscription réussie",
-      data: {
-        user,
-        session,
-      },
-    } as ApiResponse<UserSession>);
+    return new Response(null, {
+      status: 302,
+      headers: {
+          Location: `ochoapp://auth/google/${googleUser.id}`,
+      }
+  })
   } catch (error) {
     console.error(error);
     return NextResponse.json({
