@@ -5,7 +5,7 @@ import { slugify } from "@/lib/utils";
 import { generateIdFromEntropySize } from "lucia";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { User, ApiResponse, UserSession } from "../../utils/dTypes";
+import { User } from "../../utils/dTypes";
 import { google } from "@/app/(mobile)/android/auth";
 
 export async function GET(req: NextRequest) {
@@ -89,7 +89,7 @@ export async function GET(req: NextRequest) {
       return new Response(null, {
         status: 302,
         headers: {
-          Location: `ochoapp://auth/google/${googleUser.id}`,
+          Location: `ochoapp://auth/google?googleId=${googleUser.id}`,
         },
       });
     }
@@ -139,7 +139,7 @@ export async function GET(req: NextRequest) {
     return new Response(null, {
       status: 302,
       headers: {
-        Location: `ochoapp://auth/google/${googleUser.id}`,
+        Location: `ochoapp://auth/google?googleId=${googleUser.id}`,
       },
     });
   } catch (error) {
