@@ -7,7 +7,7 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { User, ApiResponse, UserSession } from "../../utils/dTypes";
 
-export async function POST(req: NextRequest) {
+export async function GET(req: NextRequest) {
   const code = req.nextUrl.searchParams.get("code");
   const state = req.nextUrl.searchParams.get("state");
 
@@ -128,17 +128,6 @@ export async function POST(req: NextRequest) {
 
       return validatedUsername;
     }
-
-    const username = await validatedUsername();
-
-    const userData = await prisma.user.create({
-      data: {
-        id: userId,
-        username,
-        displayName: googleUser.name,
-        googleId: googleUser.id,
-      },
-    });
 
     const session = await lucia.createSession(userId, {});
     const sessionCookie = lucia.createSessionCookie(session.id);
