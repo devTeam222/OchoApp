@@ -40,9 +40,9 @@ export default async function Page() {
         <div className="space-y-5">
           <LoginForm />
           <div className="flex items-center gap-3">
-            <div className="h-px flex-1 bg-muted"></div>
+            <div className="h-px flex-1 bg-muted-foreground"></div>
             <span>{orContinueWith}</span>
-            <div className="h-px flex-1 bg-muted"></div>
+            <div className="h-px flex-1 bg-muted-foreground"></div>
           </div>
           <Support />
           <div className="text-center">
