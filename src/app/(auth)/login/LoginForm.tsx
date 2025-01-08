@@ -17,8 +17,17 @@ import { PasswordInput } from "@/components/PasswordInput";
 import LoadingButton from "@/components/LoadingButton";
 import { login } from "./actions";
 import { t } from "@/context/LanguageContext";
+import { EmptySession } from "@/app/(main)/SessionProvider";
 
 export default function LoginForm() {
+  return (
+    <EmptySession>
+      <AuthForm/>
+    </EmptySession>
+  );
+}
+
+function AuthForm() {
   const { username, yourUsername, password, yourPassword, signIn } = t();
 
   const [error, setError] = useState<string>();
@@ -41,39 +50,39 @@ export default function LoginForm() {
     });
   }
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
-        {error && <p className="text-center text-destructive">{error}</p>}
-        <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{username}</FormLabel>
-              <FormControl>
-                <Input placeholder={yourUsername} {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{password}</FormLabel>
-              <FormControl>
-                <PasswordInput placeholder={yourPassword} {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <LoadingButton loading={isPending} type="submit" className="w-full">
-          {signIn}
-        </LoadingButton>
-      </form>
-    </Form>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
+            {error && <p className="text-center text-destructive">{error}</p>}
+            <FormField
+              control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{username}</FormLabel>
+                  <FormControl>
+                    <Input placeholder={yourUsername} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{password}</FormLabel>
+                  <FormControl>
+                    <PasswordInput placeholder={yourPassword} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <LoadingButton loading={isPending} type="submit" className="w-full">
+              {signIn}
+            </LoadingButton>
+          </form>
+        </Form>
   );
 }

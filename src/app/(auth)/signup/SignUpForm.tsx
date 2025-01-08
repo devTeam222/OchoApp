@@ -17,16 +17,24 @@ import { signUp } from "./actions";
 import { PasswordInput } from "@/components/PasswordInput";
 import LoadingButton from "@/components/LoadingButton";
 import { t } from "@/context/LanguageContext";
+import { EmptySession } from "@/app/(main)/SessionProvider";
 
 export default function SignUpForm() {
+  return (
+    <EmptySession>
+      <AuthForm/>
+    </EmptySession>
+  );
+}
+export function AuthForm() {
   const {
     username,
     yourUsername,
     password,
-    yourPassword,
     createPassword,
     emailAdress,
     exampleMail,
+    createAccount,
   } = t();
 
   const [error, setError] = useState<string>();
@@ -50,52 +58,52 @@ export default function SignUpForm() {
     });
   }
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
-        {error && <p className="text-center text-destructive">{error}</p>}
-        <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{username}</FormLabel>
-              <FormControl>
-                <Input placeholder={yourUsername} {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{emailAdress}</FormLabel>
-              <FormControl>
-                <Input placeholder={exampleMail} type="email" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{password}</FormLabel>
-              <FormControl>
-                <PasswordInput placeholder={createPassword} {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <LoadingButton loading={isPending} type="submit" className="w-full">
-          Créer un compte
-        </LoadingButton>
-      </form>
-    </Form>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+            {error && <p className="text-center text-destructive">{error}</p>}
+            <FormField
+              control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{username}</FormLabel>
+                  <FormControl>
+                    <Input placeholder={yourUsername} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{emailAdress}</FormLabel>
+                  <FormControl>
+                    <Input placeholder={exampleMail} type="email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{password}</FormLabel>
+                  <FormControl>
+                    <PasswordInput placeholder={createPassword} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <LoadingButton loading={isPending} type="submit" className="w-full">
+              {createAccount}
+            </LoadingButton>
+          </form>
+        </Form>
   );
 }

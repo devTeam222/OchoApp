@@ -28,7 +28,7 @@ export default async function Page() {
   const welcomeIntro2 = welcomeIntro.split(divider)[1];
 
   return (
-    <div className="flex h-full max-h-[40rem] w-full max-w-[64rem] overflow-hidden rounded-2xl bg-card shadow-2xl">
+    <div className="flex h-full max-h-[40rem] w-full max-w-[64rem] overflow-hidden rounded-2xl bg-card shadow-2xl max-sm:relative max-sm:bg-card/80">
       <div className="w-full space-y-10 overflow-y-auto md:p-10 p-5 md:w-1/2">
         <div className="space-y-1 text-center">
           <h1 className="text-3xl font-bold">{login}</h1>
@@ -59,7 +59,7 @@ export default async function Page() {
       <Image
         src={loginImage}
         alt="login-image"
-        className="hidden w-1/2 object-cover md:block"
+        className="w-1/2 object-cover max-sm:absolute max-sm:-z-10 max-sm:h-full max-sm:w-full"
       />
     </div>
   );

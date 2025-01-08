@@ -30,7 +30,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
   const { user } = useSession();
   const router = useRouter();
 
-  const userId = user.id || "guest";
+  const userId = user?.id || "guest";
 
   // Charger la langue au démarrage
   useEffect(() => {
