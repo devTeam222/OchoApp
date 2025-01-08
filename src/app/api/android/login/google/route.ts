@@ -89,7 +89,7 @@ export async function GET(req: NextRequest) {
       return new Response(null, {
         status: 302,
         headers: {
-          Location: `ochoapp://auth/google?googleId=${googleUser.id}`,
+          Location: `ochoapp://auth/google/${googleUser.id}`,
         },
       });
     }
@@ -139,7 +139,7 @@ export async function GET(req: NextRequest) {
     return new Response(null, {
       status: 302,
       headers: {
-        Location: `ochoapp://auth/google?googleId=${googleUser.id}`,
+        Location: `ochoapp://auth/google/${googleUser.id}`,
       },
     });
   } catch (error) {
