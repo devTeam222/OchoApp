@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface GithubSignInButtonProps {
   supported: boolean;
@@ -10,15 +11,19 @@ export default function GithubSignInButton({
   return (
     <Button
       variant="outline"
-      className="w-full text-white bg-[#24292e] hover:bg-[#2b3137] hover:text-white"
+      className={cn(
+        "aspect-square w-10 bg-[#24292e] text-white hover:bg-[#2b3137] hover:text-white",
+        !supported && "saturate-0",
+      )}
       disabled={!supported}
+      title={supported ? "Connexion avec Github" : "Github non pris en charge"}
+      size="icon"
     >
       <a
         href="/login/github"
-        className="flex w-full items-center justify-center gap-2"
+        className="flex aspect-square h-full w-full items-center justify-center gap-2"
       >
         <GithubIcon />
-        {supported ? "Connexion avec Github" : "Github non pris en charge"}
       </a>
     </Button>
   );
@@ -26,7 +31,12 @@ export default function GithubSignInButton({
 
 function GithubIcon() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="1.7em" height="1.7em" viewBox="0 0 98 96">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="1.7em"
+      height="1.7em"
+      viewBox="0 0 98 96"
+    >
       <path
         fillRule="evenodd"
         clipRule="evenodd"

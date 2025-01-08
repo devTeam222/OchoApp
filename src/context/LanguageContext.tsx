@@ -46,14 +46,17 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
     // Sauvegarder la langue côté serveur (cookie) si non défini
     if (!Cookies.get(`lang-${userId}`)) {
       Cookies.set(`lang-${userId}`, shortLang, { expires: 365 });
+      Cookies.set(`lang-guest`, shortLang, { expires: 365 });
     }
   }, [userId]);
-
+  
   // Mettre à jour la langue côté client et serveur
   const changeLanguage = (lang: Language) => {
     setLanguage(lang);
     localStorage.setItem(`lang-${userId}`, lang);
+    localStorage.setItem(`lang-guest`, lang);
     Cookies.set(`lang-${userId}`, lang, { expires: 365 });
+    Cookies.set(`lang-guest`, lang, { expires: 365 });
     router.refresh(); // Recharger pour refléter la nouvelle langue si nécessaire
   };
 

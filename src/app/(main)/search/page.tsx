@@ -6,7 +6,7 @@ import SearchTrend from "@/components/search/SearchTrend";
 import SetNavigation from "@/components/SetNavigation";
 import { getTranslation } from "@/lib/language";
 
-interface PageProps {
+export interface PageProps {
   searchParams: { q: string };
 }
 

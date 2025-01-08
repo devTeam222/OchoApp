@@ -1,25 +1,29 @@
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-
-interface GoogleSignInButtonProps{
+interface GoogleSignInButtonProps {
   supported: boolean;
 }
 
-export default function GoogleSignInButton({supported}:GoogleSignInButtonProps) {
-
-
+export default function GoogleSignInButton({
+  supported,
+}: GoogleSignInButtonProps) {
   return (
     <Button
       variant="outline"
-      className="w-full bg-white text-black hover:bg-gray-100 hover:text-black"
+      className={cn(
+        "aspect-square w-10 bg-white text-black hover:bg-gray-100 hover:text-black",
+        !supported && "saturate-0",
+      )}
       disabled={!supported}
+      size="icon"
+      title={supported ? "Connexion avec google" : "Google non pris en charge"}
     >
       <a
         href="/login/google"
-        className="flex w-full items-center justify-center gap-2"
+        className="flex w-full h-full items-center justify-center gap-2"
       >
         <GoogleIcon />
-        {supported ? "Connexion avec google" : "Google non pris en charge"}
       </a>
     </Button>
   );
@@ -29,8 +33,8 @@ function GoogleIcon() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width="1.2em"
-      height="1.2em"
+      width="1.5em"
+      height="1.5em"
       viewBox="0 0 256 262"
     >
       <path

@@ -15,7 +15,7 @@ export default function Support() {
     }
   }, [baseUrl]);
 
-  return <div className="w-full flex flex-col gap-2">
+  return <div className="w-full flex gap-2 justify-center">
     <GoogleSignInButton supported={isSameOrigin} />
     <GithubSignInButton supported={isSameOrigin} />
   </div>;
