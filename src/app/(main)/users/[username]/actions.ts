@@ -218,10 +218,13 @@ export async function uploadGroupAvatarFile({
     if (utResponse[0].error) {
       throw new Error("Erreur lors de l'enregistrement du fichier");
     }
-    url = utResponse[0].data.url.replace(
+    const addAppUrl = !utResponse[0].data.url
+      .split("https://")[1]
+      .startsWith(process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID || "");
+    url = addAppUrl ?utResponse[0].data.url.replace(
       "/f/",
       `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
-    );
+    ) : utResponse[0].data.url;
     const name = filename;
     const appUrl = url;
     const size = file.size;

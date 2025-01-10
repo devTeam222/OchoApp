@@ -15,6 +15,10 @@ const nextConfig = {
             },
             {
                 protocol: "https",
+                hostname: `${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}.ufs.sh`,
+            },
+            {
+                protocol: "https",
                 hostname: "platform-lookaside.fbsbx.com",
             },
             {

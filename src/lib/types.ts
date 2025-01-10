@@ -76,6 +76,34 @@ export type UserData = Prisma.UserGetPayload<{
   select: ReturnType<typeof getUserDataSelect>;
 }>;
 
+export function getMessageDataSelect() {
+  return {
+    type: true,
+    content: true,
+    sender: {
+      select: {
+        id: true,
+        displayName: true,
+        username: true,
+        avatarUrl: true,
+        bio: true,
+        lastSeen: true,
+      },
+    },
+    recipient: {
+      select: {
+        id: true,
+        displayName: true,
+        username: true,
+        avatarUrl: true,
+        bio: true,
+        lastSeen: true,
+      },
+    },
+    createdAt: true,
+  } satisfies Prisma.MessageSelect;
+}
+
 export function getChatChannelDataInclude(userId: string | undefined = undefined) {
   return {
     members: {
@@ -128,34 +156,6 @@ export function getChatChannelDataInclude(userId: string | undefined = undefined
       orderBy: { createdAt: "desc" },
     },
   } satisfies Prisma.ChannelInclude;
-}
-
-export function getMessageDataSelect() {
-  return {
-    type: true,
-    content: true,
-    sender: {
-      select: {
-        id: true,
-        displayName: true,
-        username: true,
-        avatarUrl: true,
-        bio: true,
-        lastSeen: true,
-      },
-    },
-    recipient: {
-      select: {
-        id: true,
-        displayName: true,
-        username: true,
-        avatarUrl: true,
-        bio: true,
-        lastSeen: true,
-      },
-    },
-    createdAt: true,
-  } satisfies Prisma.MessageSelect;
 }
 
 export type ChannelData = Prisma.ChannelGetPayload<{

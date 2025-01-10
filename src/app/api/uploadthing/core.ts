@@ -51,10 +51,15 @@ export const fileRouter = {
         }
       }
 
-      const newAvatarUrl = file.url.replace(
+      const addAppUrl = !file.url
+      .split("https://")[1]
+      .startsWith(process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID || "");
+
+      const newAvatarUrl = addAppUrl ?file.url.replace(
         "/f/",
         `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
-      );
+      ) : file.url;
+  
       await prisma.user.update({
         where: { id: metadata.user.id },
         data: { avatarUrl: newAvatarUrl },
@@ -133,10 +138,14 @@ export const fileRouter = {
         }
       }
 
-      const newAvatarUrl = file.url.replace(
+      const addAppUrl = !file.url
+      .split("https://")[1]
+      .startsWith(process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID || "");
+
+      const newAvatarUrl = addAppUrl ?file.url.replace(
         "/f/",
         `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
-      );
+      ) : file.url;
       await prisma.channel
         .update({
           where: { id: metadata.channel.id },
@@ -188,12 +197,17 @@ export const fileRouter = {
       return { user };
     })
     .onUploadComplete(async ({ file }) => {
+      const addAppUrl = !file.url
+      .split("https://")[1]
+      .startsWith(process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID || "");
+
+      const url = addAppUrl ?file.url.replace(
+        "/f/",
+        `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
+      ) : file.url;
       const media = await prisma.media.create({
         data: {
-          url: file.url.replace(
-            "/f/",
-            `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
-          ),
+          url,
           type: file.type.startsWith("image") ? "IMAGE" : "VIDEO",
         },
       });
