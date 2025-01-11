@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
     });
     await prisma.authCode.create({
       data: {
-        id: code,
+        id: code.split("/")[1],
         userId: googleUser.id,
         expiresAt: new Date(Date.now() + 600_000)
       }

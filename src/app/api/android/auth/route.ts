@@ -30,13 +30,6 @@ export async function GET(req: NextRequest) {
     });
   }
   const isExpired = new Date() > new Date(authCode.expiresAt);
-
-  if (isExpired) {
-    return NextResponse.json({
-      success: false,
-      message: "Code d'authentification expiré ou invalide.",
-    });
-  }
   await prisma.authCode.delete({
     where: {
       id_userId: {
@@ -45,6 +38,13 @@ export async function GET(req: NextRequest) {
       },
     },
   });
+
+  if (isExpired) {
+    return NextResponse.json({
+      success: false,
+      message: "Code d'authentification expiré ou invalide.",
+    });
+  }
 
 
   try {
