@@ -22,43 +22,45 @@ export default function Page() {
   }, [provider, userId]);
 
   return (
-    <div className="flex h-screen flex-col items-center justify-center gap-3">
+    <div className="flex h-screen flex-col items-center justify-center gap-3 p-4">
       <h1 className="text-xl font-bold">Redirection</h1>
-      <AppLogo size={100} />
-      {canRedirect ? (
-        <div>
-          <p>
-            Vous pouvez fermer cet onglet si l&apos;application a été ouverte.
-          </p>
-          <p>
-            Si l&apos;application ne s&apos;ouvre pas automatiquement,{" "}
-            <a
-              href={`ochoapp://auth/${provider}/${userId}`}
-              target="_blank" // Ouvre le lien dans un nouvel onglet
-              rel="noopener noreferrer"
-              className="hover:underline max-sm:underline"
-            >
-              cliquez ici
-            </a>
-            .
-          </p>
+      <div className="p-4 bg-card shadow-sm rounded-2xl flex flex-col gap-4 w-full max-w-lg justify-center text-center">
+        <AppLogo size={100} />
+        {canRedirect ? (
+          <div className="flex flex-col gap-2 px-3">
+            <p>
+              Vous pouvez fermer cet onglet si l&apos;application a été ouverte.
+            </p>
+            <p>
+              Si l&apos;application ne s&apos;ouvre pas automatiquement,{" "}
+              <a
+                href={`ochoapp://auth/${provider}/${userId}`}
+                target="_blank" // Ouvre le lien dans un nouvel onglet
+                rel="noopener noreferrer"
+                className="hover:underline max-sm:underline text-primary"
+              >
+                cliquez ici
+              </a>
+              .
+            </p>
+          </div>
+        ) : (
+          <p>Redirection en cours...</p>
+        )}
+        <div className="flex max-sm:flex-col gap-3 sm:w-full justify-center">
+          <Button
+            className="flex max-w-70 @container sm:w-full items-center gap-2 bg-white text-black ring-1 ring-primary hover:text-primary-foreground active:text-primary-foreground"
+            onClick={() => navigate("/android/download")}
+          >
+            <AndroidLogo size={24} /> <span className="@[11rem]:inline hidden">Telecharger l&apos;application</span>
+          </Button>
+          <Button
+            className="flex max-w-70 @container sm:w-full items-center gap-2 bg-white text-black ring-1 ring-primary hover:text-primary-foreground active:text-primary-foreground"
+            onClick={() => navigate("/")}
+          >
+            <HomeIcon size={24} /> <span className="@[11rem]:inline hidden">Revenir à l&apos;accueil</span>
+          </Button>
         </div>
-      ) : (
-        <p>Redirection en cours...</p>
-      )}
-      <div className="flex flex-col gap-3">
-        <Button
-          className="flex items-center gap-2 bg-white text-black ring-1 ring-primary hover:text-primary-foreground active:text-primary-foreground"
-          onClick={() => navigate("/android/download")}
-        >
-          <AndroidLogo size={24} /> Telecharger l&apos;application
-        </Button>
-        <Button
-          className="flex items-center gap-2 bg-white text-black ring-1 ring-primary hover:text-primary-foreground active:text-primary-foreground"
-          onClick={() => navigate("/")}
-        >
-          <HomeIcon size={24} /> Revenir à l&apos;accueil
-        </Button>
       </div>
     </div>
   );
