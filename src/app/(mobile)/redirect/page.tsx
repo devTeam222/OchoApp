@@ -15,14 +15,9 @@ export default function Page() {
 
   useEffect(() => {
     if (provider && userId) {
-      // Essayer d'ouvrir l'application avec un deep link
+      // Essayer d'ouvrir l'application avec un deep link dans un nouvel onglet
       const deepLink = `ochoapp://auth/${provider}/${userId}`;
-      window.location.href = deepLink;
-
-      // Afficher un message après un délai pour permettre l'ouverture de l'application
-      setTimeout(() => {
-        alert("Vous pouvez fermer cet onglet si l'application a été ouverte.");
-      }, 1000); // Délai de 1 seconde
+      window.open(deepLink, "_blank");
     }
   }, [provider, userId]);
 
@@ -39,6 +34,8 @@ export default function Page() {
             Si l&apos;application ne s&apos;ouvre pas automatiquement,{" "}
             <a
               href={`ochoapp://auth/${provider}/${userId}`}
+              target="_blank" // Ouvre le lien dans un nouvel onglet
+              rel="noopener noreferrer"
               className="hover:underline max-sm:underline"
             >
               cliquez ici
