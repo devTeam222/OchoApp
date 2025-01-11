@@ -27,8 +27,6 @@ import {
 } from "../ui/carousel";
 import Zoomable from "../Zoomable";
 import { t } from "@/context/LanguageContext";
-import { VocabularyKey } from "@/lib/vocabulary";
-import { comment } from "postcss";
 import Verified from "../Verified";
 
 interface PostProps {

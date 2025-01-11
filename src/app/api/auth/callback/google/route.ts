@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
                     Authorization: `Bearer ${tokens.accessToken}`
                 }
             })
-            .json<{ id: string; name: string; }>();
+            .json<{ id: string; name: string; email: string; }>();
 
         const existingUser = await prisma.user.findUnique({
             where: { googleId: googleUser.id }
@@ -92,11 +92,14 @@ export async function GET(req: NextRequest) {
         }
         
         const username = await validatedUsername();
+        const email = googleUser.email;
+
 
         await prisma.user.create({
             data: {
                 id: userId,
                 username,
+                email,
                 displayName: googleUser.name,
                 googleId: googleUser.id
             },

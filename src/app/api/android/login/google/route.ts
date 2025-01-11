@@ -1,11 +1,8 @@
 import { lucia } from "@/auth";
 import kyInstance from "@/lib/ky";
 import prisma from "@/lib/prisma";
-import { slugify } from "@/lib/utils";
-import { generateIdFromEntropySize } from "lucia";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { User } from "../../utils/dTypes";
 import { google } from "@/app/(mobile)/android/auth";
 
 export async function GET(req: NextRequest) {
@@ -61,7 +58,6 @@ export async function GET(req: NextRequest) {
     });
 
     if (existingUser) {
-      const userData = existingUser;
       const session = await lucia.createSession(existingUser.id, {});
       const sessionCookie = lucia.createSessionCookie(session.id);
 
@@ -70,76 +66,19 @@ export async function GET(req: NextRequest) {
         sessionCookie.value,
         sessionCookie.attributes,
       );
-      const user: User = {
-        id: userData.id,
-        username: userData.username,
-        displayName: userData.displayName,
-        email: userData.email || undefined,
-        avatarUrl: userData.avatarUrl || undefined,
-        bio: userData.bio || undefined,
-        createdAt: userData.createdAt.getTime(),
-        lastSeen: userData.lastSeen.getTime(),
-        verified: {
-          verified: !!userData.verified?.[0],
-          type: userData.verified?.[0]?.type,
-          expiresAt: userData.verified?.[0]?.expiresAt,
-        },
-      };
 
       return new Response(null, {
         status: 302,
         headers: {
-          Location: `ochoapp://auth/google/${googleUser.id}`,
+          Location: `/redirect?provider=google&userId=${googleUser.id}`,
         },
       });
     }
-
-    const userId = generateIdFromEntropySize(10);
-
-    async function validatedUsername() {
-      const baseUsername = slugify(googleUser.name);
-      let validatedUsername = baseUsername;
-
-      // Chercher tous les noms d'utilisateur qui commencent par le nom de base
-      const similarUsernames = await prisma.user.findMany({
-        where: {
-          username: {
-            startsWith: baseUsername,
-          },
-        },
-        select: { username: true },
-      });
-
-      if (similarUsernames.length === 0) {
-        // Si aucun nom d'utilisateur similaire, le nom est disponible
-        return validatedUsername;
-      }
-
-      // Extraire uniquement les suffixes numériques
-      const usernameSet = new Set(similarUsernames.map((u) => u.username));
-      let number = 1;
-
-      // Trouver le premier suffixe disponible
-      while (usernameSet.has(validatedUsername)) {
-        validatedUsername = `${baseUsername}${number}`;
-        number++;
-      }
-
-      return validatedUsername;
-    }
-
-    const session = await lucia.createSession(userId, {});
-    const sessionCookie = lucia.createSessionCookie(session.id);
-    cookies().set(
-      sessionCookie.name,
-      sessionCookie.value,
-      sessionCookie.attributes,
-    );
 
     return new Response(null, {
       status: 302,
       headers: {
-        Location: `ochoapp://auth/google/${googleUser.id}`,
+        Location: `/redirect?provider=google&userId=${googleUser.id}`,
       },
     });
   } catch (error) {
