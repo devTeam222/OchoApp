@@ -24,41 +24,48 @@ export default function Page() {
   return (
     <div className="flex h-screen flex-col items-center justify-center gap-3 p-4">
       <h1 className="text-xl font-bold">Redirection</h1>
-      <div className="p-4 bg-card shadow-sm rounded-2xl flex flex-col gap-4 w-full max-w-lg justify-center text-center">
+      <div className="flex w-full max-w-lg flex-col justify-center gap-4 rounded-2xl bg-card p-4 text-center shadow-sm">
         <AppLogo size={100} />
         {canRedirect ? (
           <div className="flex flex-col gap-2 px-3">
             <p>
-              Vous pouvez fermer cet onglet si l&apos;application a été ouverte.
-            </p>
-            <p>
-              Si l&apos;application ne s&apos;ouvre pas automatiquement,{" "}
+              Si l&apos;application ne s&apos;ouvre pas automatiquement,
+              veuillez autoriser les redirections ou{" "}
               <a
                 href={`ochoapp://auth/${provider}/${userId}`}
                 target="_blank" // Ouvre le lien dans un nouvel onglet
                 rel="noopener noreferrer"
-                className="hover:underline max-sm:underline text-primary"
+                className="text-primary hover:underline max-sm:underline"
               >
                 cliquez ici
               </a>
               .
             </p>
+            <p>
+              Vous pouvez fermer cet onglet si l&apos;application a été ouverte.
+            </p>
           </div>
         ) : (
           <p>Redirection en cours...</p>
         )}
-        <div className="flex max-sm:flex-col gap-3 sm:w-full justify-center">
+        <div className="flex justify-center gap-3 max-sm:flex-col sm:w-full">
           <Button
-            className="flex max-w-70 @container sm:w-full items-center gap-2 bg-white text-black ring-1 ring-primary hover:text-primary-foreground active:text-primary-foreground"
+            className="max-w-70 flex items-center gap-2 bg-white text-black ring-1 ring-primary @container hover:text-primary-foreground active:text-primary-foreground sm:w-full"
             onClick={() => navigate("/android/download")}
           >
-            <AndroidLogo size={24} /> <span className="@[11rem]:inline hidden">Telecharger l&apos;application</span>
+            <AndroidLogo size={24} />{" "}
+            <span className="hidden @[11rem]:inline">
+              Telecharger l&apos;application
+            </span>
           </Button>
           <Button
-            className="flex max-w-70 @container sm:w-full items-center gap-2 bg-white text-black ring-1 ring-primary hover:text-primary-foreground active:text-primary-foreground"
+            className="max-w-70 flex items-center gap-2 bg-white text-black ring-1 ring-primary @container hover:text-primary-foreground active:text-primary-foreground sm:w-full"
             onClick={() => navigate("/")}
           >
-            <HomeIcon size={24} /> <span className="@[11rem]:inline hidden">Revenir à l&apos;accueil</span>
+            <HomeIcon size={24} />{" "}
+            <span className="hidden @[11rem]:inline">
+              Revenir à l&apos;accueil
+            </span>
           </Button>
         </div>
       </div>
