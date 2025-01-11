@@ -4,6 +4,8 @@ import prisma from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { google } from "@/app/(mobile)/android/auth";
+import { generateState } from "arctic";
+import { generateId } from "lucia";
 
 export async function GET(req: NextRequest) {
   const code = req.nextUrl.searchParams.get("code");
@@ -56,9 +58,10 @@ export async function GET(req: NextRequest) {
         passwordHash: true,
       },
     });
+    const authCode = generateId(20)
     await prisma.authCode.create({
       data: {
-        id: code.split("/")[1],
+        id: authCode,
         userId: googleUser.id,
         expiresAt: new Date(Date.now() + 600_000)
       }
@@ -77,7 +80,7 @@ export async function GET(req: NextRequest) {
       return new Response(null, {
         status: 302,
         headers: {
-          Location: `/redirect?provider=google&userId=${googleUser.id}&code=${code}`,
+          Location: `/redirect?provider=google&userId=${googleUser.id}&code=${authCode}`,
         },
       });
     }
@@ -85,7 +88,7 @@ export async function GET(req: NextRequest) {
     return new Response(null, {
       status: 302,
       headers: {
-        Location: `/redirect?provider=google&userId=${googleUser.id}&code=${code}`,
+        Location: `/redirect?provider=google&userId=${googleUser.id}&code=${authCode}`,
       },
     });
   } catch (error) {
