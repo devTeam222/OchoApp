@@ -47,7 +47,7 @@ export default function Page() {
             </p>
           </div>
         ) : (
-          <p>Redirection en cours...</p>
+          <p>Vous pouvez fermer cet onglet si aucune redirection n&apos;est en cours.</p>
         )}
         <div className="flex justify-center gap-3 max-sm:flex-col sm:w-full">
           <Button
