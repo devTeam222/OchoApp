@@ -7,6 +7,45 @@ import { User, ApiResponse, UserSession } from "../utils/dTypes";
 export async function GET(req: NextRequest) {
   const type = req.nextUrl.searchParams.get("type");
   const user_id = req.nextUrl.searchParams.get("userId") || "";
+  const code = req.nextUrl.searchParams.get("code") || "";
+
+  const authCode = await prisma.authCode.findUnique({
+    where: {
+      id_userId: {
+        id: code,
+        userId: user_id,
+      },
+    },
+    select: {
+      id: true,
+      userId: true,
+      expiresAt: true,
+    },
+  });
+
+  if (!authCode) {
+    return NextResponse.json({
+      success: false,
+      message: "Code d'authentification expiré ou invalide.",
+    });
+  }
+  const isExpired = new Date() > new Date(authCode.expiresAt);
+
+  if (isExpired) {
+    return NextResponse.json({
+      success: false,
+      message: "Code d'authentification expiré ou invalide.",
+    });
+  }
+  await prisma.authCode.delete({
+    where: {
+      id_userId: {
+        id: code,
+        userId: user_id,
+      },
+    },
+  });
+
 
   try {
     const wheres = {

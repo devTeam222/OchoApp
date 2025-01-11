@@ -58,6 +58,15 @@ model Session {
   @@map("sessions")
 }
 
+model AuthCode {
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  @@unique([id, userId])
+
+  @@map("auth_code")
+}
+
 model VerifiedUsers {
   id        String       @id @default(cuid())
   userId    String

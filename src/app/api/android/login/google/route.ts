@@ -56,6 +56,13 @@ export async function GET(req: NextRequest) {
         passwordHash: true,
       },
     });
+    await prisma.authCode.create({
+      data: {
+        id: code,
+        userId: googleUser.id,
+        expiresAt: new Date(Date.now() + 600_000)
+      }
+    })
 
     if (existingUser) {
       const session = await lucia.createSession(existingUser.id, {});
@@ -70,7 +77,7 @@ export async function GET(req: NextRequest) {
       return new Response(null, {
         status: 302,
         headers: {
-          Location: `/redirect?provider=google&userId=${googleUser.id}`,
+          Location: `/redirect?provider=google&userId=${googleUser.id}&code=${code}`,
         },
       });
     }
@@ -78,7 +85,7 @@ export async function GET(req: NextRequest) {
     return new Response(null, {
       status: 302,
       headers: {
-        Location: `/redirect?provider=google&userId=${googleUser.id}`,
+        Location: `/redirect?provider=google&userId=${googleUser.id}&code=${code}`,
       },
     });
   } catch (error) {

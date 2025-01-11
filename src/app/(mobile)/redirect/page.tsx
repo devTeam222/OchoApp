@@ -11,15 +11,16 @@ export default function Page() {
   const { push: navigate } = useRouter();
   const provider = searchParams.get("provider"); // Récupère le provider (google, facebook, etc.)
   const userId = searchParams.get("userId"); // Récupère l'ID de l'utilisateur
-  const canRedirect = !!(provider && userId);
+  const code = searchParams.get("code"); // Récupère le code d'accès
+  const canRedirect = !!(provider && userId && code);
 
   useEffect(() => {
-    if (provider && userId) {
+    if (canRedirect) {
       // Essayer d'ouvrir l'application avec un deep link dans un nouvel onglet
-      const deepLink = `ochoapp://auth/${provider}/${userId}`;
+      const deepLink = `ochoapp://auth/${provider}/${userId}/${code}`;
       window.open(deepLink, "_blank");
     }
-  }, [provider, userId]);
+  }, [canRedirect, code, provider, userId]);
 
   return (
     <div className="flex h-screen flex-col items-center justify-center gap-3 p-4">
@@ -32,7 +33,7 @@ export default function Page() {
               Si l&apos;application ne s&apos;ouvre pas automatiquement,
               veuillez autoriser les redirections ou{" "}
               <a
-                href={`ochoapp://auth/${provider}/${userId}`}
+                href={`ochoapp://auth/${provider}/${userId}/${code}`}
                 target="_blank" // Ouvre le lien dans un nouvel onglet
                 rel="noopener noreferrer"
                 className="text-primary hover:underline max-sm:underline"
