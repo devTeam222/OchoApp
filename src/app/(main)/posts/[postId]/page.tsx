@@ -8,7 +8,7 @@ import UserTooltip from "@/components/UserTooltip";
 import prisma from "@/lib/prisma";
 import { getPostDataIncludes, getUserDataSelect, UserData } from "@/lib/types";
 import { Loader2 } from "lucide-react";
-import Link from "next/link";
+import OchoLink from "@/components/ui/OchoLink";
 import { notFound, redirect } from "next/navigation";
 import { cache, Suspense } from "react";
 
@@ -107,7 +107,7 @@ async function UserInfoSidebar({ user }: UserInfoSidebarProps) {
     <div className="space-y-5 rounded-2xl bg-card p-5 shadow-sm">
       <h2 className="text-xl font-bold">A propos de {user.displayName}</h2>
       <UserTooltip user={user}>
-        <Link href={`/users/${user.username}`} className="flex items-center gap-3">
+        <OchoLink href={`/users/${user.username}`} className="flex items-center gap-3 text-inherit">
           <UserAvatar avatarUrl={user.avatarUrl} className="flex-none" />
           <div>
             <p className="line-clamp-1 break-all font-semibold hover:underline">
@@ -117,7 +117,7 @@ async function UserInfoSidebar({ user }: UserInfoSidebarProps) {
               @{user.username}
             </p>
           </div>
-        </Link>
+        </OchoLink>
       </UserTooltip>
       <Linkify>
         <p className="line-clamp-6 whitespace-pre-line break-words text-muted-foreground">

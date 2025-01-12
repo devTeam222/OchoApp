@@ -5,12 +5,11 @@ import { t } from "@/context/LanguageContext";
 import kyInstance from "@/lib/ky";
 import { NotificationCountInfo } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { VocabularyKey, VocabularyObject } from "@/lib/vocabulary";
 import { useQuery } from "@tanstack/react-query";
-import { MessageCircleMore, MessageSquareMore } from "lucide-react";
-import Link from "next/link";
+import { MessageCircleMore } from "lucide-react";
+import OchoLink from "@/components/ui/OchoLink";
 
-interface MessagesButtonProps extends ButtonProps {
+interface MessagesButtonProps {
   initialState: NotificationCountInfo;
   className?: string;
 }
@@ -18,7 +17,6 @@ interface MessagesButtonProps extends ButtonProps {
 export default function MessagesButton({
   initialState,
   className,
-  ...props
 }: MessagesButtonProps) {
   const isProduction = process.env.NODE_ENV === "production";
 
@@ -40,7 +38,6 @@ export default function MessagesButton({
 
   return (
     <Button
-      {...props}
       variant="ghost"
       className={cn(
         "flex items-center justify-start max-sm:h-fit max-sm:flex-1 max-sm:p-1.5 sm:gap-3",
@@ -49,9 +46,9 @@ export default function MessagesButton({
       title={messages}
       asChild
     >
-      <Link
+      <OchoLink
         href="/messages"
-        className="items-center max-sm:flex max-sm:flex-col"
+        className={cn("items-center max-sm:flex max-sm:flex-col text-inherit", className)}
       >
         <div className="relative">
           <MessageCircleMore />
@@ -63,7 +60,7 @@ export default function MessagesButton({
         </div>
         <span className="text-xs sm:hidden">{messages}</span>
         <span className="max-lg:hidden">{messages}</span>
-      </Link>
+      </OchoLink>
     </Button>
   );
 }

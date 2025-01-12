@@ -1,6 +1,6 @@
 import signupImage from "@/assets/signup-image.jpg";
 import Image from "next/image";
-import Link from "next/link";
+import OchoLink from "@/components/ui/OchoLink";
 import SignUpForm from "./SignUpForm";
 import { getLanguage, getTranslation } from "@/lib/language";
 
@@ -25,7 +25,7 @@ export default async function Page() {
   const welcomeIntro2 = welcomeIntro.split(divider)[1];
   return (
     <div className="flex h-full max-h-[40rem] w-full max-w-[64rem] overflow-hidden rounded-2xl bg-card shadow-2xl max-sm:relative max-sm:bg-card/80">
-      <div className="w-full space-y-10 overflow-y-auto p-5 md:w-1/2 md:p-10">
+      <div className="w-full space-y-5 overflow-y-auto p-5 md:w-1/2 md:p-10">
         <div className="space-y-1 text-center">
           <h1 className="text-3xl font-bold">{signup}</h1>
           <p className="text-muted-foreground">
@@ -37,12 +37,11 @@ export default async function Page() {
           <SignUpForm />
           <div className="text-center">
             {alreadyHave}{" "}
-            <Link
+            <OchoLink
               href="/login"
-              className="text-primary hover:underline max-sm:underline"
             >
               {signIn}
-            </Link>
+            </OchoLink>
           </div>
         </div>
       </div>

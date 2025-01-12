@@ -5,7 +5,7 @@ import { NotificationData } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { NotificationType } from "@prisma/client";
 import { AtSign, Heart, MessageSquareMore, User2 } from "lucide-react";
-import Link from "next/link";
+import OchoLink from "@/components/ui/OchoLink";
 
 interface NotificationProps {
   notification: NotificationData;
@@ -69,7 +69,7 @@ export default function Notification({ notification }: NotificationProps) {
   const { message, icon, href } = notificationTypeMap[notification.type];
 
   return (
-    <Link href={href} className="block">
+    <OchoLink href={href} className="block text-inherit">
       <article
         className={cn(
           "flex gap-3 bg-card/50 p-5 shadow-sm transition-colors hover:bg-card/70 sm:rounded-2xl sm:bg-card",
@@ -97,6 +97,6 @@ export default function Notification({ notification }: NotificationProps) {
           )}
         </div>
       </article>
-    </Link>
+    </OchoLink>
   );
 }

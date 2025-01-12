@@ -3,18 +3,9 @@
 import { useEffect, useState } from "react";
 import GoogleSignInButton from "./GoogleSignInButton";
 import GithubSignInButton from "./GithubSignInButton";
-import { EmptySession } from "@/app/(main)/SessionProvider";
 import { t } from "@/context/LanguageContext";
 
 export default function Support() {
-  return (
-    <EmptySession>
-      <AuthSupport />
-    </EmptySession>
-  );
-}
-
-function AuthSupport() {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   const [isSameOrigin, setIsSameOrigin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,10 +26,11 @@ function AuthSupport() {
         <GithubSignInButton supported={isSameOrigin && !isLoading} />
       </div>
       {!isLoading && !isSameOrigin && (
-        <span className="text-center italic text-destructive text-sm">
+        <span className="text-center text-sm italic text-destructive">
           {unsupportedEnv}
         </span>
       )}
     </div>
   );
 }
+

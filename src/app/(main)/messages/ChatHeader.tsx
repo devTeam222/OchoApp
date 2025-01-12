@@ -13,7 +13,7 @@ import {
 import Linkify from "@/components/Linkify";
 import { Button } from "@/components/ui/button";
 import Time from "@/components/Time";
-import Link from "next/link";
+import OchoLink from "@/components/ui/OchoLink";
 import AddMemberDialog from "@/components/messages/AddMemberDialog";
 import GroupUserPopover from "@/components/messages/GroupUserPopover";
 import { useActiveChannel } from "@/context/ChatContext";
@@ -392,11 +392,11 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
                     )}
                   </div>
                 ) : (
-                  <Link href={`/users/${otherUser?.username || "-"}`}>
+                  <OchoLink href={`/users/${otherUser?.username || "-"}`} className="text-inherit">
                     <Button variant="outline" className="flex gap-1">
                       <UserCircle2 /> {viewProfile}
                     </Button>
-                  </Link>
+                  </OchoLink>
                 )}
               </div>
               <hr className="w-full" />

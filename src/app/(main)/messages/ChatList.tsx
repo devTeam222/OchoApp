@@ -11,6 +11,7 @@ import { useActiveChannel } from "@/context/ChatContext";
 import { Frown, MessageSquare, SquarePen } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { t } from "@/context/LanguageContext";
+import { useProgress } from "@/context/ProgressContext";
 
 interface SidebarProps {
   activeChannel: (channel: ChannelData) => void;
@@ -30,7 +31,7 @@ export default function ChatList({
   const { user: loggedinUser } = useSession();
   const { activeChannelId, setActiveChannelId } = useActiveChannel();
   const pathname = usePathname();
-  const router = useRouter();
+  const {startNavigation: navigate} = useProgress();
 
   const { chats, newChat, startNewChat, noChat, unableToLoadChat, dataError } = t();
 
@@ -95,7 +96,7 @@ export default function ChatList({
     !selectedChannelId &&
     pathname === "/messages/chat"
   ) {
-    router.push("/messages");
+    navigate("/messages");
   }
 
   return (

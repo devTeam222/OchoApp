@@ -9,7 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
-import Link from "next/link";
+import OchoLink from "@/components/ui/OchoLink";
 import UserAvatar from "./UserAvatar";
 import FollowButton from "./FollowButton";
 import Linkify from "./Linkify";
@@ -67,14 +67,14 @@ export default function UserTooltip({
         className={`flex max-w-80 divide-y-2 ${user.id !== loggedInUser.id ? "flex-col" : "items-center"} gap-3 break-words px-1 py-2.5 md:min-w-52`}
       >
         <div className={`flex items-center justify-between gap-2`}>
-          <Link href={`/users/${user.username}`}>
+          <OchoLink href={`/users/${user.username}`}>
             <UserAvatar avatarUrl={user.avatarUrl} size={70} />
-          </Link>
+          </OchoLink>
           {user.id !== loggedInUser.id && (
             <FollowButton userId={user.id} initialState={followerState} />
           )}
         </div>
-        <Link href={`/users/${user.username}`}>
+        <OchoLink href={`/users/${user.username}`} className="text-inherit">
           <div
             className={cn(
               "text-lg font-semibold hover:underline",
@@ -87,7 +87,7 @@ export default function UserTooltip({
           <div className="text-muted-foreground hover:underline">
             @{user.username}
           </div>
-        </Link>
+        </OchoLink>
       </div>
       {user.bio && (
         <Linkify>
@@ -106,14 +106,14 @@ export default function UserTooltip({
       <PopoverContent>
         <div className="flex flex-col gap-3">
           {content}
-          <Link href={`/users/${user.username}`}>
+          <OchoLink href={`/users/${user.username}`} className="text-inherit">
             <Button
               variant="outline"
               className="flex w-full justify-center gap-3"
             >
               <UserCircle2 size={24} /> Afficher le profil
             </Button>
-          </Link>
+          </OchoLink>
         </div>
       </PopoverContent>
     </Popover>

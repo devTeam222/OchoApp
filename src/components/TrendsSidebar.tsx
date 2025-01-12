@@ -1,7 +1,7 @@
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
 import { Loader2 } from "lucide-react";
-import Link from "next/link";
+import OchoLink from "@/components/ui/OchoLink";
 import { Suspense } from "react";
 import UserAvatar from "./UserAvatar";
 import { unstable_cache } from "next/cache";
@@ -74,9 +74,9 @@ async function WhoToFollow() {
             className="flex items-center justify-between gap-3"
           >
             <UserTooltip user={user}>
-              <Link
+              <OchoLink
                 href={`/users/${user.username}`}
-                className="flex items-center gap-3"
+                className="flex items-center gap-3 text-inherit"
               >
                 <UserAvatar
                   avatarUrl={user.avatarUrl}
@@ -91,7 +91,7 @@ async function WhoToFollow() {
                     @{user.username}
                   </p>
                 </div>
-              </Link>
+              </OchoLink>
             </UserTooltip>
             <FollowButton
               userId={user.id}
@@ -160,7 +160,7 @@ async function TrendingTopics() {
         const title = hashtag.split("#")[1];
 
         return (
-          <Link key={title} href={`/hashtag/${title}`} className="block">
+          <OchoLink key={title} href={`/hashtag/${title}`} className="block text-inherit">
             <h3
               className="line-clamp-1 break-all font-semibold hover:underline"
               title={hashtag}
@@ -170,7 +170,7 @@ async function TrendingTopics() {
             <p className="break-all text-sm text-muted-foreground">
               <FormattedInt number={count} /> {count === 1 ? aPost : posts}
             </p>
-          </Link>
+          </OchoLink>
         );
       })}
     </div>

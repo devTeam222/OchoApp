@@ -1,16 +1,15 @@
 import { PostData } from "@/lib/types";
 import { useState } from "react";
 import { useSubmitCommentMutation } from "./mutations";
-import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Loader2, SendIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { Textarea } from "../ui/textarea";
 import { useSession } from "@/app/(main)/SessionProvider";
 import UserAvatar from "../UserAvatar";
 import { useToast } from "../ui/use-toast";
 import { t } from "@/context/LanguageContext";
 import { VocabularyObject } from "@/lib/vocabulary";
+import { useProgress } from "@/context/ProgressContext";
 
 interface CommentInput {
   post: PostData;
@@ -26,7 +25,7 @@ export default function CommentInput({ post }: CommentInput) {
     commentAs
   }: VocabularyObject = t();
 
-  const router = useRouter();
+  const {startNavigation: navigate} = useProgress();
 
   const mutation = useSubmitCommentMutation(post.id);
 
@@ -49,7 +48,7 @@ export default function CommentInput({ post }: CommentInput) {
       },
       {
         onSuccess: (newComment) => {
-          router.push(`/posts/${post.id}?comment=${newComment.id}`);
+          navigate(`/posts/${post.id}?comment=${newComment.id}`);
           setInput("");
         },
       },

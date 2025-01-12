@@ -1,4 +1,4 @@
-import Link from "next/link";
+import OchoLink from "@/components/ui/OchoLink";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import UserAvatar from "../UserAvatar";
 import { ChannelData, UserData } from "@/lib/types";
@@ -97,11 +97,11 @@ export default function GroupUserPopover({
               className={`flex max-w-80 items-center gap-3 break-words px-1 py-2.5 md:min-w-52`}
             >
               <div className={`flex items-center justify-center gap-2`}>
-                <Link href={`/users/${user.username}`}>
+                <OchoLink href={`/users/${user.username}`}>
                   <UserAvatar avatarUrl={user.avatarUrl} size={70} />
-                </Link>
+                </OchoLink>
               </div>
-              <Link href={`/users/${user.username}`}>
+              <OchoLink href={`/users/${user.username}`} className="text-inherit">
                 <div
                   className={cn(
                     "text-lg font-semibold hover:underline",
@@ -114,7 +114,7 @@ export default function GroupUserPopover({
                 <div className="text-muted-foreground hover:underline">
                   @{user.username}
                 </div>
-              </Link>
+              </OchoLink>
             </div>
             {user.bio && (
               <Linkify>
@@ -135,11 +135,11 @@ export default function GroupUserPopover({
             )}
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <Link href={`/users/${user.username}`}>
+            <OchoLink href={`/users/${user.username}`} className="text-inherit">
               <Button variant="secondary" className="flex w-full gap-1">
                 <UserCircle2 /> {profile}
               </Button>
-            </Link>
+            </OchoLink>
             <MessageButton userId={user.id} />
           </div>
           {user.id !== loggedInUser.id &&

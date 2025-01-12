@@ -3,7 +3,6 @@
 import { LanguageProvider } from "@/context/LanguageContext";
 import { Session, User } from "lucia";
 import { createContext, useContext } from "react";
-import { AuthForm } from "../(auth)/signup/SignUpForm";
 
 interface SessionContext {
   user: User;

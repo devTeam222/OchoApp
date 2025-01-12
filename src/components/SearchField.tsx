@@ -7,12 +7,13 @@ import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useSearch } from "@/context/SearchContext"; // Import the SearchContext
 import { t } from "@/context/LanguageContext";
+import { useProgress } from "@/context/ProgressContext";
 
 export default function SearchField() {
   const { isSearchActive, setSearchActive } = useSearch(); // Use context instead of local state
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
+  const {startNavigation: navigate} = useProgress();
   const {search} = t("search");
   // ecouter isSesrchActive avec un use effect
   useEffect(() => {
@@ -25,7 +26,7 @@ export default function SearchField() {
     const form = e.currentTarget;
     const q = (form.q as HTMLInputElement).value.trim();
     if (!q) return;
-    router.push(`search?q=${encodeURIComponent(q)}`);
+    navigate(`search?q=${encodeURIComponent(q)}`);
   }
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {

@@ -1,9 +1,9 @@
 import loginImage from "@/assets/login-image.jpg";
 import Image from "next/image";
 import LoginForm from "./LoginForm";
-import Link from "next/link";
 import Support from "./Support";
 import { getTranslation } from "@/lib/language";
+import OchoLink from "@/components/ui/OchoLink";
 
 export async function generateMetadata() {
   const { login } = await getTranslation();
@@ -29,7 +29,7 @@ export default async function Page() {
 
   return (
     <div className="flex h-full max-h-[40rem] w-full max-w-[64rem] overflow-hidden rounded-2xl bg-card shadow-2xl max-sm:relative max-sm:bg-card/80">
-      <div className="w-full space-y-10 overflow-y-auto md:p-10 p-5 md:w-1/2">
+      <div className="w-full space-y-5 overflow-y-auto md:p-10 p-5 md:w-1/2">
         <div className="space-y-1 text-center">
           <h1 className="text-3xl font-bold">{login}</h1>
           <p className="text-muted-foreground">
@@ -47,12 +47,11 @@ export default async function Page() {
           <Support />
           <div className="text-center">
             {newHere}{" "}
-            <Link
+            <OchoLink
               href="/signup"
-              className="text-primary hover:underline max-sm:underline"
             >
               {register}
-            </Link>
+            </OchoLink>
           </div>
         </div>
       </div>

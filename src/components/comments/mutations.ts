@@ -9,6 +9,7 @@ import { deleteComment, submitComment } from "./action";
 import { CommentsPage } from "@/lib/types";
 import { redirect, usePathname, useRouter } from "next/navigation";
 import { t } from "@/context/LanguageContext";
+import { useProgress } from "@/context/ProgressContext";
 
 export function useSubmitCommentMutation(postId: string) {
   const { toast } = useToast();
@@ -70,7 +71,7 @@ export function useDeleteCommentMutation() {
   const { toast } = useToast();
   const { commentDeleted, unableToDeleteComment } = t();
   const pathname = usePathname();
-  const router = useRouter();
+  const { startNavigation: navigate } = useProgress();
 
   const queryClient = useQueryClient();
 
@@ -101,7 +102,7 @@ export function useDeleteCommentMutation() {
         description: commentDeleted,
       });
       if (pathname.startsWith(`/posts/${deletedComment.postId}`)) {
-        router.push(`/posts/${deletedComment.postId}`);
+        navigate(`/posts/${deletedComment.postId}`);
       }
     },
     onError(error) {

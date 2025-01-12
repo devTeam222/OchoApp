@@ -9,6 +9,7 @@ import { ChatProvider } from "@/context/ChatContext";
 import { SearchProvider } from "@/context/SearchContext";
 import { NavigationProvider } from "@/context/NavigationContext";
 import { LanguageProvider } from "@/context/LanguageContext";
+import { ProgressProvider } from "@/context/ProgressContext";
 
 export default async function Layout({
   children,
@@ -25,26 +26,28 @@ export default async function Layout({
 
   return (
     <SessionProvider value={session}>
-      <NavigationProvider>
-        <LanguageProvider>
-          <MenuBarProvider>
-            <SearchProvider>
-              <ChatProvider>
-                <div className="relative flex h-screen max-h-dvh min-h-dvh w-full flex-col">
-                  <Navbar />
-                  <div className="relative h-full max-h-full w-full overflow-hidden">
-                    <main className="mx-auto flex h-full max-h-full w-full max-w-7xl justify-center gap-5 overflow-auto sm:p-5">
-                      <MenuBar className="sticky top-0 hidden h-fit flex-none space-y-3 rounded-2xl bg-card px-3 py-5 sm:block lg:px-5 xl:w-60" />
-                      {children}
-                    </main>
+      <ProgressProvider>
+        <NavigationProvider>
+          <LanguageProvider>
+            <MenuBarProvider>
+              <SearchProvider>
+                <ChatProvider>
+                  <div className="relative flex h-screen max-h-dvh min-h-dvh w-full flex-col">
+                    <Navbar />
+                    <div className="relative h-full max-h-full w-full overflow-hidden">
+                      <main className="mx-auto flex h-full max-h-full w-full max-w-7xl justify-center gap-5 overflow-auto sm:p-5">
+                        <MenuBar className="sticky top-0 hidden h-fit flex-none space-y-3 rounded-2xl bg-card px-3 py-5 sm:block lg:px-5 xl:w-60" />
+                        {children}
+                      </main>
+                    </div>
+                    <BottomMenuBar />
                   </div>
-                  <BottomMenuBar />
-                </div>
-              </ChatProvider>
-            </SearchProvider>
-          </MenuBarProvider>
-        </LanguageProvider>
-      </NavigationProvider>
+                </ChatProvider>
+              </SearchProvider>
+            </MenuBarProvider>
+          </LanguageProvider>
+        </NavigationProvider>
+      </ProgressProvider>
     </SessionProvider>
   );
 }

@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Compass, Home, Search, Settings, Settings2Icon } from "lucide-react";
-import Link from "next/link";
+import OchoLink from "@/components/ui/OchoLink";
 import NotificationsButton from "./NotificationsButton";
 import { useSession } from "./SessionProvider";
 import { useSearch } from "@/context/SearchContext";
@@ -19,41 +19,11 @@ interface MenuBarProps {
 export default function MenuBar({ className }: MenuBarProps) {
   const { user } = useSession();
   const { setSearchActive } = useSearch();
-  const { currentNavigation, setCurrentNavigation } = useNavigation();
-  
-    const {
-      home,
-      explore,
-      search,
-      activity,
-      notifications,
-      dark,
-      settings,
-      menu
-    } : VocabularyObject = t();
+  const { currentNavigation } = useNavigation();
+
+  const { home, explore, search, settings, menu }: VocabularyObject = t();
 
   if (!user) return null;
-
-  function handleSearchClick() {
-    setSearchActive(true);
-    setCurrentNavigation("explore");
-  }
-
-  function setHomeNav() {
-    setCurrentNavigation("home");
-  }
-
-  function setActivityNav() {
-    setCurrentNavigation("activity");
-  }
-
-  function setMessagesNav() {
-    setCurrentNavigation("messages");
-  }
-
-  function setSettingsNav() {
-    setCurrentNavigation("settings");
-  }
 
   return (
     <div className={className}>
@@ -66,13 +36,19 @@ export default function MenuBar({ className }: MenuBarProps) {
         )}
         title={home}
         asChild
-        onClick={setHomeNav}
       >
-        <Link href="/" className="items-center max-sm:flex max-sm:flex-col">
+        <OchoLink
+          href="/"
+          className={cn(
+            "items-center text-inherit max-sm:flex max-sm:flex-col",
+            currentNavigation === "home" &&
+              "bg-accent text-primary hover:text-primary",
+          )}
+        >
           <Home />
           <span className="text-xs sm:hidden">{home}</span>
           <span className="max-lg:hidden">{home}</span>
-        </Link>
+        </OchoLink>
       </Button>
       <Button
         variant="ghost"
@@ -82,16 +58,19 @@ export default function MenuBar({ className }: MenuBarProps) {
             "bg-accent text-primary hover:text-primary",
         )}
         title={explore}
-        onClick={handleSearchClick} // Trigger search activation when clicked
         asChild
       >
-        <Link
+        <OchoLink
           href="/explore"
-          className="items-center max-sm:flex max-sm:flex-col"
+          className={cn(
+            "items-center text-inherit max-sm:flex max-sm:flex-col",
+            currentNavigation === "explore" &&
+              "text-primary hover:text-primary",
+          )}
         >
           <Compass />
           <span className="text-xs">{explore}</span>
-        </Link>
+        </OchoLink>
       </Button>
       <Button
         variant="ghost"
@@ -101,18 +80,24 @@ export default function MenuBar({ className }: MenuBarProps) {
             "bg-accent text-primary hover:text-primary",
         )}
         title={search}
-        onClick={handleSearchClick} // Trigger search activation when clicked
         asChild
       >
-        <Link href="/search" className="">
+        <OchoLink
+          href="/search"
+          className={cn(
+            "text-inherit",
+            currentNavigation === "explore" &&
+              "text-primary hover:text-primary",
+          )}
+          onClick={() => setSearchActive(true)}
+        >
           <Search />
           <span className="max-lg:hidden">{search}</span>
-        </Link>
+        </OchoLink>
       </Button>
 
       <NotificationsButton
         initialState={{ unreadCount: 0 }}
-        onClick={setActivityNav}
         className={cn(
           currentNavigation === "activity" &&
             "bg-accent text-primary hover:text-primary",
@@ -120,7 +105,6 @@ export default function MenuBar({ className }: MenuBarProps) {
       />
       <MessagesButton
         initialState={{ unreadCount: 0 }}
-        onClick={setMessagesNav}
         className={cn(
           currentNavigation === "messages" &&
             "bg-accent text-primary hover:text-primary",
@@ -130,39 +114,41 @@ export default function MenuBar({ className }: MenuBarProps) {
         variant="ghost"
         className={cn(
           "flex items-center justify-start max-sm:h-fit max-sm:flex-1 max-sm:p-1.5 sm:hidden sm:gap-3",
-          currentNavigation === "settings" &&
-            "bg-accent text-primary hover:text-primary",
         )}
         title={menu}
         asChild
-        onClick={setSettingsNav}
       >
-        <Link
+        <OchoLink
           href="/settings"
-          className="items-center max-sm:flex max-sm:flex-col"
+          className={cn(
+            "items-center text-inherit max-sm:flex max-sm:flex-col",
+            currentNavigation === "settings" &&
+              "bg-accent text-primary hover:text-primary",
+          )}
         >
           <Settings2Icon />
           <span className="text-xs">{menu}</span>
-        </Link>
+        </OchoLink>
       </Button>
       <Button
         variant="ghost"
         className={cn(
           "flex items-center justify-start max-sm:hidden max-sm:h-fit max-sm:flex-1 max-sm:p-1.5 sm:gap-3",
-          currentNavigation === "settings" &&
-            "bg-accent text-primary hover:text-primary",
         )}
         title={settings}
         asChild
-        onClick={setSettingsNav}
       >
-        <Link
+        <OchoLink
           href="/settings"
-          className="items-center max-sm:flex max-sm:flex-col"
+          className={cn(
+            "items-center text-inherit max-sm:hidden max-sm:flex-col",
+            currentNavigation === "settings" &&
+              "bg-accent text-primary hover:text-primary",
+          )}
         >
           <Settings className="max-sm" />
           <span className="max-lg:hidden">{settings}</span>
-        </Link>
+        </OchoLink>
       </Button>
     </div>
   );

@@ -89,7 +89,7 @@ const config = {
           from: { opacity: "0", transform: "translateX(-100%)" },
           to: { opacity: "1", transform: "translateX(0)" },
         },
-        "appear-y" : {
+        "appear-y": {
           from: { opacity: "0", transform: "translateY(-100%)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
@@ -97,9 +97,14 @@ const config = {
           from: { opacity: "0", transform: "translateX(100%)" },
           to: { opacity: "1", transform: "translateX(0)" },
         },
-        "appear-b" : {
+        "appear-b": {
           from: { opacity: "0", transform: "translateY(100%)" },
           to: { opacity: "1", transform: "translateY(0)" },
+        },
+        progress: {
+          "0%": { transform: " translateX(0) scaleX(0)" },
+          "40%": { transform: "translateX(0) scaleX(0.4)" },
+          "100%": { transform: "translateX(100%) scaleX(0.5)" },
         },
       },
       animation: {
@@ -111,13 +116,17 @@ const config = {
         "appear-y": "appear-y 300ms forwards",
         "appear-r": "appear-r 300ms forwards",
         "appear-b": "appear-b 300ms forwards",
+        progress: "progress 1s infinite linear",
       },
+      transformOrigin: {
+        'left-right': '0% 50%',
+      }
     },
   },
   plugins: [
     require("tailwindcss-animate"),
     require("tailwind-scrollbar")({ nocompatible: true }),
-    require("@tailwindcss/container-queries")
+    require("@tailwindcss/container-queries"),
   ],
 } satisfies Config;
 

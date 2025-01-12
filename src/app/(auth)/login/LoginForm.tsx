@@ -20,14 +20,6 @@ import { t } from "@/context/LanguageContext";
 import { EmptySession } from "@/app/(main)/SessionProvider";
 
 export default function LoginForm() {
-  return (
-    <EmptySession>
-      <AuthForm/>
-    </EmptySession>
-  );
-}
-
-function AuthForm() {
   const { username, yourUsername, password, yourPassword, signIn } = t();
 
   const [error, setError] = useState<string>();

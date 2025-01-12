@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation"; // Importation de useRouter
 import { ButtonProps } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { t } from "@/context/LanguageContext";
+import { useProgress } from "@/context/ProgressContext";
 
 interface MessageButtonProps extends ButtonProps {
   userId: string;
@@ -27,7 +28,7 @@ export default function MessageButton({
   const { user: loggedinUser } = useSession();
   const { toast } = useToast();
   const { unableToSendMessage, message } = t();
-  const router = useRouter(); // Utilisation de useRouter
+  const { startNavigation: navigate } = useProgress(); // Utilisation de useRouter
 
   const handleSubmit = () => {
     if (loggedinUser.id === userId) {
@@ -36,7 +37,7 @@ export default function MessageButton({
         {
           onSuccess: ({ newChannel }) => {
             setActiveChannelId(newChannel.id);
-            router.push("/messages"); // Utilisation de router.push au lieu de redirect
+            navigate("/messages"); // Utilisation de router.push au lieu de redirect
           },
           onError(error) {
             console.error(error);
@@ -58,7 +59,7 @@ export default function MessageButton({
       {
         onSuccess: ({ newChannel }) => {
           setActiveChannelId(newChannel.id);
-          router.push("/messages");
+          navigate("/messages");
         },
         onError(error) {
           console.error(error);

@@ -9,9 +9,9 @@ import { useActiveChannel } from "@/context/ChatContext";
 import NewChat from "./NewChat";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import AppLogo from "@/components/AppLogo";
 import { t } from "@/context/LanguageContext";
+import { useProgress } from "@/context/ProgressContext";
 
 export default function Messages() {
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(
@@ -22,7 +22,7 @@ export default function Messages() {
   const { user } = useSession();
   const { setActiveChannelId } = useActiveChannel();
   const queryClient = useQueryClient();
-  const router = useRouter();
+  const { startNavigation: navigate } = useProgress();
   const { messagesOnApp, selectChatToStart } = t();
 
   if (!user) {
@@ -63,7 +63,7 @@ export default function Messages() {
             channelId={selectedChannelId}
             initialData={selectedChannel}
             onClose={() => {
-              router.push(`/messages`);
+              navigate(`/messages`);
               setSelectedChannelId(null);
               setSelectedChannel(undefined);
               setActiveChannelId(null);

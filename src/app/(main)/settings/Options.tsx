@@ -26,6 +26,7 @@ import { useTheme } from "next-themes";
 import US from "@/components/flags/US";
 import { t, useLanguage } from "@/context/LanguageContext";
 import { Language, VocabularyKey, getVocabularyObject } from "@/lib/vocabulary";
+import { useProgress } from "@/context/ProgressContext";
 
 interface OptionsProps {
   setting?: string | null;
@@ -36,7 +37,7 @@ export default function Options({
   setting = null,
   subOption = false,
 }: OptionsProps) {
-  const router = useRouter();
+  const { startNavigation: navigate } = useProgress();
   const { theme, setTheme } = useTheme();
   const { language, setLanguage } = useLanguage();
 
@@ -165,7 +166,7 @@ export default function Options({
       label: account,
       icon: <UserRound size={24} />,
       action: "default",
-      onClick: (value) => router.push(`/settings/${value}`),
+      onClick: (value) => navigate(`/settings/${value}`),
       hasSubMenu: !!subOptions.account,
     },
     {
@@ -173,7 +174,7 @@ export default function Options({
       label: privacy,
       icon: <LockKeyholeIcon size={24} />,
       action: "default",
-      onClick: (value) => router.push(`/settings/${value}`),
+      onClick: (value) => navigate(`/settings/${value}`),
       hasSubMenu: !!subOptions.privacy,
     },
     {
@@ -181,7 +182,7 @@ export default function Options({
       label: display,
       icon: <SunMoonIcon size={24} />,
       action: "default",
-      onClick: (value) => router.push(`/settings/${value}`),
+      onClick: (value) => navigate(`/settings/${value}`),
       hasSubMenu: !!subOptions.display,
     },
     {
@@ -189,7 +190,7 @@ export default function Options({
       label: languageText,
       icon: <EarthIcon size={24} />,
       action: "default",
-      onClick: (value) => router.push(`/settings/${value}`),
+      onClick: (value) => navigate(`/settings/${value}`),
       hasSubMenu: !!subOptions.language,
     },
     {
@@ -204,14 +205,13 @@ export default function Options({
     },
   ];
 
-
   // Verifier si l'option est un sous-menu si oui trouver le label dans les options et la liste des menus dans subOptions
   if (subOption && setting) {
     const option: SettingsOption[] =
       subOptions[setting as keyof typeof subOptions];
     const label = options.find((option) => option.value === setting)?.label;
     if (!option || !label) {
-      router.push("/settings");
+      navigate("/settings");
       return null;
     }
     return <Settings options={option} setting={setting} label={label} />;

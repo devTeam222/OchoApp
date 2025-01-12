@@ -26,6 +26,7 @@ import { useUploadThing } from "@/lib/uploadthing";
 import kyInstance from "@/lib/ky";
 import { useSession } from "../../SessionProvider";
 import { t } from "@/context/LanguageContext";
+import { useProgress } from "@/context/ProgressContext";
 
 async function uploadAvatar(file: File): Promise<LocalUpload[] | null> {
   return new Promise<LocalUpload[] | null>(async (resolve, reject) => {
@@ -74,7 +75,7 @@ async function uploadGroupAvatar({
 
 export function useUpdateProfileMutation() {
   const { toast } = useToast();
-  const router = useRouter();
+  const { startNavigation: navigate } = useProgress();
   const queryClient = useQueryClient();
   const { startUpload: startAvatarUpload } =
     useUploadThing("avatar");
@@ -138,7 +139,7 @@ export function useUpdateProfileMutation() {
           };
         },
       );
-      router.refresh();
+      navigate();
 
       toast({
         description: profileUpdated,
@@ -161,7 +162,7 @@ export function useDeleteAvatarMutation() {
 
   const { profilePicDeleted, profilePicDeleteError } = t();
 
-  const router = useRouter();
+  const { startNavigation: navigate } = useProgress();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -197,7 +198,7 @@ export function useDeleteAvatarMutation() {
           };
         },
       );
-      router.refresh();
+      navigate();
 
       toast({
         description: profilePicDeleted,
@@ -228,7 +229,7 @@ export function useUpdateGroupChatMutation({
 
   const { groupUpdated, groupUpdateError } = t();
 
-  const router = useRouter();
+  const { startNavigation: navigate } = useProgress();
   const queryClient = useQueryClient();
 
   async function upload(file: File) {
@@ -301,7 +302,7 @@ export function useUpdateGroupChatMutation({
           groupAvatarUrl: updatedGroup.groupAvatarUrl,
         };
       });
-      router.refresh();
+      navigate();
 
       toast({
         description: groupUpdated,
@@ -323,7 +324,7 @@ export function useDeleteGroupChatAvatarMutation() {
   const { user } = useSession();
   const { groupIconDeleted, groupIconDeleteError } = t();
 
-  const router = useRouter();
+  const { startNavigation: navigate } = useProgress();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -368,7 +369,7 @@ export function useDeleteGroupChatAvatarMutation() {
           groupAvatarUrl: null,
         };
       });
-      router.refresh();
+      navigate();
 
       toast({
         description: groupIconDeleted,

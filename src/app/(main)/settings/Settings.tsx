@@ -2,7 +2,7 @@
 
 import UserAvatar from "@/components/UserAvatar";
 import { useSession } from "../SessionProvider";
-import Link from "next/link";
+import OchoLink from "@/components/ui/OchoLink";
 import { Button } from "@/components/ui/button";
 import { Language, VocabularyKey, getVocabularyObject } from "@/lib/vocabulary";
 import { t } from "@/context/LanguageContext";
@@ -49,9 +49,9 @@ export default function Settings({
               <h1 className="text-3xl font-extrabold">{user.displayName}</h1>
               <span className="text-muted-foreground">@{user.username}</span>
             </div>
-            <Link href={`/users/${user.username}`}>
+            <OchoLink href={`/users/${user.username}`} className="text-inherit">
               <Button variant="outline">{viewProfile}</Button>
-            </Link>
+            </OchoLink>
           </>
         )}
       </div>

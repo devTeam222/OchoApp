@@ -14,7 +14,7 @@ import {
   DropdownMenuSubContent,
 } from "./ui/dropdown-menu";
 import UserAvatar from "./UserAvatar";
-import Link from "next/link";
+import OchoLink from "@/components/ui/OchoLink";
 import {
   Check,
   LogOutIcon,
@@ -74,12 +74,12 @@ export default function UserButton({ className }: UserButtonProps) {
           {loggedIn} @{user.username}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <Link href={`/users/${user.username}`}>
+        <OchoLink href={`/users/${user.username}`} className="text-inherit">
           <DropdownMenuItem>
             <UserRound className="mr-2 size-4 rounded-full" />
             {profile}
           </DropdownMenuItem>
-        </Link>
+        </OchoLink>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
             {theme === "system" && (

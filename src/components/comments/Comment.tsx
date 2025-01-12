@@ -1,7 +1,7 @@
 import { CommentData } from "@/lib/types";
 import Linkify from "../Linkify";
 import UserTooltip from "../UserTooltip";
-import Link from "next/link";
+import OchoLink from "@/components/ui/OchoLink";
 import UserAvatar from "../UserAvatar";
 import Time from "../Time";
 import { useSession } from "@/app/(main)/SessionProvider";
@@ -19,18 +19,19 @@ export default function Comment({ comment, isTarget = false }: CommentProps) {
   return (
     <div
       className={cn(
-      "group/comment flex gap-3 sm:rounded-sm px-2 py-3 transition-all bg-background/30",
-        isTarget && "bg-primary/10 border-solid border-s-primary border-s-4 sm:border-primary/50 sm:border-4",
+        "group/comment flex gap-3 bg-background/30 px-2 py-3 transition-all sm:rounded-sm",
+        isTarget &&
+          "border-s-4 border-solid border-s-primary bg-primary/10 sm:border-4 sm:border-primary/50",
       )}
     >
       <UserTooltip user={comment.user}>
         <span>
-          <Link
+          <OchoLink
             href={`users/${comment.user.username}`}
-            className="hidden sm:inline"
+            className="max-sm:hidden"
           >
             <UserAvatar avatarUrl={comment.user.avatarUrl} size={32} />
-          </Link>
+          </OchoLink>
           <span className="sm:hidden">
             <UserAvatar avatarUrl={comment.user.avatarUrl} size={32} />
           </span>
@@ -41,12 +42,12 @@ export default function Comment({ comment, isTarget = false }: CommentProps) {
           <div className="flex-1 items-center gap-1 text-sm text-muted-foreground">
             <UserTooltip user={comment.user}>
               <div className="items-center">
-                <Link
+                <OchoLink
                   href={`users/${comment.user.username}`}
-                  className="hidden font-medium hover:underline sm:inline"
+                  className="font-medium max-sm:hidden text-inherit"
                 >
                   {comment.user.displayName}
-                </Link>
+                </OchoLink>
                 <span className="font-medium hover:underline sm:hidden">
                   {comment.user.displayName}
                 </span>
@@ -64,7 +65,7 @@ export default function Comment({ comment, isTarget = false }: CommentProps) {
           <p>{comment.content}</p>
         </Linkify>
         <div className="">
-          <span className="text-muted-foreground text-xs">
+          <span className="text-xs text-muted-foreground">
             <Time time={comment.createdAt} long />
           </span>
         </div>

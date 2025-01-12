@@ -5,10 +5,11 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { useToast } from "../ui/use-toast";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { deletePost } from "./actions";
 import { PostsPage } from "@/lib/types";
 import { t } from "@/context/LanguageContext";
+import { useProgress } from "@/context/ProgressContext";
 
 export function useDeletePostMutation() {
   const { toast } = useToast();
@@ -16,7 +17,7 @@ export function useDeletePostMutation() {
 
   const queryClient = useQueryClient();
 
-  const router = useRouter();
+  const { startNavigation: navigate } = useProgress();
 
   const pathname = usePathname();
 
@@ -48,7 +49,7 @@ export function useDeletePostMutation() {
       });
 
       if (pathname.startsWith(`/posts/${deletedPost.id}`)) {
-        router.push(`/users/${deletedPost.user.username}`);
+        navigate(`/users/${deletedPost.user.username}`);
       }
     },
     onError(error) {

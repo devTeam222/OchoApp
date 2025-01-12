@@ -8,9 +8,9 @@ import {
   VocabularyKey,
   VocabularyObject,
 } from "@/lib/vocabulary";
-import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { useSession } from "@/app/(main)/SessionProvider";
+import { useProgress } from "./ProgressContext";
 
 type LanguageContextType = {
   language: Language;
@@ -28,7 +28,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [language, setLanguage] = useState<Language>("en");
   const { user } = useSession();
-  const router = useRouter();
+  const { startNavigation: navigate } = useProgress();
 
   const userId = user?.id || "guest";
 
@@ -57,7 +57,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.setItem(`lang-guest`, lang);
     Cookies.set(`lang-${userId}`, lang, { expires: 365 });
     Cookies.set(`lang-guest`, lang, { expires: 365 });
-    router.refresh(); // Recharger pour refléter la nouvelle langue si nécessaire
+    navigate(); // Recharger pour refléter la nouvelle langue si nécessaire
   };
 
   return (

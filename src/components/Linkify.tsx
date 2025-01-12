@@ -1,6 +1,6 @@
 import { LinkIt, LinkItUrl } from "react-linkify-it";
 import React from "react";
-import Link from "next/link";
+import OchoLink from "@/components/ui/OchoLink";
 import UserLinkWithTooltip from "./UserLinkWithTooltip";
 import kyInstance from "@/lib/ky";
 import { cn } from "@/lib/utils";
@@ -66,13 +66,13 @@ function LinkifyHashtag({ children, className }: LinkifyProps) {
       regex={/(?<!https?:\/\/\S*)#([a-zA-Z0-9_-]+)/}
       component={(match, key) => {
         return (
-          <Link
+          <OchoLink
             key={key}
             href={`/hashtag/${match.slice(1)}`}
-            className={cn("text-primary hover:underline", className)}
+            className={cn(className)}
           >
             {match}
-          </Link>
+          </OchoLink>
         );
       }}
     >

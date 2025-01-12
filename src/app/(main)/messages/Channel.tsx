@@ -13,6 +13,7 @@ import FormattedInt from "@/components/FormattedInt";
 import { usePathname, useRouter } from "next/navigation";
 import { t } from "@/context/LanguageContext";
 import Verified from "@/components/Verified";
+import { useProgress } from "@/context/ProgressContext";
 
 interface ChannelProps {
   channel: ChannelData;
@@ -51,6 +52,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
     noMessage,
     deletedChat,
   } = t();
+  const {startNavigation: navigate} = useProgress();
   const router = useRouter();
 
   const queryKey: QueryKey = ["unread-chat-messages", channel.id];
@@ -216,7 +218,7 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
     queryClient.setQueryData(["unread-chat-messages", channel.id], {
       unreadCount: 0,
     });
-    router.push("/messages/chat");
+    navigate("/messages/chat");
   };
 
   const chatName =

@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { VocabularyKey } from "@/lib/vocabulary";
 import { useQuery } from "@tanstack/react-query";
 import { Bell } from "lucide-react";
-import Link from "next/link";
+import OchoLink from "@/components/ui/OchoLink";
 
 interface NotificationsButtonProps extends ButtonProps {
   initialState: NotificationCountInfo;
@@ -44,9 +44,11 @@ export default function NotificationsButton({
       title={activityCenter}
       asChild
     >
-      <Link
+      <OchoLink
         href="/notifications"
-        className="items-center max-sm:flex max-sm:flex-col"
+        className={cn("items-center max-sm:flex max-sm:flex-col text-inherit",
+          className,
+        )}
       >
         <div className="relative">
           <Bell />
@@ -58,7 +60,7 @@ export default function NotificationsButton({
         </div>
         <span className="text-xs sm:hidden">{activity}</span>
         <span className="max-lg:hidden">{notifications}</span>
-      </Link>
+      </OchoLink>
     </Button>
   );
 }

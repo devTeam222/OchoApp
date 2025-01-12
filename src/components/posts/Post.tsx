@@ -1,7 +1,7 @@
 "use client";
 
 import { PostData } from "@/lib/types";
-import Link from "next/link";
+import OchoLink from "@/components/ui/OchoLink";
 import UserAvatar from "../UserAvatar";
 import Time from "../Time";
 import { useSession } from "@/app/(main)/SessionProvider";
@@ -28,6 +28,7 @@ import {
 import Zoomable from "../Zoomable";
 import { t } from "@/context/LanguageContext";
 import Verified from "../Verified";
+import { useProgress } from "@/context/ProgressContext";
 
 interface PostProps {
   post: PostData;
@@ -35,7 +36,7 @@ interface PostProps {
 
 export default function Post({ post }: PostProps) {
   const { user } = useSession();
-  const router = useRouter();
+  const { startNavigation: navigate } = useProgress();
   const pathname = usePathname();
 
   const [showComment, setShowComment] = useState(false);
@@ -64,7 +65,7 @@ export default function Post({ post }: PostProps) {
     if (pathname.startsWith(`/posts/${post.id}`)) {
       return;
     }
-    router.push(`/posts/${post.id}`);
+    navigate(`/posts/${post.id}`);
   }
 
   const timestamp = post.createdAt.getTime();
@@ -98,8 +99,9 @@ export default function Post({ post }: PostProps) {
       <div className="flex justify-between gap-3 p-5">
         <div className="flex flex-wrap gap-3">
           <UserTooltip user={post.user} verified={verifiedCheck}>
-            <Link
+            <OchoLink
               href={`/users/${post.user.username}`}
+              className="text-inherit"
               title={viewUserSProfile.replace(
                 "[name]",
                 post.user.displayName.split(" ")[0],
@@ -109,23 +111,23 @@ export default function Post({ post }: PostProps) {
                 avatarUrl={post.user.avatarUrl}
                 online={isUserOnline}
               />
-            </Link>
+            </OchoLink>
           </UserTooltip>
           <div>
             <span className={cn(isVerified && "flex items-center gap-1")}>
               <UserTooltip user={post.user} verified={verifiedCheck}>
-                <Link
+                <OchoLink
                   href={`/users/${post.user.username}`}
-                  className="block font-medium hover:underline"
+                  className="block font-medium text-inherit"
                 >
                   {post.user.displayName}
-                </Link>
+                </OchoLink>
               </UserTooltip>
               {verifiedCheck}
             </span>
-            <Link
+            <OchoLink
               href={`/posts/${post.id}`}
-              className="block text-sm text-muted-foreground hover:underline"
+              className="block text-sm text-muted-foreground"
               suppressHydrationWarning
             >
               <Time
@@ -133,7 +135,7 @@ export default function Post({ post }: PostProps) {
                 relative={relative}
                 long={!relative}
               />
-            </Link>
+            </OchoLink>
           </div>
         </div>
         {post.user.id === user.id && (

@@ -4,7 +4,7 @@ import kyInstance from "@/lib/ky";
 import { UserData } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 import { HTTPError } from "ky";
-import Link from "next/link";
+import OchoLink from "@/components/ui/OchoLink";
 import { PropsWithChildren, useEffect, useState } from "react";
 import UserTooltip from "./UserTooltip";
 import { useSession } from "@/app/(main)/SessionProvider";
@@ -50,12 +50,11 @@ export default function UserLinkWithTooltip({
 
   if (!data) {
     return (
-      <Link
+      <OchoLink
         href={`/users/${username}`}
-        className="text-primary hover:underline"
       >
         {children}
-      </Link>
+      </OchoLink>
     );
   }
   if(onFind && (user.id !== data.id)) {
@@ -65,12 +64,11 @@ export default function UserLinkWithTooltip({
     <UserTooltip user={data}>
       {
         useDialog ? (<span className="text-primary hover:underline">{children}</span>) : (
-        <Link
+        <OchoLink
           href={`/users/${username}`}
-          className="text-primary hover:underline"
         >
           {children}
-        </Link>
+        </OchoLink>
         )
       }
     </UserTooltip>
