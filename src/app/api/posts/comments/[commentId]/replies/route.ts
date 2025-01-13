@@ -1,17 +1,18 @@
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
-import { CommentsPage, getCommentDataIncludes } from "@/lib/types";
+import { RepliesPage, getCommentDataIncludes } from "@/lib/types";
 import { NextRequest } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params: { postId } }: { params: { postId: string } },
+  { params: { commentId } }: { params: { commentId: string } },
 ) {
   try {
     const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
     const comment = req.nextUrl.searchParams.get("comment") || null;
 
-    const pageSize = 5;
+    const pageSize = 3;
+    const firstLevelCommentId = commentId;
 
     const { user } = await validateRequest();
 
@@ -21,15 +22,19 @@ export async function GET(
 
     // Étape 1 : Récupérer le commentaire cible si un commentId est fourni
     let targetComment = null;
-    if (comment) {
-      targetComment = await prisma.comment.findUnique({
-        where: { id: comment },
-        include: getCommentDataIncludes(user.id),
-      });
-    }
+    // if (comment) {
+    //   targetComment = await prisma.comment.findUnique({
+    //     where: { id: comment, type: { not: "COMMENT" } },
+    //     include: getCommentDataIncludes(user.id),
+    //   });
+    // }
 
     const comments = await prisma.comment.findMany({
-      where: { postId, id: { not: comment || undefined }, type: { not: "REPLY" }  },
+      where: {
+        firstLevelCommentId,
+        id: { not: comment || undefined },
+        type: { not: "COMMENT" },
+      },
       include: getCommentDataIncludes(user.id),
       orderBy: { createdAt: "desc" },
       take: -pageSize - 1,
@@ -38,8 +43,8 @@ export async function GET(
 
     const previousCursor = comments.length > pageSize ? comments[0].id : null;
 
-    const data: CommentsPage = {
-      comments: targetComment
+    const data: RepliesPage = {
+      replies: targetComment
         ? [targetComment, ...comments.slice(0, pageSize)]
         : comments.slice(0, pageSize),
       previousCursor,

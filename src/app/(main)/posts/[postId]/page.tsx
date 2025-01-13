@@ -73,7 +73,7 @@ export default async function Page({ params: { postId }, searchParams }: PagePro
   const post = await getPost(postId, user.id, searchParams.comment);
 
   return (
-    <main className="flex w-full min-w-0 gap-5 max-sm:py-4">
+    <main className="flex w-full min-w-0 gap-5 max-sm:py-4 pb-4">
       <SetNavigation navPage={null} />
       <div className="w-full min-w-0 space-y-5">
         <Post post={post} />

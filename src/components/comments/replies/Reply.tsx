@@ -1,41 +1,38 @@
-import { CommentData } from "@/lib/types";
-import Linkify from "../Linkify";
-import UserTooltip from "../UserTooltip";
-import OchoLink from "@/components/ui/OchoLink";
-import UserAvatar from "../UserAvatar";
-import Time from "../Time";
 import { useSession } from "@/app/(main)/SessionProvider";
-import CommentMoreButton from "./CommentMoreButton";
+import Linkify from "@/components/Linkify";
+import Time from "@/components/Time";
+import OchoLink from "@/components/ui/OchoLink";
+import UserAvatar from "@/components/UserAvatar";
+import UserTooltip from "@/components/UserTooltip";
+import { CommentData } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import LikeButton from "./replies/LikeButton";
-import ReplyButton from "./replies/ReplyButton";
-import Replies from "./replies/Replies";
-import ReplyInput from "./replies/ReplyInput";
+import CommentMoreButton from "../CommentMoreButton";
+import LikeButton from "./LikeButton";
+import ReplyButton from "./ReplyButton";
+import ReplyInput from "./ReplyInput";
 import { useState } from "react";
-import { t } from "@/context/LanguageContext";
-import { Button } from "../ui/button";
+
 
 interface CommentProps {
   comment: CommentData;
   isTarget?: boolean;
 }
 
-export default function Comment({ comment, isTarget = false }: CommentProps) {
+export default function Reply({ comment, isTarget = false }: CommentProps) {
   const { user } = useSession();
   const [showInput, setShowInput] = useState(false);
-  const [showReplies, setShowReplies] = useState(false);
 
   return (
     <div
       className={cn(
-        "group/comment flex flex-shrink-0 flex-col items-end bg-background/30 px-2 py-3 transition-all *:flex-shrink-0 sm:rounded-sm",
+        "group/comment flex flex-shrink-0 flex-col items-end px-2 py-3 transition-all *:flex-shrink-0 sm:rounded-sm",
+          isTarget &&
+            "p-s-4 border-solid border-s-primary bg-primary/10 sm:border-4 sm:border-primary/50",
       )}
     >
       <div
         className={cn(
-          "flex w-full gap-3",
-          isTarget &&
-            "border-s-4 border-solid border-s-primary bg-primary/10 sm:border-4 sm:border-primary/50",
+          "flex w-full gap-3"
         )}
       >
         <UserTooltip user={comment.user}>
@@ -97,41 +94,7 @@ export default function Comment({ comment, isTarget = false }: CommentProps) {
           </div>
         </div>
       </div>
-      {showInput && <ReplyInput comment={{
-        ...comment,
-        firstLevelComment: comment
-      }} onClose={()=>setShowInput(false)}/>}
-        {!comment.firstLevelCommentId && <ShowRepliesButton comment={comment} onClick={()=>setShowReplies(true)}/>}
-      {showReplies && <Replies comment={comment} onClose={()=>setShowReplies(false)}/>}
+      {showInput && <ReplyInput comment={comment} onClose={()=>setShowInput(false)}/>}
     </div>
-  );
-}
-
-export function ShowRepliesButton({
-  comment,
-  onClick,
-}: {
-  comment: CommentData;
-  onClick: () => void;
-}) {
-  const { replies: repliesText, reply: replyText } = t();
-  const replies = comment._count.replies;
-  if (comment.firstLevelCommentId || !replies) {
-    return null;
-  }
-  return (
-    <span className=" w-[calc(100%-2rem)]  sm:w-[calc(100%-2.5rem)]">
-      <Button
-        title={repliesText}
-        onClick={onClick}
-        className="flex items-center gap-2"
-        variant="ghost"
-      >
-          <span className="text-sm font-medium tabular-nums">
-            {replies}{" "}
-            <span className="">{replies > 1 ? repliesText : replyText}</span>
-          </span>
-      </Button>
-    </span>
   );
 }

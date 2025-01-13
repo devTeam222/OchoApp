@@ -31,7 +31,9 @@ export default function Comments({ post, onClose }: CommentsProps) {
     noComments,
     noLongerAvailablecomment,
     dataError,
-  }: VocabularyObject = t();
+    comments: commentsText,
+    comment: commentText
+  } = t();
 
   const searchParams = useSearchParams();
   const comment = searchParams.get("comment");
@@ -160,7 +162,7 @@ export default function Comments({ post, onClose }: CommentsProps) {
       >
         <div className="relative top-0 flex w-full items-center justify-between px-3 py-2 font-bold sm:hidden">
           {status === "success" && !!comments.length && (
-            <p>{`${comments.length} commentaire${comments.length > 1 ? "s" : ""}`}</p>
+            <p>{`${comments.length} ${comments.length > 1 ? commentsText : commentText}`}</p>
           )}
           <div className="" onClick={onClose}>
             <X />

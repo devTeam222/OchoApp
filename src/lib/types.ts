@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { Vocabulary } from "./vocabulary";
+import { get } from "http";
 
 export type MenuBarContextType = {
   isVisible: boolean;
@@ -269,15 +270,49 @@ export function getCommentDataIncludes(loggedInUserId: string) {
     user: {
       select: getUserDataSelect(loggedInUserId),
     },
+    likes: true,
+    firstLevelComment: {
+      include: getFirstCommentDataIncludes(loggedInUserId)
+    },
+    _count: {
+      select: {
+        likes: true,
+        replies: true,
+        firstLevelOf: true,
+      },
+    },
   } satisfies Prisma.CommentInclude;
 }
 
 export type CommentData = Prisma.CommentGetPayload<{
   include: ReturnType<typeof getCommentDataIncludes>;
 }>;
+export function getFirstCommentDataIncludes(loggedInUserId: string) {
+  return {
+    user: {
+      select: getUserDataSelect(loggedInUserId),
+    },
+    likes: true,
+    _count: {
+      select: {
+        likes: true,
+        replies: true,
+        firstLevelOf: true,
+      },
+    },
+  } satisfies Prisma.CommentInclude;
+}
+
+export type FirstCommentData = Prisma.CommentGetPayload<{
+  include: ReturnType<typeof getFirstCommentDataIncludes>;
+}>;
 
 export interface CommentsPage {
   comments: CommentData[];
+  previousCursor: string | null;
+}
+export interface RepliesPage {
+  replies: CommentData[];
   previousCursor: string | null;
 }
 

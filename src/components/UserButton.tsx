@@ -28,8 +28,10 @@ import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import kyInstance from "@/lib/ky";
-import { VocabularyKey, VocabularyObject } from "@/lib/vocabulary";
-import { t } from "@/context/LanguageContext";
+import { Language, VocabularyKey, VocabularyObject } from "@/lib/vocabulary";
+import { t, useLanguage } from "@/context/LanguageContext";
+import US from "./flags/US";
+import French from "./flags/French";
 
 interface UserButtonProps {
   className?: string;
@@ -37,6 +39,7 @@ interface UserButtonProps {
 
 export default function UserButton({ className }: UserButtonProps) {
   const { user } = useSession();
+  const { language, setLanguage } = useLanguage();
 
   useQuery({
     queryKey: ["last-seen", user.id],
@@ -52,6 +55,7 @@ export default function UserButton({ className }: UserButtonProps) {
     logout: logoutText,
     light,
     dark,
+    language: languageText,
     systemDefault,
   }: VocabularyObject = t();
 
@@ -117,6 +121,35 @@ export default function UserButton({ className }: UserButtonProps) {
                 <Moon className="mr-2 size-4" />
                 {dark}
                 {theme === "dark" && <Check className="ms-2 size-4" />}
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuPortal>
+        </DropdownMenuSub>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger className="max-sm:hidden">
+            {language === "fr" && <French className="mr-2 size-4" />}
+            {language === "en" && <US className="mr-2 size-4" />}
+            {languageText}
+          </DropdownMenuSubTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuSubContent className="max-sm:max-w-48">
+              <DropdownMenuItem
+                onClick={() => {
+                  setLanguage("fr" as Language);
+                }}
+                >
+                <French className="mr-2 size-4" />
+                Français
+                {language === "fr" && <Check className="mr-2 size-4" />}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setLanguage("en" as Language);
+                }}
+                >
+                <US className="mr-2 size-4" />
+                English
+                {language === "en" && <Check className="mr-2 size-4" />}
               </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuPortal>

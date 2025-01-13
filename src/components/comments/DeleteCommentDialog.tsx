@@ -1,5 +1,5 @@
 import { CommentData } from "@/lib/types";
-import { useDeleteCommentMutation } from "./mutations";
+import { useDeleteCommentMutation, useDeleteReplyMutation } from "./mutations";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,7 @@ export default function DeleteCommentDialog({
   onClose,
 }: DeleteCommentDialogProps) {
   const mutation = useDeleteCommentMutation();
+  const replyMutation = useDeleteReplyMutation();
 
   function handleOpenChange(open: boolean) {
     if (!open || !mutation.isPending) {
@@ -41,16 +42,24 @@ export default function DeleteCommentDialog({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-            <LoadingButton
+          <LoadingButton
             variant="destructive"
-            onClick={()=>mutation.mutate(comment.id, {onSuccess: onClose})}
+            onClick={() => {
+              comment.type === "COMMENT"
+                ? mutation.mutate(comment.id, { onSuccess: onClose })
+                : replyMutation.mutate(comment.id, { onSuccess: onClose });
+            }}
             loading={mutation.isPending}
-            >Supprimer</LoadingButton>
-            <Button 
-            variant="outline" 
-            onClick={onClose} 
+          >
+            Supprimer
+          </LoadingButton>
+          <Button
+            variant="outline"
+            onClick={onClose}
             disabled={mutation.isPending}
-            >Annuler</Button>
+          >
+            Annuler
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -15,10 +15,13 @@ export default function Notification({ notification }: NotificationProps) {
   const {
     followedYou,
     likedYourPost,
+    likedYourComment,
     taggedYou,
     commented,
+    replied,
     commentPrev,
     onYourPost,
+    onYourComment,
   } = t();
   const notificationTypeMap: Record<
     NotificationType,
@@ -28,14 +31,14 @@ export default function Notification({ notification }: NotificationProps) {
       href: string;
     }
   > = {
-    FOLLOW: {
-      message: followedYou,
+    LIKE: {
+      message: likedYourPost,
       icon: (
-        <div className="absolute -bottom-0.5 -right-0.5 flex aspect-square items-center justify-center overflow-hidden rounded-full bg-foreground p-1">
-          <User2 className="size-4 rounded-full fill-primary text-primary" />
+        <div className="absolute -bottom-0.5 -right-0.5 flex aspect-square items-center justify-center rounded-full bg-foreground p-1">
+          <Heart className="size-4 fill-red-500 text-red-500" />
         </div>
       ),
-      href: `/users/${notification.issuer.username}`,
+      href: `/posts/${notification.postId}`,
     },
     COMMENT: {
       message: `${commented} ${notification.comment?.content ? `${commentPrev.replace("[c]", notification.comment.content.slice(0, 30))}` : onYourPost}.`,
@@ -46,14 +49,32 @@ export default function Notification({ notification }: NotificationProps) {
       ),
       href: `/posts/${notification.postId}${notification.commentId ? `?comment=${notification.commentId}` : ""}`,
     },
-    LIKE: {
-      message: likedYourPost,
+    COMMENT_LIKE: {
+      message: likedYourComment,
       icon: (
         <div className="absolute -bottom-0.5 -right-0.5 flex aspect-square items-center justify-center rounded-full bg-foreground p-1">
           <Heart className="size-4 fill-red-500 text-red-500" />
         </div>
       ),
       href: `/posts/${notification.postId}`,
+    }, 
+    COMMENT_REPLY: {
+      message: `${replied} ${notification.comment?.content ? `${commentPrev.replace("[c]", notification.comment.content.slice(0, 30))}` : onYourComment}.`,
+      icon: (
+        <div className="absolute -bottom-0.5 -right-0.5 flex aspect-square items-center justify-center rounded-full bg-foreground p-1">
+          <MessageSquareMore className="size-4 fill-primary text-primary" />
+        </div>
+      ),
+      href: `/posts/${notification.postId}${notification.commentId ? `?comment=${notification.commentId}` : ""}`,
+    },
+    FOLLOW: {
+      message: followedYou,
+      icon: (
+        <div className="absolute -bottom-0.5 -right-0.5 flex aspect-square items-center justify-center overflow-hidden rounded-full bg-foreground p-1">
+          <User2 className="size-4 rounded-full fill-primary text-primary" />
+        </div>
+      ),
+      href: `/users/${notification.issuer.username}`,
     },
     IDENTIFY: {
       message: taggedYou,

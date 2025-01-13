@@ -17,7 +17,7 @@ import { useEffect, useRef, useState } from "react";
 import { Maximize2, MessageSquareIcon, MessageSquareMore, Minimize2, X } from "lucide-react";
 import Comments from "../comments/Comments";
 import { Button } from "../ui/button";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   Carousel,
   CarouselContent,
@@ -50,6 +50,7 @@ export default function Post({ post }: PostProps) {
 
   const searchParams = useSearchParams();
   const comment = searchParams.get("comment");
+  const showCommentParam = searchParams.get("show-comment");
 
   const gradient = post.gradient
     ? `gadient-post gradient-${post.gradient} *:*:text-[inherit] *:*:font-bold`
@@ -57,15 +58,15 @@ export default function Post({ post }: PostProps) {
 
   useEffect(() => {
     // On récupère le paramètre `comment` depuis les paramètres de recherche
-    if (comment) {
+    if (comment || showCommentParam) {
       setShowComment(true);
     }
-  }, [comment]);
-  function postPage() {
+  }, [comment, showCommentParam]);
+  function postPage(param:string = "") {
     if (pathname.startsWith(`/posts/${post.id}`)) {
       return;
     }
-    navigate(`/posts/${post.id}`);
+    navigate(`/posts/${post.id}${param}`);
   }
 
   const timestamp = post.createdAt.getTime();
@@ -153,7 +154,7 @@ export default function Post({ post }: PostProps) {
       >
         <div
           className="absolute inset-0 h-full w-full"
-          onClick={postPage}
+          onClick={()=>postPage()}
         ></div>
         {!!post.content && (
           <Linkify
@@ -194,7 +195,10 @@ export default function Post({ post }: PostProps) {
           />
           <CommentButton
             comments={post._count.comments}
-            onClick={() => setShowComment(!showComment)}
+            onClick={() => {
+              postPage("?show-comment=true")
+              setShowComment(!showComment)}
+            }
           />
         </div>
         <BookmarkButton
@@ -523,7 +527,7 @@ interface CommentButtonProps {
   onClick: () => void;
   comments: number;
 }
-function CommentButton({ comments, onClick }: CommentButtonProps) {
+export function CommentButton({ comments, onClick }: CommentButtonProps) {
   const { comment: commentText, comments: commentsText } = t();
   return (
     <button

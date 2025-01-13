@@ -36,6 +36,7 @@ model User {
   posts                Post[]
   likes                Like[]
   comments             Comment[]
+  commentLikes         CommentLike[]
   bookmarks            Bookmark[]
   receivedNotification Notification[]  @relation("Recipient")
   issuedNotification   Notification[]  @relation("Issuer")
@@ -62,8 +63,8 @@ model AuthCode {
   id        String   @id
   userId    String
   expiresAt DateTime
-  @@unique([id, userId])
 
+  @@unique([id, userId])
   @@map("auth_code")
 }
 
@@ -248,11 +249,34 @@ model Comment {
   user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   postId              String
   post                Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  firstLevelCommentId String?
+  firstLevelComment   Comment?       @relation(name: "FirstLevelComment", fields: [firstLevelCommentId], references: [id], onDelete: Cascade)
+  firstLevelOf        Comment[]      @relation(name: "FirstLevelComment")
+  commentId           String?
+  comment             Comment?       @relation(name: "ReplyToComment", fields: [commentId], references: [id], onDelete: Cascade)
+  replies             Comment[]      @relation(name: "ReplyToComment")
   commentNotification Notification[]
+  type                CommentType    @default(COMMENT)
+  likes               CommentLike[]
 
   createdAt DateTime @default(now())
 
   @@map("comments")
+}
+
+enum CommentType {
+  COMMENT
+  REPLY
+}
+
+model CommentLike {
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  commentId String
+  comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@map("comment_likes")
 }
 
 model Like {
@@ -299,6 +323,8 @@ model Notification {
 enum NotificationType {
   LIKE
   COMMENT
+  COMMENT_LIKE
+  COMMENT_REPLY
   FOLLOW
   IDENTIFY
 }
