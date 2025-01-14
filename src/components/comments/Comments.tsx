@@ -59,10 +59,6 @@ export default function Comments({ post, onClose }: CommentsProps) {
         .json<CommentsPage>(),
     initialPageParam: null as string | null,
     getNextPageParam: (firstPage) => firstPage.previousCursor,
-    select: (data) => ({
-      pages: [...data.pages].reverse(),
-      pageParams: [...data.pageParams].reverse(),
-    }),
   });
 
   useEffect(() => {
@@ -111,10 +107,12 @@ export default function Comments({ post, onClose }: CommentsProps) {
       comment &&
       comments.find((c) => c.id === comment)
     ) {
+      
       setTargetComment(comment);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, comment, data, comments]);
+  
 
   return (
     <Draggable
@@ -169,6 +167,7 @@ export default function Comments({ post, onClose }: CommentsProps) {
           </div>
         </div>
         <div className="space-y-1 overflow-y-auto py-1 max-sm:h-[50vh] max-sm:bg-card/50">
+        
           {comments.map((comment) => (
             <Comment
               key={comment.id}

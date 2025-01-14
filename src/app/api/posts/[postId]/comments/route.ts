@@ -24,23 +24,55 @@ export async function GET(
     if (comment) {
       targetComment = await prisma.comment.findUnique({
         where: { id: comment },
-        include: getCommentDataIncludes(user.id),
+        include: {
+          ...getCommentDataIncludes(user.id),
+          firstLevelOf: {
+            select: {
+              userId: true,
+            },
+          },
+        },
       });
     }
 
-    const comments = await prisma.comment.findMany({
-      where: { postId, id: { not: comment || undefined }, type: { not: "REPLY" }  },
-      include: getCommentDataIncludes(user.id),
+    const commentsData = await prisma.comment.findMany({
+      where: {
+        postId,
+        id: { not: comment || undefined },
+        type: { not: "REPLY" },
+      },
+      include: {
+        ...getCommentDataIncludes(user.id),
+        firstLevelOf: {
+          select: {
+            userId: true,
+          },
+        },
+      },
       orderBy: { createdAt: "desc" },
-      take: -pageSize - 1,
+      take: pageSize + 1,
       cursor: cursor ? { id: cursor } : undefined,
     });
 
-    const previousCursor = comments.length > pageSize ? comments[0].id : null;
+    const comments = commentsData.map(comment=>{
+      const isRepliedByAuthor = !!comment?.firstLevelOf.some(
+        (reply) => reply.userId === comment.post.userId,
+      );
+      
+      return { ...comment, isRepliedByAuthor };
+    })
+
+    const previousCursor = comments.length > pageSize ? comments[pageSize].id : null;
+    const isRepliedByAuthor = !!targetComment?.firstLevelOf.some(
+      (reply) => reply.userId === targetComment.post.userId,
+    );
 
     const data: CommentsPage = {
       comments: targetComment
-        ? [targetComment, ...comments.slice(0, pageSize)]
+        ? [
+            { ...targetComment, isRepliedByAuthor },
+            ...comments.slice(0, pageSize),
+          ]
         : comments.slice(0, pageSize),
       previousCursor,
     };

@@ -25,7 +25,7 @@ export default function ReplyInput({ comment, onClose }: CommentInput) {
 
   const { startNavigation: navigate } = useProgress();
 
-  const mutation = useSubmitReplyMutation(comment.id);
+  const mutation = useSubmitReplyMutation(comment.id, comment.firstLevelCommentId || comment.id);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -45,10 +45,9 @@ export default function ReplyInput({ comment, onClose }: CommentInput) {
     };
 
     mutation.mutate(reply, {
-      onSuccess: (newComment) => {
-        navigate(`/posts/${comment.id}?comment=${newComment.id}`);
+      onSuccess: () => {
         setInput("");
-        blured();
+        setTimeout(blured, 100);
       },
     });
   }

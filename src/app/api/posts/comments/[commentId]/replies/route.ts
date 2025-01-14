@@ -37,20 +37,19 @@ export async function GET(
       },
       include: getCommentDataIncludes(user.id),
       orderBy: { createdAt: "desc" },
-      take: -pageSize - 1,
+      take: pageSize + 1,
       cursor: cursor ? { id: cursor } : undefined,
     });
-
-    const previousCursor = comments.length > pageSize ? comments[0].id : null;
-
+    
+    const previousCursor = comments.length > pageSize ? comments[pageSize].id : null;
+    
     const data: RepliesPage = {
-      replies: targetComment
-        ? [targetComment, ...comments.slice(0, pageSize)]
-        : comments.slice(0, pageSize),
+      replies: comments.slice(0, pageSize),
       previousCursor,
     };
-
+    
     return Response.json(data);
+    
   } catch (error) {
     console.error(error);
     return Response.json({ error: "Internal server error" }, { status: 500 });

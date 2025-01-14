@@ -149,7 +149,6 @@ export default function Draggable({
         canScroll = deltaY < 0 ? canScrollUp : canScrollDown;
       }
 
-      console.log("canScroll", canScroll);
       return; // Si on peut encore défiler, on ne fait rien de plus ici
     }
     e.preventDefault(); // Empêcher le défilement si l'élément ne peut plus défiler

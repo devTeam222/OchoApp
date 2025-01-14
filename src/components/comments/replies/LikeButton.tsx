@@ -1,4 +1,4 @@
-import { LikeInfo } from "@/lib/types";
+import { CommentData, LikeInfo } from "@/lib/types";
 import { useToast } from "../../ui/use-toast";
 import {
   QueryKey,
@@ -10,17 +10,26 @@ import kyInstance from "@/lib/ky";
 import { Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { t } from "@/context/LanguageContext";
+import { useSession } from "@/app/(main)/SessionProvider";
+import { useEffect } from "react";
 
 interface LikeButtonProps {
-  commentId: string;
+  comment: CommentData;
   initialState: LikeInfo;
+  onAuthorLikeChange: (liked: boolean) => void;
 }
 
-export default function LikeButton({ commentId, initialState }: LikeButtonProps) {
+export default function LikeButton({
+  comment,
+  initialState,
+  onAuthorLikeChange,
+}: LikeButtonProps) {
   const { toast } = useToast();
   const { like: likeText, likes: likesText, unLike, somethingWentWrong } = t();
+  const commentId = comment.id;
 
   const queryClient = useQueryClient();
+  const {user} = useSession();
 
   const queryKey: QueryKey = ["like-info", commentId];
 
@@ -46,6 +55,7 @@ export default function LikeButton({ commentId, initialState }: LikeButtonProps)
         likes:
           (previousState?.likes || 0) + (previousState?.isLikedByUser ? -1 : 1),
         isLikedByUser: !previousState?.isLikedByUser,
+        isLikedByAuthor: comment.post.userId === user.id && !previousState?.isLikedByUser,
       }));
 
       return { previousState };
@@ -60,6 +70,10 @@ export default function LikeButton({ commentId, initialState }: LikeButtonProps)
     },
   });
 
+  useEffect(()=>{
+    onAuthorLikeChange(data?.isLikedByAuthor || false);
+  }, [data.isLikedByAuthor, onAuthorLikeChange])
+
   return (
     <button
       title={data.isLikedByUser ? unLike : likeText}
@@ -72,6 +86,7 @@ export default function LikeButton({ commentId, initialState }: LikeButtonProps)
           data.isLikedByUser && "fill-red-500 text-red-500",
         )}
       />
+      {!!data.likes && <span>{data.likes}</span>}
     </button>
   );
 }

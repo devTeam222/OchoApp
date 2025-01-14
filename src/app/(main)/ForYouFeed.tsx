@@ -71,7 +71,6 @@ export default function ForYouFeed() {
     <InfiniteScrollContainer
       className="space-y-2 sm:space-y-5"
       onBottomReached={() => {
-        console.log("bottom reached");
         
         hasNextPage && !isFetchingNextPage && fetchNextPage()
       }}

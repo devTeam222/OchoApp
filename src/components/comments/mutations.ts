@@ -67,7 +67,7 @@ export function useSubmitCommentMutation(postId: string) {
   return mutation;
 }
 
-export function useSubmitReplyMutation(commentId: string) {
+export function useSubmitReplyMutation(commentId: string, firstLevelCommentId: string) {
   const { toast } = useToast();
   const { commentSent, unaBleToSendComment } = t();
 
@@ -76,7 +76,7 @@ export function useSubmitReplyMutation(commentId: string) {
   const mutation = useMutation({
     mutationFn: submitReply,
     onSuccess: async (newComment) => {
-      const queryKey: QueryKey = ["replies", commentId];
+      const queryKey: QueryKey = ["replies", firstLevelCommentId];
 
       await queryClient.cancelQueries({ queryKey });
 

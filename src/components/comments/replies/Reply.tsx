@@ -11,7 +11,9 @@ import LikeButton from "./LikeButton";
 import ReplyButton from "./ReplyButton";
 import ReplyInput from "./ReplyInput";
 import { useState } from "react";
-
+import { ChevronRight } from "lucide-react";
+import { t } from "@/context/LanguageContext";
+import { AuthorLikeIcon } from "../Comment";
 
 interface CommentProps {
   comment: CommentData;
@@ -20,21 +22,19 @@ interface CommentProps {
 
 export default function Reply({ comment, isTarget = false }: CommentProps) {
   const { user } = useSession();
+  const { appUser, author } = t();
   const [showInput, setShowInput] = useState(false);
+  const [authorLiked, setAuthorLiked] = useState(false);
 
   return (
     <div
       className={cn(
-        "group/comment flex flex-shrink-0 flex-col items-end px-2 py-3 transition-all *:flex-shrink-0 sm:rounded-sm",
-          isTarget &&
-            "p-s-4 border-solid border-s-primary bg-primary/10 sm:border-4 sm:border-primary/50",
+        "group/reply flex flex-shrink-0 flex-col items-end px-2 py-3 transition-all *:flex-shrink-0 sm:rounded-sm",
+        // isTarget &&
+        //   "p-s-4 border-solid border-s-primary bg-primary/10 sm:border-4 sm:border-primary/50",
       )}
     >
-      <div
-        className={cn(
-          "flex w-full gap-3"
-        )}
-      >
+      <div className={cn("flex w-full gap-3")}>
         <UserTooltip user={comment.user}>
           <span>
             <OchoLink
@@ -50,25 +50,48 @@ export default function Reply({ comment, isTarget = false }: CommentProps) {
         </UserTooltip>
         <div className="relative flex-1">
           <div className="flex w-full justify-between">
-            <div className="flex-1 items-center gap-1 text-sm text-muted-foreground">
+            <div className="flex flex-1 items-center text-sm text-muted-foreground">
               <UserTooltip user={comment.user}>
-                <div className="items-center">
+                <div className="flex items-center">
                   <OchoLink
                     href={`users/${comment.user.username}`}
-                    className="font-medium text-inherit max-sm:hidden"
+                    className="flex items-center font-medium text-inherit max-sm:hidden"
                   >
-                    {comment.user.displayName}
+                    {comment.user.displayName || appUser}
                   </OchoLink>
-                  <span className="font-medium hover:underline sm:hidden">
-                    {comment.user.displayName}
+                  <span className="flex font-medium hover:underline sm:hidden">
+                    {comment.user.displayName || appUser}
                   </span>
+                  {comment.userId === comment.post.userId && (
+                    <span className="space-x-1 ps-1 text-primary">
+                      <span className="font-bold">•</span>
+                      <span>{author}</span>
+                    </span>
+                  )}
                 </div>
               </UserTooltip>
+              {comment.firstLevelCommentId !== comment.commentId && (
+                <div className="items-center">
+                  <OchoLink
+                    href={`users/${comment.comment?.user.username || "-"}`}
+                    className="flex items-center gap-1 font-medium text-inherit max-sm:hidden"
+                  >
+                    <span className="flex items-center">
+                      <ChevronRight size={16} />
+                      {comment.comment?.user.displayName || appUser}
+                    </span>
+                  </OchoLink>
+                  <span className="flex items-center font-medium hover:underline sm:hidden">
+                    <ChevronRight size={16} />
+                    {comment.comment?.user.displayName || appUser}
+                  </span>
+                </div>
+              )}
             </div>
             {comment.user.id === user.id && (
               <CommentMoreButton
                 comment={comment}
-                className="absolute right-0 top-0 opacity-0 transition-opacity group-hover/comment:opacity-100 max-sm:opacity-100"
+                className="absolute right-0 top-0 opacity-0 transition-opacity group-hover/reply:opacity-100 max-sm:opacity-100"
               />
             )}
           </div>
@@ -80,21 +103,33 @@ export default function Reply({ comment, isTarget = false }: CommentProps) {
               <Time time={comment.createdAt} long />
             </span>
           </div>
-          <div className="flex w-full gap-2">
+          <div className="flex w-full items-center gap-4">
             <LikeButton
-              commentId={comment.id}
+              comment={comment}
               initialState={{
                 likes: comment._count.likes,
                 isLikedByUser: comment.likes.some(
                   (like) => like.userId === user.id,
                 ),
+                isLikedByAuthor: comment.likes.some(
+                  (like) => like.userId === comment.post.userId,
+                ),
               }}
+              onAuthorLikeChange={setAuthorLiked}
             />
-            <ReplyButton replies={comment._count.replies} onClick={() => setShowInput(true)} />
+            <ReplyButton
+              replies={comment._count.replies}
+              onClick={() => setShowInput(true)}
+            />
+            {authorLiked && (
+              <AuthorLikeIcon avatarUrl={comment.post.user.avatarUrl} />
+            )}
           </div>
         </div>
       </div>
-      {showInput && <ReplyInput comment={comment} onClose={()=>setShowInput(false)}/>}
+      {showInput && (
+        <ReplyInput comment={comment} onClose={() => setShowInput(false)} />
+      )}
     </div>
   );
 }

@@ -14,9 +14,10 @@ import ReplyInput from "./replies/ReplyInput";
 import { useState } from "react";
 import { t } from "@/context/LanguageContext";
 import { Button } from "../ui/button";
+import { Heart, MessageSquare } from "lucide-react";
 
 interface CommentProps {
-  comment: CommentData;
+  comment: CommentData & { isRepliedByAuthor?: boolean };
   isTarget?: boolean;
 }
 
@@ -24,11 +25,14 @@ export default function Comment({ comment, isTarget = false }: CommentProps) {
   const { user } = useSession();
   const [showInput, setShowInput] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
+  const [repliesCount, setRepliesCount] = useState(comment._count.firstLevelOf);
+  const [authorReplied, setAuthorReplied] = useState(comment.isRepliedByAuthor);
+  const [authorLiked, setAuthorLiked] = useState(false);
 
   return (
     <div
       className={cn(
-        "group/comment flex flex-shrink-0 flex-col items-end bg-background/30 px-2 py-3 transition-all *:flex-shrink-0 sm:rounded-sm",
+        "group/comment flex flex-shrink-0 flex-col items-end gap-2 bg-background/30 px-2 py-3 transition-all *:flex-shrink-0 sm:rounded-sm",
       )}
     >
       <div
@@ -83,55 +87,107 @@ export default function Comment({ comment, isTarget = false }: CommentProps) {
               <Time time={comment.createdAt} long />
             </span>
           </div>
-          <div className="flex w-full gap-2">
+          <div className="flex w-full items-center gap-4">
             <LikeButton
-              commentId={comment.id}
+              comment={comment}
               initialState={{
                 likes: comment._count.likes,
                 isLikedByUser: comment.likes.some(
                   (like) => like.userId === user.id,
                 ),
+                isLikedByAuthor: comment.likes.some(
+                  (like) => like.userId === comment.post.userId,
+                ),
               }}
+              onAuthorLikeChange={setAuthorLiked}
             />
-            <ReplyButton replies={comment._count.replies} onClick={() => setShowInput(true)} />
+            <ReplyButton
+              replies={repliesCount}
+              onClick={() => setShowInput(true)}
+            />
+            {authorLiked && (
+              <AuthorLikeIcon avatarUrl={comment.post.user.avatarUrl} />
+            )}
           </div>
         </div>
       </div>
-      {showInput && <ReplyInput comment={{
-        ...comment,
-        firstLevelComment: comment
-      }} onClose={()=>setShowInput(false)}/>}
-        {!comment.firstLevelCommentId && <ShowRepliesButton comment={comment} onClick={()=>setShowReplies(true)}/>}
-      {showReplies && <Replies comment={comment} onClose={()=>setShowReplies(false)}/>}
+      {showInput && (
+        <ReplyInput
+          comment={{
+            ...comment,
+            firstLevelComment: comment,
+          }}
+          onClose={() => setShowInput(false)}
+        />
+      )}
+      <div className="flex w-[calc(100%-2rem)] items-center gap-2 sm:w-[calc(100%-2.5rem)]">
+        {authorReplied && (
+          <>
+            <AuthorReplyIcon avatarUrl={comment.post.user.avatarUrl} />
+            <span className="text-xl font-bold text-primary">•</span>
+          </>
+        )}
+        {!comment.firstLevelCommentId && (
+          <ShowRepliesButton
+            replies={repliesCount}
+            onClick={() => setShowReplies(!showReplies)}
+          />
+        )}
+      </div>
+      {(showReplies || showInput) && (
+        <Replies
+          comment={comment}
+          onClose={() => setShowReplies(false)}
+          onCountChange={setRepliesCount}
+          onAuthorReplyChange={setAuthorReplied}
+        />
+      )}
     </div>
   );
 }
 
+export function AuthorReplyIcon({ avatarUrl }: { avatarUrl: string | null }) {
+  return (
+    <span className="relative">
+      <UserAvatar avatarUrl={avatarUrl} size={32} />
+      <MessageSquare
+        size={20}
+        className="absolute -bottom-1 -right-0.5 fill-primary"
+      />
+    </span>
+  );
+}
+export function AuthorLikeIcon({ avatarUrl }: { avatarUrl: string | null }) {
+  return (
+    <span className="relative border-border">
+      <UserAvatar avatarUrl={avatarUrl} size={28} />
+      <Heart size={20} className="absolute -bottom-1 -right-0.5 fill-red-500" />
+    </span>
+  );
+}
+
 export function ShowRepliesButton({
-  comment,
+  replies,
   onClick,
 }: {
-  comment: CommentData;
+  replies: number;
   onClick: () => void;
 }) {
   const { replies: repliesText, reply: replyText } = t();
-  const replies = comment._count.replies;
-  if (comment.firstLevelCommentId || !replies) {
+  if (!replies) {
     return null;
   }
   return (
-    <span className=" w-[calc(100%-2rem)]  sm:w-[calc(100%-2.5rem)]">
-      <Button
-        title={repliesText}
-        onClick={onClick}
-        className="flex items-center gap-2"
-        variant="ghost"
-      >
-          <span className="text-sm font-medium tabular-nums">
-            {replies}{" "}
-            <span className="">{replies > 1 ? repliesText : replyText}</span>
-          </span>
-      </Button>
-    </span>
+    <Button
+      title={repliesText}
+      onClick={onClick}
+      className="flex items-center gap-2 bg-accent text-primary hover:text-primary"
+      variant="ghost"
+    >
+      <span className="text-sm font-medium tabular-nums">
+        {replies}{" "}
+        <span className="">{replies > 1 ? repliesText : replyText}</span>
+      </span>
+    </Button>
   );
 }

@@ -233,8 +233,6 @@ export default function Reaction({
     // Tri principal par `count`
     return b[1].count - a[1].count;
   });
-  /* console.log("Quick reaction", quickReaction);
-  console.log(!reactionData.hasUserReacted); */
 
   const MAX_VISIBLE_REACTIONS = 2; // Nombre maximum de réactions visibles dans les onglets principaux
 

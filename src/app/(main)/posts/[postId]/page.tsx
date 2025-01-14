@@ -75,7 +75,7 @@ export default async function Page({ params: { postId }, searchParams }: PagePro
   return (
     <main className="flex w-full min-w-0 gap-5 max-sm:py-4 pb-4">
       <SetNavigation navPage={null} />
-      <div className="w-full min-w-0 space-y-5">
+      <div className="w-full min-w-0 space-y-5 pb-4">
         <Post post={post} />
       </div>
       <div className="sticky top-0 hidden h-fit w-80 flex-none lg:block">

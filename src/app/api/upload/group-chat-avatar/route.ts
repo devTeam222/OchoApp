@@ -13,7 +13,6 @@ import { MemberType } from "@prisma/client";
 const uploadDir = path.resolve("data/uploads/avatars");
 
 export async function POST(request: NextRequest) {
-  console.log(request);
   
   try {
     const { user } = await validateRequest();
@@ -26,8 +25,6 @@ export async function POST(request: NextRequest) {
     }
     const formData = await request.formData();
     
-    console.log(formData);
-
     const file = formData.get("file") as File | null;
     const channelId = formData.get("id") as string;
 

@@ -18,15 +18,16 @@ export type NavigationContextType = {
   setCurrentNavigation: (currentNavigation: NavigationType) => void;
 };
 
-
-
 export type LanguageContextType = {
   language: string;
   setLanguage: (language: string) => void;
   vocabulary: Vocabulary;
 };
 
-export function getUserDataSelect(loggedInUserId: string, username: string| undefined = undefined) {
+export function getUserDataSelect(
+  loggedInUserId: string,
+  username: string | undefined = undefined,
+) {
   return {
     id: true,
     username: true,
@@ -38,13 +39,13 @@ export function getUserDataSelect(loggedInUserId: string, username: string| unde
     verified: {
       where: {
         user: {
-          username
-        }
+          username,
+        },
       },
       select: {
         type: true,
         expiresAt: true,
-      }
+      },
     },
     followers: {
       where: {
@@ -57,12 +58,12 @@ export function getUserDataSelect(loggedInUserId: string, username: string| unde
     following: {
       where: {
         follower: {
-          username
-        }
+          username,
+        },
       },
       select: {
         followerId: true,
-      }
+      },
     },
     _count: {
       select: {
@@ -105,7 +106,9 @@ export function getMessageDataSelect() {
   } satisfies Prisma.MessageSelect;
 }
 
-export function getChatChannelDataInclude(userId: string | undefined = undefined) {
+export function getChatChannelDataInclude(
+  userId: string | undefined = undefined,
+) {
   return {
     members: {
       select: {
@@ -121,12 +124,12 @@ export function getChatChannelDataInclude(userId: string | undefined = undefined
             lastSeen: true,
             verified: {
               where: {
-                userId
+                userId,
               },
               select: {
                 type: true,
                 expiresAt: true,
-              }
+              },
             },
             followers: {
               select: {
@@ -135,8 +138,8 @@ export function getChatChannelDataInclude(userId: string | undefined = undefined
             },
             following: {
               select: {
-                followerId:true,
-              }
+                followerId: true,
+              },
             },
             _count: {
               select: {
@@ -216,7 +219,10 @@ export interface MessagesSection {
   nextCursor: string | null;
 }
 
-export function getPostDataIncludes(loggedInUserId: string, username: string | undefined = undefined) {
+export function getPostDataIncludes(
+  loggedInUserId: string,
+  username: string | undefined = undefined,
+) {
   return {
     user: {
       select: getUserDataSelect(loggedInUserId, username),
@@ -270,9 +276,22 @@ export function getCommentDataIncludes(loggedInUserId: string) {
     user: {
       select: getUserDataSelect(loggedInUserId),
     },
+    post: {
+      select: {
+        userId: true,
+        user: {
+          select: {
+            avatarUrl: true,
+          },
+        },
+      },
+    },
     likes: true,
     firstLevelComment: {
-      include: getFirstCommentDataIncludes(loggedInUserId)
+      include: getFirstCommentDataIncludes(loggedInUserId),
+    },
+    comment: {
+      include: getFirstCommentDataIncludes(loggedInUserId),
     },
     _count: {
       select: {
@@ -308,7 +327,7 @@ export type FirstCommentData = Prisma.CommentGetPayload<{
 }>;
 
 export interface CommentsPage {
-  comments: CommentData[];
+  comments: (CommentData & { isRepliedByAuthor: boolean })[] | CommentData[];
   previousCursor: string | null;
 }
 export interface RepliesPage {
@@ -356,7 +375,9 @@ export interface FollowerInfo {
 export interface LikeInfo {
   likes: number;
   isLikedByUser: boolean;
+  isLikedByAuthor?: boolean;
 }
+
 export interface ReactionData {
   user: {
     id: string;

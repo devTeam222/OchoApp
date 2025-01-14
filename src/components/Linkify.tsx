@@ -23,7 +23,9 @@ export default function Linkify({ children, className }: LinkifyProps) {
 
 function LinkifyUrl({ children, className }: LinkifyProps) {
   return (
-    <LinkItUrl className={cn("text-primary hover:underline", className)}>{children}</LinkItUrl>
+    <LinkItUrl className={cn("text-primary hover:underline", className)}>
+      {children}
+    </LinkItUrl>
   );
 }
 
@@ -33,23 +35,11 @@ function LinkifyUsername({ children, postId }: LinkifyProps) {
       regex={/(?<!https?:\/\/\S*)@([a-zA-Z0-9_-]+)/}
       component={(match, key) => {
         return (
-          <UserLinkWithTooltip key={key} username={match.slice(1)} onFind={async user=>{
-            if(user && postId){
-              try {
-                // Envoyer une requête pour créer une notification d'identification
-                await kyInstance.post("/api/notifications/identify", {
-                  json: {
-                    recipientId: user.id,
-                    postId: postId,
-                    type: "IDENTIFY"
-                  }
-                });
-                console.log(`Notification d'identification envoyée à ${user.username}`);
-              } catch (error) {
-                console.error("Erreur lors de l'envoi de la notification :", error);
-              }
-            }
-          }}>
+          <UserLinkWithTooltip
+            key={key}
+            username={match.slice(1)}
+            onFind={async (user) => {}}
+          >
             {match}
           </UserLinkWithTooltip>
         );

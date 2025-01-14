@@ -81,7 +81,6 @@ export default function GroupChatSettingsDialog({
   });
 
   async function onSubmit(values: UpdateGroupChatProfileValues) {
-    console.log(values);
 
     const newAvatarFile = croppedAvatar
       ? new File([croppedAvatar], `avatar_${channel.id}.webp`)
