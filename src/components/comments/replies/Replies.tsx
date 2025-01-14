@@ -30,7 +30,7 @@ export default function Replies({
   const [isDraggable, setIsDraggable] = useState(false);
   const previousWidth = useRef(window.innerWidth);
 
-  const { showMore, hide, dataError } = t();
+  const { showMore, hide, dataError, noComments } = t();
 
   const searchParams = useSearchParams();
 
@@ -106,9 +106,6 @@ export default function Replies({
   if (comment.firstLevelCommentId) {
     return null;
   }
-  if (status === "success" && !replies.length && !hasNextPage) {
-    return null;
-  }
 
   return (
     <div className="relative w-[calc(100%-2rem)] overflow-y-auto border-s-4 border-solid border-s-primary bg-background sm:w-[calc(100%-2.5rem)]">
@@ -132,6 +129,11 @@ export default function Replies({
             {hide}
           </Button>
         </div>
+        {status === "success" && !replies.length && !hasNextPage && (
+          <p className="w-full py-4 text-center text-muted-foreground max-sm:flex max-sm:items-center max-sm:justify-center italic">
+            {noComments}
+          </p>
+        )}
         {status === "pending" && (
           <Loader2 className="mx-auto my-3 animate-spin" />
         )}
