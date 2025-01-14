@@ -166,7 +166,7 @@ export default function Comments({ post, onClose }: CommentsProps) {
             <X />
           </div>
         </div>
-        <div className="space-y-1 overflow-y-auto py-1 max-sm:h-[50vh] max-sm:bg-card/50">
+        <div className="space-y-1 overflow-y-auto py-1 max-sm:h-[70vh] max-sm:bg-card/50">
         
           {comments.map((comment) => (
             <Comment

@@ -107,7 +107,9 @@ export const english = {
   cancel: "Cancel",
   edit: "Edit",
   deleteConfirmPrompt:
-    "Are you sure you want to delete this post? You can't undo this action.",
+    "Are you sure you want to delete this post ? You can't undo this action.",
+  commentDeleteConfirmPrompt:
+    "Are you sure you want to delete this comment ? You can't undo this action.",
   noLongerAvailablecomment: "The comment is no longer available",
   showPreviousComments: "Show previous comments",
   noComments: "No comments yet",
@@ -388,6 +390,8 @@ export const french: Vocabulary = {
   edit: "Modifier",
   deleteConfirmPrompt:
     "Êtes-vous sûr de vouloir supprimer cette publication ? \nCette action est irréversible.",
+  commentDeleteConfirmPrompt:
+    "Êtes-vous sûr de vouloir supprimer ce commentaire ? \nCette action est irréversible.",
   noLongerAvailablecomment: "Le commentaire n'est plus diaponible",
   showPreviousComments: "Afficher les commentaires precedents",
   noComments: "Aucun commentaire à afficher",

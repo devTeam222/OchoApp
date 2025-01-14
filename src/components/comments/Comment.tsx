@@ -28,18 +28,20 @@ export default function Comment({ comment, isTarget = false }: CommentProps) {
   const [repliesCount, setRepliesCount] = useState(comment._count.firstLevelOf);
   const [authorReplied, setAuthorReplied] = useState(comment.isRepliedByAuthor);
   const [authorLiked, setAuthorLiked] = useState(false);
+  const { author } = t();
 
   return (
     <div
       className={cn(
         "group/comment flex flex-shrink-0 flex-col items-end gap-2 bg-background/30 px-2 py-3 transition-all *:flex-shrink-0 sm:rounded-sm",
+        isTarget && "p-0",
       )}
     >
       <div
         className={cn(
           "flex w-full gap-3",
           isTarget &&
-            "border-s-4 border-solid border-s-primary bg-primary/10 sm:border-4 sm:border-primary/50",
+            "border-s-4 border-solid border-s-primary bg-primary/10 p-2 sm:border-4 sm:border-primary/50",
         )}
       >
         <UserTooltip user={comment.user}>
@@ -48,10 +50,10 @@ export default function Comment({ comment, isTarget = false }: CommentProps) {
               href={`users/${comment.user.username}`}
               className="max-sm:hidden"
             >
-              <UserAvatar avatarUrl={comment.user.avatarUrl} size={32} />
+              <UserAvatar avatarUrl={comment.user.avatarUrl} size={36} />
             </OchoLink>
             <span className="sm:hidden">
-              <UserAvatar avatarUrl={comment.user.avatarUrl} size={32} />
+              <UserAvatar avatarUrl={comment.user.avatarUrl} size={36} />
             </span>
           </span>
         </UserTooltip>
@@ -69,6 +71,12 @@ export default function Comment({ comment, isTarget = false }: CommentProps) {
                   <span className="font-medium hover:underline sm:hidden">
                     {comment.user.displayName}
                   </span>
+                  {comment.userId === comment.post.userId && (
+                    <span className="space-x-1 ps-1 text-primary">
+                      <span className="font-bold">•</span>
+                      <span>{author}</span>
+                    </span>
+                  )}
                 </div>
               </UserTooltip>
             </div>
@@ -120,7 +128,7 @@ export default function Comment({ comment, isTarget = false }: CommentProps) {
           onClose={() => setShowInput(false)}
         />
       )}
-      <div className="flex w-[calc(100%-2rem)] items-center gap-2 sm:w-[calc(100%-2.5rem)]">
+      <div className="flex w-[calc(100%-3rem)] items-center gap-2">
         {authorReplied && (
           <>
             <AuthorReplyIcon avatarUrl={comment.post.user.avatarUrl} />

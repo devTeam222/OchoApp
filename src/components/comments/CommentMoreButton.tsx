@@ -7,8 +7,10 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
-import { MoreHorizontal, Trash2 } from "lucide-react";
+import { MoreVertical, Trash2 } from "lucide-react";
 import DeleteCommentDialog from "./DeleteCommentDialog";
+import { t } from "@/context/LanguageContext";
+import { cn } from "@/lib/utils";
 
 interface CommentMoreButtonProps {
   comment: CommentData;
@@ -21,20 +23,21 @@ export default function CommentMoreButton({
   className,
   onRemove,
 }: CommentMoreButtonProps) {
+  const {delete: deleteText} = t();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button size="icon" variant="ghost" className={className}>
-            <MoreHorizontal className="size-5 text-muted-foreground" />
-          </Button>
+          <span className={cn("p-1 border-border rounded-full aspect-square cursor-pointer", className)}>
+            <MoreVertical className="size-5 text-muted-foreground" />
+          </span>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem onClick={() => setShowDeleteDialog(true)}>
             <span className="flex items-center gap-3 text-destructive">
               <Trash2 className="size-4" />
-              Supprimer
+              {deleteText}
             </span>
           </DropdownMenuItem>
         </DropdownMenuContent>

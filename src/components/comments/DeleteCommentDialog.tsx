@@ -10,6 +10,7 @@ import {
 } from "../ui/dialog";
 import LoadingButton from "../LoadingButton";
 import { Button } from "../ui/button";
+import { t } from "@/context/LanguageContext";
 
 interface DeleteCommentDialogProps {
   comment: CommentData;
@@ -24,9 +25,10 @@ export default function DeleteCommentDialog({
 }: DeleteCommentDialogProps) {
   const mutation = useDeleteCommentMutation();
   const replyMutation = useDeleteReplyMutation();
+  const { commentDeleteConfirmPrompt, cancel, delete: deleteText } = t();
 
   function handleOpenChange(open: boolean) {
-    if (!open || !mutation.isPending) {
+    if (!open || !mutation.isPending || !replyMutation.isPending) {
       onClose();
     }
   }
@@ -35,10 +37,9 @@ export default function DeleteCommentDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Supprimer ?</DialogTitle>
+          <DialogTitle>{deleteText}</DialogTitle>
           <DialogDescription>
-            Voulez-vous vraiment supprimer ce commentaire ? Cette action est
-            irreversible.
+            <p className="">{commentDeleteConfirmPrompt}</p>
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -49,16 +50,16 @@ export default function DeleteCommentDialog({
                 ? mutation.mutate(comment.id, { onSuccess: onClose })
                 : replyMutation.mutate(comment.id, { onSuccess: onClose });
             }}
-            loading={mutation.isPending}
+            loading={mutation.isPending || replyMutation.isPending}
           >
-            Supprimer
+            {deleteText}
           </LoadingButton>
           <Button
             variant="outline"
             onClick={onClose}
-            disabled={mutation.isPending}
+            disabled={mutation.isPending || replyMutation.isPending}
           >
-            Annuler
+            {cancel}
           </Button>
         </DialogFooter>
       </DialogContent>

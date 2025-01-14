@@ -106,6 +106,9 @@ export default function Replies({
   if (comment.firstLevelCommentId) {
     return null;
   }
+  if (status === "success" && !replies.length && !hasNextPage) {
+    return null;
+  }
 
   return (
     <div className="relative w-[calc(100%-2rem)] overflow-y-auto border-s-4 border-solid border-s-primary bg-background sm:w-[calc(100%-2.5rem)]">

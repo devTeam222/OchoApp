@@ -48,6 +48,7 @@ export default function ReplyInput({ comment, onClose }: CommentInput) {
       onSuccess: () => {
         setInput("");
         setTimeout(blured, 100);
+        onClose();
       },
     });
   }

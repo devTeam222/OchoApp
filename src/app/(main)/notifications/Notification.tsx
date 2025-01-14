@@ -65,7 +65,7 @@ export default function Notification({ notification }: NotificationProps) {
           <MessageSquareMore className="size-4 fill-primary text-primary" />
         </div>
       ),
-      href: `/posts/${notification.postId}${notification.commentId ? `?comment=${notification.commentId}` : ""}`,
+      href: `/posts/${notification.postId}?show-comment=true`,
     },
     FOLLOW: {
       message: followedYou,
