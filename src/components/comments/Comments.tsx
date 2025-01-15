@@ -128,7 +128,7 @@ export default function Comments({ post, onClose }: CommentsProps) {
     >
       <CommentInput post={post} />
       {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
-      {hasNextPage && (
+      {hasNextPage && !isFetchingNextPage && (
         <Button
           variant="link"
           className="mx-auto block"
