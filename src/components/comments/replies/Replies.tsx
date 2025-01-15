@@ -16,6 +16,7 @@ import Reply from "./Reply";
 interface RepliesProps {
   comment: CommentData;
   onClose: () => void;
+  hidden: boolean;
   onCountChange: (count: number) => void;
   onAuthorReplyChange: (replied: boolean) => void;
 }
@@ -23,6 +24,7 @@ interface RepliesProps {
 export default function Replies({
   comment,
   onClose,
+  hidden = true,
   onCountChange,
   onAuthorReplyChange,
 }: RepliesProps) {
@@ -84,6 +86,7 @@ export default function Replies({
   }, []);
 
   const replies = data?.pages.flatMap((page) => page.replies) || [];
+  const count = data?.pages[0].count || 0;
 
   useEffect(() => {
     if (status === "success" && comment) {
@@ -92,7 +95,7 @@ export default function Replies({
       );
       onAuthorReplyChange(authorReplied);
       setTargetComment(comment.id);
-      onCountChange(replies.length);
+      !!count && onCountChange(count);
     }
     if (status === "error") {
       toast({
@@ -108,7 +111,7 @@ export default function Replies({
   }
 
   return (
-    <div className="relative w-[calc(100%-2rem)] overflow-y-auto border-s-4 border-solid border-s-primary bg-background sm:w-[calc(100%-2.5rem)]">
+    <div className={cn("relative w-[calc(100%-2rem)] overflow-y-auto border-s-4 border-solid border-s-primary bg-background sm:w-[calc(100%-2.5rem)]", hidden && "hidden")}>
       <div className="flex w-full flex-col-reverse">
         {isFetchingNextPage && (
           <p className="w-full py-4 text-center text-muted-foreground max-sm:flex max-sm:items-center max-sm:justify-center">

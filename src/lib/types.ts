@@ -333,6 +333,7 @@ export interface CommentsPage {
 export interface RepliesPage {
   replies: CommentData[];
   previousCursor: string | null;
+  count? : number;
 }
 
 export const notificationsInclude = {

@@ -29,7 +29,7 @@ export default function CommentMoreButton({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <span className={cn("p-1 border-border rounded-full aspect-square cursor-pointer", className)}>
+          <span className={cn("p-1 ring-1 ring-ring rounded-full aspect-square cursor-pointer", className)}>
             <MoreVertical className="size-5 text-muted-foreground" />
           </span>
         </DropdownMenuTrigger>

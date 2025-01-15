@@ -10,13 +10,15 @@ import UserAvatar from "@/components/UserAvatar";
 import { Loader2, SendIcon } from "lucide-react";
 import { useSubmitReplyMutation } from "../mutations";
 import { SubmitReply } from "../action";
+import { cn } from "@/lib/utils";
 
 interface CommentInput {
   comment: CommentData;
-  onClose: ()=>void
+  onClose: ()=>void;
+  profile?: boolean;
 }
 
-export default function ReplyInput({ comment, onClose }: CommentInput) {
+export default function ReplyInput({ comment, onClose, profile }: CommentInput) {
   const [input, setInput] = useState("");
   const { user } = useSession();
   const { toast } = useToast();
@@ -63,8 +65,8 @@ export default function ReplyInput({ comment, onClose }: CommentInput) {
       className="flex w-full items-center p-2 max-sm:left-0 max-sm:z-20"
       onSubmit={onSubmit}
     >
-      <div className="flex w-full items-end gap-2 rounded-3xl border border-input bg-background p-1 ring-primary ring-offset-background transition-all duration-75 has-[textarea:focus-visible]:outline-none has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring has-[textarea:focus-visible]:ring-offset-2">
-        <UserAvatar avatarUrl={user.avatarUrl} size={40} />
+      <div className={cn("flex w-full items-end gap-2 rounded-3xl border border-input bg-background p-1 ring-primary ring-offset-background transition-all duration-75 has-[textarea:focus-visible]:outline-none has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring has-[textarea:focus-visible]:ring-offset-2", !profile && "ps-4")}>
+        {profile && <UserAvatar avatarUrl={user.avatarUrl} size={40} />}
         <Textarea
           placeholder={replyTo.replace(
             "[name]",

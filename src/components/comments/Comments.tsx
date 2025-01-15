@@ -1,3 +1,5 @@
+"use client"
+
 import { CommentsPage, PostData } from "@/lib/types";
 import CommentInput from "./CommentInput";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -13,7 +15,6 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Draggable from "../Draggable";
 import { t } from "@/context/LanguageContext";
-import { getVocabularyObject, VocabularyKey, VocabularyObject } from "@/lib/vocabulary";
 
 interface CommentsProps {
   post: PostData;
@@ -23,7 +24,6 @@ interface CommentsProps {
 export default function Comments({ post, onClose }: CommentsProps) {
   const [targetComment, setTargetComment] = useState<string | null>(null);
   const [isDraggable, setIsDraggable] = useState(false);
-  const previousWidth = useRef(window.innerWidth);
   const router = useRouter();
 
   const {
@@ -73,10 +73,12 @@ export default function Comments({ post, onClose }: CommentsProps) {
   }, []);
 
   useEffect(() => {
+    let previousWidth = window?.innerWidth || 0;
+
     const handleResize = () => {
-      const currentWidth = window.innerWidth;
-      if (currentWidth !== previousWidth.current) {
-        previousWidth.current = currentWidth;
+      const currentWidth = window?.innerWidth || 0;
+      if (currentWidth !== previousWidth) {
+        previousWidth = currentWidth;
         onClose(); // Appelle la fonction uniquement pour les redimensionnements horizontaux
       }
     };
@@ -118,8 +120,8 @@ export default function Comments({ post, onClose }: CommentsProps) {
     <Draggable
       draggable={isDraggable}
       direction="down"
-      className="bottom-0 left-0 z-20 w-full max-sm:fixed max-sm:rounded-e-sm"
-      contentClassName="max-sm:bg-card max-sm:pt-2 sm:space-y-3 max-sm:rounded-s-sm max-sm:flex max-sm:flex-col-reverse"
+      className="group/comments bottom-0 left-0 z-20 w-full max-sm:fixed max-sm:rounded-e-sm"
+      contentClassName="max-sm:bg-background max-sm:pt-2 sm:space-y-3 max-sm:rounded-s-sm max-sm:flex max-sm:flex-col-reverse"
       onDrag={(number) => {
         if (number > 200) {
           onClose();
@@ -128,7 +130,7 @@ export default function Comments({ post, onClose }: CommentsProps) {
     >
       <CommentInput post={post} />
       {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
-      {hasNextPage && !isFetchingNextPage && (
+      {hasNextPage && !isFetchingNextPage && status === "success" && (
         <Button
           variant="link"
           className="mx-auto block"

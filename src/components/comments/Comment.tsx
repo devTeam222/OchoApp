@@ -83,7 +83,7 @@ export default function Comment({ comment, isTarget = false }: CommentProps) {
             {comment.user.id === user.id && (
               <CommentMoreButton
                 comment={comment}
-                className="absolute right-0 top-0 opacity-0 transition-opacity group-hover/comment:opacity-100 max-sm:opacity-100"
+                className="absolute right-0 top-0 transition-opacity group-hover/comment:opacity-100 sm:opacity-0"
               />
             )}
           </div>
@@ -126,6 +126,7 @@ export default function Comment({ comment, isTarget = false }: CommentProps) {
             firstLevelComment: comment,
           }}
           onClose={() => setShowInput(false)}
+          profile
         />
       )}
       <div className="flex w-[calc(100%-3rem)] items-center gap-2">
@@ -142,14 +143,13 @@ export default function Comment({ comment, isTarget = false }: CommentProps) {
           />
         )}
       </div>
-      {(showReplies || showInput) && (
         <Replies
           comment={comment}
           onClose={() => setShowReplies(false)}
           onCountChange={setRepliesCount}
           onAuthorReplyChange={setAuthorReplied}
+          hidden={!(showReplies || showInput)}
         />
-      )}
     </div>
   );
 }

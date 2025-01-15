@@ -70,7 +70,7 @@ export async function GET(
 
     const data: CommentsPage = {
       comments:
-        targetComment && previousCursor
+        targetComment && (comments.length > pageSize ? !previousCursor : previousCursor)
           ? [
               { ...targetComment, isRepliedByAuthor },
               ...comments.slice(0, pageSize).filter(

@@ -14,7 +14,13 @@ import Image from "next/image";
 import LikeButton from "./LikeButton";
 import BookmarkButton from "./BookmarkButton";
 import { useEffect, useRef, useState } from "react";
-import { Maximize2, MessageSquareIcon, MessageSquareMore, Minimize2, X } from "lucide-react";
+import {
+  Maximize2,
+  MessageSquareIcon,
+  MessageSquareMore,
+  Minimize2,
+  X,
+} from "lucide-react";
 import Comments from "../comments/Comments";
 import { Button } from "../ui/button";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -62,7 +68,7 @@ export default function Post({ post }: PostProps) {
       setShowComment(true);
     }
   }, [comment, showCommentParam]);
-  function postPage(param:string = "") {
+  function postPage(param: string = "") {
     if (pathname.startsWith(`/posts/${post.id}`)) {
       return;
     }
@@ -154,7 +160,7 @@ export default function Post({ post }: PostProps) {
       >
         <div
           className="absolute inset-0 h-full w-full"
-          onClick={()=>postPage()}
+          onClick={() => postPage()}
         ></div>
         {!!post.content && (
           <Linkify
@@ -196,9 +202,9 @@ export default function Post({ post }: PostProps) {
           <CommentButton
             comments={post._count.comments}
             onClick={() => {
-              postPage("?show-comment=true")
-              setShowComment(!showComment)}
-            }
+              postPage("?show-comment=true");
+              setShowComment(!showComment);
+            }}
           />
         </div>
         <BookmarkButton
@@ -210,22 +216,28 @@ export default function Post({ post }: PostProps) {
           }}
         />
       </div>
-      {showComment && (
-        <>
+      <div
+        className={cn(
+          "bottom-0",
+          !showComment &&
+            "invisible fixed -bottom-full z-20 h-full w-full transition-[bottom]",
+        )}
+      >
+        {showComment && (
           <div
             className="fixed inset-0 z-20 sm:hidden"
             onClick={() => setShowComment(false)}
           ></div>
-          <Comments post={post} onClose={() => setShowComment(false)} />
-          <Button
-            variant="link"
-            onClick={() => setShowComment(false)}
-            className="mx-auto block max-sm:hidden"
-          >
-            {hideComments}
-          </Button>
-        </>
-      )}
+        )}
+        <Comments post={post} onClose={() => setShowComment(false)} />
+        <Button
+          variant="link"
+          onClick={() => setShowComment(false)}
+          className="mx-auto block max-sm:hidden"
+        >
+          {hideComments}
+        </Button>
+      </div>
     </article>
   );
 }
@@ -535,7 +547,7 @@ export function CommentButton({ comments, onClick }: CommentButtonProps) {
       onClick={onClick}
       className="flex items-center gap-2"
     >
-      {!!comments ? <MessageSquareMore /> : <MessageSquareIcon/>}
+      {!!comments ? <MessageSquareMore /> : <MessageSquareIcon />}
       {!!comments && (
         <span className="text-sm font-medium tabular-nums">
           {comments}{" "}

@@ -56,7 +56,7 @@ export default function CommentInput({ post }: CommentInput) {
 
   return (
     <form
-      className="flex w-full items-center p-2 max-sm:outline max-sm:outline-muted"
+      className="flex w-full items-center p-2 max-sm:outline max-sm:outline-muted max-sm:has-[.reply-input]/comments:hidden"
       onSubmit={onSubmit}
     >
       <div className="flex w-full items-end gap-2 rounded-3xl border border-input bg-background p-1 ring-primary ring-offset-background transition-all duration-75 has-[textarea:focus-visible]:outline-none has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring has-[textarea:focus-visible]:ring-offset-2">

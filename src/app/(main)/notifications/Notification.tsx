@@ -56,7 +56,7 @@ export default function Notification({ notification }: NotificationProps) {
           <Heart className="size-4 fill-red-500 text-red-500" />
         </div>
       ),
-      href: `/posts/${notification.postId}`,
+      href: `/posts/${notification.postId}?show-comment=true`,
     }, 
     COMMENT_REPLY: {
       message: `${replied} ${notification.comment?.content ? `${commentPrev.replace("[c]", notification.comment.content.slice(0, 30))}` : onYourComment}.`,

@@ -42,10 +42,18 @@ export async function GET(
     });
     
     const previousCursor = comments.length > pageSize ? comments[pageSize].id : null;
+
+    const count = await prisma.comment.count({
+      where: {
+        firstLevelCommentId,
+        type: { not: "COMMENT" },
+      },
+    })
     
     const data: RepliesPage = {
       replies: comments.slice(0, pageSize),
       previousCursor,
+      count
     };
     
     return Response.json(data);
