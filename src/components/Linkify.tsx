@@ -2,7 +2,6 @@ import { LinkIt, LinkItUrl } from "react-linkify-it";
 import React from "react";
 import OchoLink from "@/components/ui/OchoLink";
 import UserLinkWithTooltip from "./UserLinkWithTooltip";
-import kyInstance from "@/lib/ky";
 import { cn } from "@/lib/utils";
 
 interface LinkifyProps {
@@ -63,6 +62,22 @@ function LinkifyHashtag({ children, className }: LinkifyProps) {
           >
             {match}
           </OchoLink>
+        );
+      }}
+    >
+      {children}
+    </LinkIt>
+  );
+}
+export function LinkifyEmoji({ children, className }: LinkifyProps) {
+  return (
+    <LinkIt
+      regex={/[\p{Emoji}\p{Emoji_Presentation}]/gu}
+      component={(match, key) => {
+        return (
+          <span key={key} className={cn("emoji", className)}>
+            {match}
+          </span>
         );
       }}
     >

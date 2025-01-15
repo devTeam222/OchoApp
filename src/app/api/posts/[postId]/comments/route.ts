@@ -54,26 +54,30 @@ export async function GET(
       cursor: cursor ? { id: cursor } : undefined,
     });
 
-    const comments = commentsData.map(comment=>{
+    const comments = commentsData.map((comment) => {
       const isRepliedByAuthor = !!comment?.firstLevelOf.some(
         (reply) => reply.userId === comment.post.userId,
       );
-      
-      return { ...comment, isRepliedByAuthor };
-    })
 
-    const previousCursor = comments.length > pageSize ? comments[pageSize].id : null;
+      return { ...comment, isRepliedByAuthor };
+    });
+
+    const previousCursor =
+      comments.length > pageSize ? comments[pageSize].id : null;
     const isRepliedByAuthor = !!targetComment?.firstLevelOf.some(
       (reply) => reply.userId === targetComment.post.userId,
     );
 
     const data: CommentsPage = {
-      comments: targetComment
-        ? [
-            { ...targetComment, isRepliedByAuthor },
-            ...comments.slice(0, pageSize),
-          ]
-        : comments.slice(0, pageSize),
+      comments:
+        targetComment && previousCursor
+          ? [
+              { ...targetComment, isRepliedByAuthor },
+              ...comments.slice(0, pageSize).filter(
+                (comment) => comment.id !== targetComment.id,
+              ),
+            ]
+          : comments.slice(0, pageSize),
       previousCursor,
     };
 
