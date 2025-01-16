@@ -113,11 +113,6 @@ export default function Replies({
   return (
     <div className={cn("relative w-[calc(100%-2rem)] overflow-y-auto border-s-4 border-solid border-s-primary bg-background sm:w-[calc(100%-2.5rem)]", hidden && "hidden")}>
       <div className="flex w-full flex-col-reverse">
-        {isFetchingNextPage && (
-          <p className="w-full py-4 text-center text-muted-foreground max-sm:flex max-sm:items-center max-sm:justify-center">
-            <Loader2 className="mx-auto my-3 animate-spin" />
-          </p>
-        )}
         <div className="flex w-full gap-4 p-2">
           {hasNextPage && !isFetchingNextPage && (
             <Button
@@ -132,6 +127,11 @@ export default function Replies({
             {hide}
           </Button>
         </div>
+        {isFetchingNextPage && (
+          <p className="w-full py-4 text-center text-muted-foreground max-sm:flex max-sm:items-center max-sm:justify-center">
+            <Loader2 className="mx-auto my-3 animate-spin" />
+          </p>
+        )}
         {status === "success" && !replies.length && !hasNextPage && (
           <p className="w-full py-4 text-center text-muted-foreground max-sm:flex max-sm:items-center max-sm:justify-center italic">
             {noComments}

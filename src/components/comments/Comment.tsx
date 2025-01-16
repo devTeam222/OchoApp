@@ -15,6 +15,20 @@ import { useState } from "react";
 import { t } from "@/context/LanguageContext";
 import { Button } from "../ui/button";
 import { Heart, MessageSquare } from "lucide-react";
+import { VerifiedType } from "@prisma/client";
+import Verified from "../Verified";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@radix-ui/react-popover";
+import { text } from "stream/consumers";
 
 interface CommentProps {
   comment: CommentData & { isRepliedByAuthor?: boolean };
@@ -28,7 +42,19 @@ export default function Comment({ comment, isTarget = false }: CommentProps) {
   const [repliesCount, setRepliesCount] = useState(comment._count.firstLevelOf);
   const [authorReplied, setAuthorReplied] = useState(comment.isRepliedByAuthor);
   const [authorLiked, setAuthorLiked] = useState(false);
-  const { author } = t();
+  const { appUser, author } = t();
+
+  const expiresAt = comment.user.verified?.[0]?.expiresAt;
+  const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
+
+  const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
+
+  const isVerified = !!comment.user.verified[0] && !expired;
+  const verifiedType: VerifiedType = isVerified
+    ? comment.user.verified[0].type
+    : "STANDARD";
+
+  const verifiedCheck = isVerified ? <Verified type={verifiedType} /> : null;
 
   return (
     <div
@@ -44,10 +70,10 @@ export default function Comment({ comment, isTarget = false }: CommentProps) {
             "border-s-4 border-solid border-s-primary bg-primary/10 p-2 sm:border-4 sm:border-primary/50",
         )}
       >
-        <UserTooltip user={comment.user}>
+        <UserTooltip user={comment.user} verified={verifiedCheck}>
           <span>
             <OchoLink
-              href={`users/${comment.user.username}`}
+              href={`users/${comment.user.username || "-"}`}
               className="max-sm:hidden"
             >
               <UserAvatar avatarUrl={comment.user.avatarUrl} size={36} />
@@ -60,16 +86,19 @@ export default function Comment({ comment, isTarget = false }: CommentProps) {
         <div className="relative flex-1">
           <div className="flex w-full justify-between">
             <div className="flex-1 items-center gap-1 text-sm text-muted-foreground">
-              <UserTooltip user={comment.user}>
+              <UserTooltip user={comment.user} verified={verifiedCheck}>
                 <div className="items-center">
-                  <OchoLink
-                    href={`users/${comment.user.username}`}
-                    className="font-medium text-inherit max-sm:hidden"
-                  >
-                    {comment.user.displayName}
-                  </OchoLink>
-                  <span className="font-medium hover:underline sm:hidden">
-                    {comment.user.displayName}
+                  <span className="inline-flex items-center gap-0.5">
+                    <OchoLink
+                      href={`users/${comment.user.username || "-"}`}
+                      className="font-medium text-inherit max-sm:hidden"
+                    >
+                      {comment.user.displayName || appUser}
+                    </OchoLink>
+                    <span className="font-medium hover:underline sm:hidden">
+                      {comment.user.displayName || appUser}
+                    </span>
+                    {verifiedCheck}
                   </span>
                   {comment.userId === comment.post.userId && (
                     <span className="space-x-1 ps-1 text-primary">
@@ -143,34 +172,87 @@ export default function Comment({ comment, isTarget = false }: CommentProps) {
           />
         )}
       </div>
-        <Replies
-          comment={comment}
-          onClose={() => setShowReplies(false)}
-          onCountChange={setRepliesCount}
-          onAuthorReplyChange={setAuthorReplied}
-          hidden={!(showReplies || showInput)}
-        />
+      <Replies
+        comment={comment}
+        onClose={() => setShowReplies(false)}
+        onCountChange={setRepliesCount}
+        onAuthorReplyChange={setAuthorReplied}
+        hidden={!(showReplies || showInput)}
+      />
     </div>
   );
 }
 
 export function AuthorReplyIcon({ avatarUrl }: { avatarUrl: string | null }) {
+  const { repliedByAuthor } = t();
+  const text = <p>{repliedByAuthor}</p>;
   return (
-    <span className="relative">
-      <UserAvatar avatarUrl={avatarUrl} size={32} />
-      <MessageSquare
-        size={20}
-        className="absolute -bottom-1 -right-0.5 fill-primary"
-      />
-    </span>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger className="max-sm:hidden">
+          <span className="relative">
+            <UserAvatar avatarUrl={avatarUrl} size={32} />
+            <MessageSquare
+              size={20}
+              className="absolute -bottom-1 -right-0.5 fill-primary"
+            />
+          </span>
+        </TooltipTrigger>
+        <TooltipContent className="z-50 w-max rounded-sm border-solid border-input bg-background p-2 py-1">
+          {text}
+        </TooltipContent>
+      </Tooltip>
+      <Popover>
+        <PopoverTrigger className="sm:hidden">
+          <span className="relative">
+            <UserAvatar avatarUrl={avatarUrl} size={32} />
+            <MessageSquare
+              size={20}
+              className="absolute -bottom-1 -right-0.5 fill-primary"
+            />
+          </span>
+        </PopoverTrigger>
+        <PopoverContent className="z-50 rounded-sm border-solid border-input bg-background p-2">
+          {text}
+        </PopoverContent>
+      </Popover>
+    </TooltipProvider>
   );
 }
 export function AuthorLikeIcon({ avatarUrl }: { avatarUrl: string | null }) {
+  const { likedByAuthor } = t();
+  const text = <p>{likedByAuthor}</p>;
   return (
-    <span className="relative border-border">
-      <UserAvatar avatarUrl={avatarUrl} size={28} />
-      <Heart size={20} className="absolute -bottom-1 -right-0.5 fill-red-500" />
-    </span>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger className="max-sm:hidden">
+          <span className="relative border-border">
+            <UserAvatar avatarUrl={avatarUrl} size={28} />
+            <Heart
+              size={20}
+              className="absolute -bottom-1 -right-0.5 fill-red-500"
+            />
+          </span>
+        </TooltipTrigger>
+        <TooltipContent className="z-50 w-max rounded-sm border-solid border-input bg-background p-2 py-1">
+          {text}
+        </TooltipContent>
+      </Tooltip>
+      <Popover>
+        <PopoverTrigger className="sm:hidden">
+          <span className="relative border-border">
+            <UserAvatar avatarUrl={avatarUrl} size={28} />
+            <Heart
+              size={20}
+              className="absolute -bottom-1 -right-0.5 fill-red-500"
+            />
+          </span>
+        </PopoverTrigger>
+        <PopoverContent className="z-50 rounded-sm border-solid border-input bg-background p-2 py-1">
+          {text}
+        </PopoverContent>
+      </Popover>
+    </TooltipProvider>
   );
 }
 

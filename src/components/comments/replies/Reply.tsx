@@ -14,6 +14,8 @@ import { useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { t } from "@/context/LanguageContext";
 import { AuthorLikeIcon } from "../Comment";
+import Verified from "@/components/Verified";
+import { VerifiedType } from "@prisma/client";
 
 interface CommentProps {
   comment: CommentData;
@@ -26,6 +28,19 @@ export default function Reply({ comment, isTarget = false }: CommentProps) {
   const [showInput, setShowInput] = useState(false);
   const [authorLiked, setAuthorLiked] = useState(false);
 
+   const expiresAt = comment.user.verified?.[0]?.expiresAt;
+  const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
+
+  const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
+
+  const isVerified = !!comment.user.verified[0] && !expired;
+  const verifiedType: VerifiedType = isVerified
+    ? comment.user.verified[0].type
+    : "STANDARD";
+
+  const verifiedCheck = isVerified ? <Verified type={verifiedType} /> : null;
+
+
   return (
     <div
       className={cn(
@@ -35,32 +50,35 @@ export default function Reply({ comment, isTarget = false }: CommentProps) {
       )}
     >
       <div className={cn("flex w-full gap-3")}>
-        <UserTooltip user={comment.user}>
+        <UserTooltip user={comment.user} verified={verifiedCheck}>
           <span>
             <OchoLink
-              href={`users/${comment.user.username}`}
+              href={`users/${comment.user.username || "-"}`}
               className="max-sm:hidden"
             >
-              <UserAvatar avatarUrl={comment.user.avatarUrl} size={32} />
+              <UserAvatar avatarUrl={comment.user.avatarUrl} size={36} />
             </OchoLink>
             <span className="sm:hidden">
-              <UserAvatar avatarUrl={comment.user.avatarUrl} size={32} />
+              <UserAvatar avatarUrl={comment.user.avatarUrl} size={36} />
             </span>
           </span>
         </UserTooltip>
         <div className="relative flex-1">
           <div className="flex w-full justify-between">
             <div className="flex flex-1 items-center text-sm text-muted-foreground">
-              <UserTooltip user={comment.user}>
-                <div className="flex items-center">
-                  <OchoLink
-                    href={`users/${comment.user.username}`}
-                    className="flex items-center font-medium text-inherit max-sm:hidden"
-                  >
-                    {comment.user.displayName || appUser}
-                  </OchoLink>
-                  <span className="flex font-medium hover:underline sm:hidden">
-                    {comment.user.displayName || appUser}
+              <UserTooltip user={comment.user}  verified={verifiedCheck}>
+                <div className="items-center">
+                  <span className="inline-flex items-center gap-0.5">
+                    <OchoLink
+                      href={`users/${comment.user.username || "-"}`}
+                      className="font-medium text-inherit max-sm:hidden"
+                    >
+                      {comment.user.displayName || appUser}
+                    </OchoLink>
+                    <span className="font-medium hover:underline sm:hidden">
+                      {comment.user.displayName || appUser}
+                    </span>
+                    {verifiedCheck}
                   </span>
                   {comment.userId === comment.post.userId && (
                     <span className="space-x-1 ps-1 text-primary">
