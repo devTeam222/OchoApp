@@ -46,6 +46,7 @@ export default function Post({ post }: PostProps) {
   const pathname = usePathname();
 
   const [showComment, setShowComment] = useState(false);
+  const [firstCommentRender, setFirstCommentRender] = useState(false);
   const [targetComment, setTargetComment] = useState<string | null>(null);
   const {
     hideComments,
@@ -68,6 +69,9 @@ export default function Post({ post }: PostProps) {
       setShowComment(true);
     }
   }, [comment, showCommentParam]);
+  useEffect(() => {
+    showComment && setFirstCommentRender(true);
+  }, [showComment, setFirstCommentRender]);
   function postPage(param: string = "") {
     if (pathname.startsWith(`/posts/${post.id}`)) {
       return;
@@ -220,7 +224,7 @@ export default function Post({ post }: PostProps) {
         className={cn(
           "bottom-0",
           !showComment &&
-            "invisible fixed -bottom-full z-20 h-full w-full transition-[bottom]",
+            "invisible fixed -bottom-full z-50 h-full w-full transition-[bottom]",
         )}
       >
         {showComment && (
@@ -229,7 +233,9 @@ export default function Post({ post }: PostProps) {
             onClick={() => setShowComment(false)}
           ></div>
         )}
-        <Comments post={post} onClose={() => setShowComment(false)} />
+        {firstCommentRender && (
+          <Comments post={post} onClose={() => setShowComment(false)} />
+        )}
         <Button
           variant="link"
           onClick={() => setShowComment(false)}

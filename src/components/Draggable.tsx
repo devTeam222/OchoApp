@@ -20,56 +20,12 @@ export default function Draggable({
   contentClassName,
 }: DraggableProps) {
   // const containerRef = useRef<HTMLDivElement>(null);
-  const [dragging, setDragging] = useState(false);
-  const [translate, setTranslate] = useState({ x: 0, y: 0 });
-  const [isTransitioning, setIsTransitioning] = useState(false); // Nouvel état pour suivre la transition
   const [canScroll, setCanscroll] = useState(true);
+  const [dragging, setDragging] = useState(!canScroll);
+  const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const startPoint = useRef({ x: 0, y: 0 });
   const dragThreshold = 100; // Threshold to trigger `onDrag`
-
-  // Fonction externe pour vérifier si un élément est scrollable dans une direction donnée
-  const isScrollable = (
-    element: HTMLElement,
-    direction: "up" | "down" | "left" | "right",
-  ): boolean => {
-    if (direction === "up" || direction === "down") {
-      const canScrollUp = element.scrollTop > 0;
-      const canScrollDown =
-        element.scrollTop < element.scrollHeight - element.clientHeight;
-      return (
-        (direction === "up" && canScrollUp) ||
-        (direction === "down" && canScrollDown)
-      );
-    } else if (direction === "left" || direction === "right") {
-      const canScrollLeft = element.scrollLeft > 0;
-      const canScrollRight =
-        element.scrollLeft < element.scrollWidth - element.clientWidth;
-      return (
-        (direction === "left" && canScrollLeft) ||
-        (direction === "right" && canScrollRight)
-      );
-    }
-    return false;
-  };
-
-  // Fonction récursive pour vérifier si un élément ou ses enfants sont scrollables dans une direction donnée
-  const isAnyScrollable = (
-    element: HTMLElement,
-    direction: "up" | "down" | "left" | "right",
-  ): boolean => {
-    if (isScrollable(element, direction)) {
-      return true;
-    }
-
-    for (let child of element.children) {
-      if (isAnyScrollable(child as HTMLElement, direction)) {
-        return true;
-      }
-    }
-
-    return false;
-  };
 
   const handleMouseDown = (e: MouseEvent) => {
     if (!draggable) return;
@@ -103,8 +59,7 @@ export default function Draggable({
 
   const handleMouseUp = () => {
     setDragging(false);
-    setIsTransitioning(false);
-    setCanscroll(true)
+    setCanscroll(true);
     const draggedDistance = Math.abs(
       direction === "left" || direction === "right" ? translate.x : translate.y,
     );
@@ -121,13 +76,14 @@ export default function Draggable({
   const handleTouchStart = (e: TouchEvent) => {
     if (!draggable) return;
     const touch = e.touches[0];
-    setDragging(true);
+    setDragging(!canScroll);
     startPoint.current = { x: touch.clientX, y: touch.clientY };
   };
 
   const handleTouchMove = (e: TouchEvent) => {
     const container = containerRef.current;
     if (!container) return;
+    setDragging(!canScroll);
 
     const touch = e.touches[0];
     const deltaX = touch.clientX - startPoint.current.x;
@@ -142,7 +98,6 @@ export default function Draggable({
         : deltaY > 0
           ? "up"
           : "down";
-
     // Trouver tous les éléments scrollables
     const scrollableElements = Array.from(
       container.querySelectorAll("*"),
@@ -150,30 +105,49 @@ export default function Draggable({
       return isScrollable(el as HTMLElement, scrollDirection);
     });
 
-    scrollableElements.forEach((el) => {
-      const element = el as HTMLElement;
-      element.addEventListener("touchend", () =>
-        handleCorrect(element, scrollDirection),
-      );
-      element.addEventListener("touchcancel", () =>
-        handleCorrect(element, scrollDirection),
-      );
-      element.addEventListener("pointerover", () =>
-        handleCorrect(element, scrollDirection),
-      );
-      element.addEventListener("scrollend", () =>
-        handleCorrect(element, scrollDirection),
+    // Filtrer les éléments scrollables qui sont touchés
+    const touchedScrollableElements = scrollableElements.filter((el) => {
+      const rect = (el as HTMLElement).getBoundingClientRect();
+      return (
+        touch.clientX >= rect.left &&
+        touch.clientX <= rect.right &&
+        touch.clientY >= rect.top &&
+        touch.clientY <= rect.bottom
       );
     });
 
-    if (!dragging || !draggable) return;
+    touchedScrollableElements.forEach((el) => {
+      const element = el as HTMLElement;
+      canScroll
+        ? element.addEventListener(
+            "touchmove",
+            () => correctScroll(element, scrollDirection),
+            { passive: false },
+          )
+        : element.removeEventListener("touchmove", () =>
+            correctScroll(element, scrollDirection),
+          );
+      element.addEventListener("touchend", () =>
+        correctScroll(element, scrollDirection),
+      );
+      element.addEventListener("touchcancel", () =>
+        correctScroll(element, scrollDirection),
+      );
+      element.addEventListener("pointerover", () =>
+        correctScroll(element, scrollDirection),
+      );
+      element.addEventListener("scrollend", () =>
+        correctScroll(element, scrollDirection),
+      );
+    });
 
-    // Vérifier si aucun élément scrollable ne peut défiler vers le haut
-    if ((deltaY > 0 || deltaX > 0) && !canScroll && isTransitioning) {
+    if (!touchedScrollableElements.length) {
+      setCanscroll(false);
       console.log("Pull-to-refresh détecté");
-      setIsTransitioning(true);
       e.preventDefault(); // Empêcher le rechargement
     }
+
+    if (!dragging || !draggable) return;
 
     setTranslate((prev) => {
       const newTranslate = { ...prev };
@@ -187,57 +161,50 @@ export default function Draggable({
           direction === "up" ? Math.min(deltaY, 0) : Math.max(deltaY, 0);
         newTranslate.x = 0; // Verrouille le mouvement horizontal
       }
-      setIsTransitioning(false);
       return newTranslate;
     });
   };
-  const handleCorrect = (
+  const correctScroll = (
     element: HTMLElement,
-    direction: "up" | "down" | "left" | "right",
+    dir: "up" | "down" | "left" | "right",
   ) => {
-    const sens =
-      direction === "up" || direction === "down" ? "vertical" : "horizontal";
+    const sens = dir === "up" || dir === "down" ? "vertical" : "horizontal";
     if (sens === "vertical") {
-      if (element.scrollHeight >= 50) {
-        if (element.scrollTop <= 10) {
-          element.style.paddingTop = "10px";
-          element.scrollTop = 10;
-          setIsTransitioning(false);
-          setCanscroll(false);
-        } else if (
-          element.scrollTop >=
-          element.scrollHeight - (element.clientHeight + 10)
-        ) {
-          element.style.paddingBottom = "10px";
-          element.scrollTop = element.scrollHeight - element.clientHeight - 10;
-          setIsTransitioning(false);
-          setCanscroll(false);
-        } 
+      if (element.scrollTop <= 1) {
+        setCanscroll(dir === direction);
+        return;
+      }
+
+      if (
+        element.scrollTop >=
+        element.scrollHeight - (element.clientHeight + 1)
+      ) {
+        setCanscroll(dir === direction);
         return;
       }
       setCanscroll(true);
     } else {
-      if (element.scrollWidth >= 50) {
-        if (element.scrollLeft <= 10) {
-          element.style.paddingLeft = "10px";
-          element.scrollLeft = 1;
-          setIsTransitioning(false);
-          setCanscroll(false);
-        } else if (
-          element.scrollLeft >=
-          element.scrollWidth - (element.clientWidth + 10)
-        ) {
-          element.style.paddingRight = "10px";
-          element.scrollLeft = element.scrollWidth - element.clientWidth - 10;
-          setIsTransitioning(false);
-          setCanscroll(false);
-        }
+      if (element.scrollLeft <= 1) {
+        setCanscroll(dir === direction);
+        return;
+      }
+      if (
+        element.scrollLeft >=
+        element.scrollWidth - (element.clientWidth + 1)
+      ) {
+        setCanscroll(dir === direction);
         return;
       }
       setCanscroll(true);
     }
   };
 
+  useEffect(() => {
+    if (canScroll) {
+      setTimeout(() => setTranslate({ x: 0, y: 0 }), 300);
+    }
+    setDragging(!canScroll);
+  }, [canScroll, setTranslate]);
 
   // Ajout des écouteurs d'événements pour le drag
   useEffect(() => {
@@ -246,6 +213,7 @@ export default function Draggable({
 
     container.addEventListener("mousedown", handleMouseDown);
     container.addEventListener("mousemove", handleMouseMove);
+    container.addEventListener("mouseleave", handleMouseUp);
     container.addEventListener("mouseup", handleMouseUp);
     container.addEventListener("mouseleave", handleMouseUp);
 
@@ -298,3 +266,46 @@ export default function Draggable({
     </div>
   );
 }
+
+// Fonction externe pour vérifier si un élément est scrollable dans une direction donnée
+const isScrollable = (
+  element: HTMLElement,
+  direction: "up" | "down" | "left" | "right",
+): boolean => {
+  if (direction === "up" || direction === "down") {
+    const canScrollUp = element.scrollTop > 0;
+    const canScrollDown =
+      element.scrollTop < element.scrollHeight - element.clientHeight;
+    return (
+      (direction === "up" && canScrollUp) ||
+      (direction === "down" && canScrollDown)
+    );
+  } else if (direction === "left" || direction === "right") {
+    const canScrollLeft = element.scrollLeft > 0;
+    const canScrollRight =
+      element.scrollLeft < element.scrollWidth - element.clientWidth;
+    return (
+      (direction === "left" && canScrollLeft) ||
+      (direction === "right" && canScrollRight)
+    );
+  }
+  return false;
+};
+
+// Fonction récursive pour vérifier si un élément ou ses enfants sont scrollables dans une direction donnée
+const isAnyScrollable = (
+  element: HTMLElement,
+  direction: "up" | "down" | "left" | "right",
+): boolean => {
+  if (isScrollable(element, direction)) {
+    return true;
+  }
+
+  for (let child of element.children) {
+    if (isAnyScrollable(child as HTMLElement, direction)) {
+      return true;
+    }
+  }
+
+  return false;
+};

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { CommentsPage, PostData } from "@/lib/types";
 import CommentInput from "./CommentInput";
@@ -32,7 +32,7 @@ export default function Comments({ post, onClose }: CommentsProps) {
     noLongerAvailablecomment,
     dataError,
     comments: commentsText,
-    comment: commentText
+    comment: commentText,
   } = t();
 
   const searchParams = useSearchParams();
@@ -109,12 +109,10 @@ export default function Comments({ post, onClose }: CommentsProps) {
       comment &&
       comments.find((c) => c.id === comment)
     ) {
-      
       setTargetComment(comment);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, comment, data, comments]);
-  
 
   return (
     <Draggable
@@ -168,8 +166,10 @@ export default function Comments({ post, onClose }: CommentsProps) {
             <X />
           </div>
         </div>
-        <div className="space-y-1 overflow-y-auto py-1 max-sm:h-[70vh] max-sm:bg-card/50">
-        
+        <div
+          className="space-y-1 overflow-y-auto py-1 max-sm:h-[70vh] max-sm:bg-card/50"
+          style={{ overflowAnchor: "auto" }}
+        >
           {comments.map((comment) => (
             <Comment
               key={comment.id}
