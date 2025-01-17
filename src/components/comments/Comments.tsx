@@ -127,11 +127,13 @@ export default function Comments({ post, onClose }: CommentsProps) {
       }}
     >
       <CommentInput post={post} />
-      {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
+      {isFetchingNextPage && (
+        <Loader2 className="mx-auto my-3 animate-spin sm:hidden" />
+      )}
       {hasNextPage && !isFetchingNextPage && status === "success" && (
         <Button
           variant="link"
-          className="mx-auto block"
+          className="mx-auto block sm:hidden"
           disabled={isFetching}
           onClick={() => fetchNextPage()}
         >
@@ -178,6 +180,19 @@ export default function Comments({ post, onClose }: CommentsProps) {
             />
           ))}
         </div>
+        {isFetchingNextPage && (
+          <Loader2 className="mx-auto my-3 animate-spin max-sm:hidden" />
+        )}
+        {hasNextPage && !isFetchingNextPage && status === "success" && (
+          <Button
+            variant="link"
+            className="mx-auto block max-sm:hidden"
+            disabled={isFetching}
+            onClick={() => fetchNextPage()}
+          >
+            {showPreviousComments}
+          </Button>
+        )}
       </div>
     </Draggable>
   );

@@ -95,7 +95,9 @@ export default function Replies({
       );
       onAuthorReplyChange(authorReplied);
       setTargetComment(comment.id);
-      !!count && onCountChange(count);
+      console.log(count);
+      onCountChange(count);
+      
     }
     if (status === "error") {
       toast({

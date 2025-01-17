@@ -49,8 +49,6 @@ export default function ReplyInput({ comment, onClose, profile }: CommentInput) 
     mutation.mutate(reply, {
       onSuccess: () => {
         setInput("");
-        setTimeout(blured, 100);
-        onClose();
       },
     });
   }
