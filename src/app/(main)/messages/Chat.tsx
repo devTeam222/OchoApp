@@ -196,13 +196,14 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
         </div>
       </div>
 
-      <InfiniteScrollContainer
-        className="relative flex flex-1 flex-col-reverse overflow-y-auto overflow-x-hidden shadow-inner scrollbar-track-primary scrollbar-track-rounded-full has-[.reaction-open]:z-50 sm:bg-background/50"
-        onBottomReached={() =>
-          hasNextPage && !isFetchingNextPage && fetchNextPage()
-        }
-      >
-        <div className="flex w-full flex-col-reverse gap-4 p-4 px-2">
+      <div className="relative flex flex-1 flex-col-reverse overflow-y-auto overflow-x-hidden shadow-inner scrollbar-track-primary scrollbar-track-rounded-full has-[.reaction-open]:z-50 sm:bg-background/50">
+        <InfiniteScrollContainer
+          className="flex w-full flex-col-reverse gap-4 p-4 px-2"
+          onBottomReached={() => {
+            console.log(isFetchingNextPage);
+            hasNextPage && !isFetchingNextPage && fetchNextPage();
+          }}
+        >
           {status === "pending" && <MessagesLoadingSkeleton />}
           {status === "success" && !hasNextPage && !messages.length && (
             <p className="my-auto flex w-full flex-1 select-none items-center justify-center px-2 text-center italic text-muted-foreground">
@@ -230,13 +231,13 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
                 />
               );
             })}
-        </div>
+        </InfiniteScrollContainer>
         {isFetchingNextPage && (
           <div className="flex w-full justify-center">
             <Loader2 className="mx-auto my-3 animate-spin" />
           </div>
         )}
-      </InfiniteScrollContainer>
+      </div>
 
       <div className="max-sm:bg-card/50">
         {!isSaved
