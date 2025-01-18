@@ -4,7 +4,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import kyInstance from "@/lib/ky";
 import InfiniteScrollContainer from "@/components/InfiniteScrollContainer";
 import { useSession } from "../SessionProvider";
-import ChannelsLoadingSkeleton from "./ChannelsLoadingSkeleton";
+import ChannelsLoadingSkeleton from "./ChanneLoadingSkeleton";
 import { useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { useActiveChannel } from "@/context/ChatContext";
@@ -68,12 +68,7 @@ export default function ChatList({
         );
         if (activeChannel) {
           handleChannelSelect(activeChannel);
-        } else {
-          toast({
-            variant: "destructive",
-            description: unableToLoadChat.replace("[name]", savedChannelId),
-          });
-        }
+        } 
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -92,10 +87,10 @@ export default function ChatList({
 
   if (
     status === "success" &&
-    channels.length &&
-    !selectedChannelId &&
+    !activeChannelId &&
     pathname === "/messages/chat"
   ) {
+    history.pushState(null, "", "/messages")
     navigate("/messages");
   }
 

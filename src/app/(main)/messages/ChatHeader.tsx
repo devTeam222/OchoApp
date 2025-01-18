@@ -405,7 +405,7 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
                   {channel.isGroup ? (
                     <>
                       {channel.description ? (
-                        <p>{channel.description}</p>
+                        <p className="py-2 text-center whitespace-pre-line break-words">{channel.description}</p>
                       ) : loggedinMember?.type === "ADMIN" ||
                         loggedinMember?.type === "OWNER" ? (
                         <Button
@@ -426,7 +426,7 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
                       )}
                     </>
                   ) : (
-                    !!otherUser?.bio && <p>{otherUser.bio}</p>
+                    !!otherUser?.bio && <p className="py-2 text-center whitespace-pre-line break-words">{otherUser.bio}</p>
                   )}
                 </Linkify>
               </div>

@@ -418,7 +418,7 @@ function AllReactions({
   ) : (
     <div
       className={cn(
-        "flex min-h-96 min-w-[95%] select-none flex-col rounded-sm bg-card p-3 max-sm:fixed max-sm:bottom-[2%] max-sm:left-[150%] max-sm:-translate-x-[50%] sm:min-h-80 sm:min-w-72",
+        "reaction-open flex min-h-96 min-w-[95%] select-none flex-col rounded-sm bg-card p-3 max-sm:fixed max-sm:bottom-[2%] max-sm:left-[150%] max-sm:-translate-x-[50%] sm:min-h-80 sm:min-w-72",
         className,
       )}
     >

@@ -32,12 +32,27 @@ export async function GET(
             equals: "SAVED",
           },
         },
-        include: getMessageDataInclude(userId),
+        include: getMessageDataInclude(user.id),
         take: 1,
         orderBy: { createdAt: "desc" },
       });
-      if (!existingSavedMsgs[0]) {
-        const channel: ChannelData = {
+      if (existingSavedMsgs[0]) {
+        const existingSavedMsg: MessageData = existingSavedMsgs[0];
+        const createInfo = await prisma.message.findFirst({
+          where: {
+            senderId: {
+              equals: userId,
+            },
+            type: {
+              equals: "SAVED",
+            },
+          },
+          include: getMessageDataInclude(user.id),
+          take: 1,
+          orderBy: { createdAt: "asc" },
+        });
+    
+        const newChannel: ChannelData = {
           id: `saved-${userId}`,
           name: null,
           description: null,
@@ -53,14 +68,23 @@ export async function GET(
             },
           ],
           maxMembers: 300,
-          messages: [],
+          messages: [existingSavedMsg],
           isGroup: false,
-          createdAt: existingSavedMsgs[length - 1]?.createdAt || new Date(),
+          createdAt: createInfo?.createdAt || new Date(),
         };
-        return Response.json(channel);
+        return Response.json(newChannel);
       }
-      // Récupérer les messages sauvegardés (envoyés à soi-même)
-      const channel: ChannelData = {
+    
+      const createInfo: MessageData = await prisma.message.create({
+        data: {
+          content: `create-${user.id}`,
+          senderId: userId,
+          type: "SAVED",
+        },
+        include: getMessageDataInclude(user.id),
+      });
+      const existingSavedMsg: MessageData = existingSavedMsgs[0];
+      const newChannel: ChannelData = {
         id: `saved-${userId}`,
         name: null,
         description: null,
@@ -76,11 +100,11 @@ export async function GET(
           },
         ],
         maxMembers: 300,
-        messages: [],
+        messages: [existingSavedMsg],
         isGroup: false,
-        createdAt: existingSavedMsgs[length - 1]?.createdAt || new Date(),
+        createdAt: createInfo?.createdAt || new Date(),
       };
-      return Response.json(channel);
+      return Response.json(newChannel);
     } else {
       const channelData = await prisma.channel.findFirst({
         where: {

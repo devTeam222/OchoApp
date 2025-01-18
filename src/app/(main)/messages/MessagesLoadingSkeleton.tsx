@@ -33,7 +33,7 @@ function MessageLoadingSkeleton({
     <div className={`flex w-full gap-2 ${sender ? "flex-row-reverse" : ""}`}>
       {!sender && (
         <span className="py-1">
-          <Skeleton className="h h-[18px] w-[18px] rounded-full bg-muted-foreground/20" />
+          <Skeleton className="h h-[18px] w-[18px] rounded-full" />
         </span>
       )}
       <div
@@ -41,12 +41,12 @@ function MessageLoadingSkeleton({
       >
         {!sender && (
           <div className="pb-1 ps-2">
-            <Skeleton className="h-[14px] w-14 rounded bg-muted-foreground/20" />
+            <Skeleton className="h-[14px] w-14 rounded" />
           </div>
         )}
         <Skeleton
           className={
-            "rounded-3xl bg-muted-foreground/20 px-4 py-2" + ` ${sizeClass}`
+            "rounded-3xl min-w-20 px-4 py-2" + ` ${sizeClass}`
           }
         ></Skeleton>
       </div>

@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, Loader2, UsersRound, XIcon } from "lucide-react";
+import { ArrowLeft, Check, Frown, Loader2, UsersRound, XIcon } from "lucide-react";
 import { useSession } from "../SessionProvider";
 import UserAvatar from "@/components/UserAvatar";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -26,10 +26,15 @@ const fetchUsers =
 
 interface NewChatProps {
   onClose: () => void;
+  onChatStart: (channelId: string) => void;
   className?: string;
 }
 
-export default function NewChat({ onClose, className }: NewChatProps) {
+export default function NewChat({
+  onClose,
+  onChatStart,
+  className,
+}: NewChatProps) {
   const { toast } = useToast();
   const { user: loggedinUser } = useSession();
   const [isGroup, setIsgroup] = useState(false);
@@ -55,11 +60,12 @@ export default function NewChat({ onClose, className }: NewChatProps) {
     unableToSendMessage,
     unableToCreateGroup,
     mustSelectGroupUser,
+    dataError
   } = t();
 
   const mutation = useCreateChatChannelMutation();
   const saveMsgMutation = useSaveMessageMutation();
-  const { setActiveChannelId } = useActiveChannel();
+  const { activeChannelId } = useActiveChannel();
   const inputRef = useRef<HTMLInputElement>(null);
 
   function handleNameChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -109,6 +115,12 @@ export default function NewChat({ onClose, className }: NewChatProps) {
     followingQuery.isFetching &&
     suggestionsQuery.isFetching;
 
+  const isErrorAll =
+    friendsQuery.isError ||
+    followersQuery.isError ||
+    followingQuery.isError ||
+    suggestionsQuery.isError;
+
   const isPending = mutation.isPending || saveMsgMutation.isPending;
 
   const handleChatStart = (user: UserData | null = null) => {
@@ -125,7 +137,8 @@ export default function NewChat({ onClose, className }: NewChatProps) {
           {},
           {
             onSuccess: ({ newChannel }) => {
-              setActiveChannelId(newChannel.id);
+              onChatStart(newChannel.id);
+              setName("");
               setSelectedUsers([]);
               setIsgroup(false);
               onClose();
@@ -149,7 +162,8 @@ export default function NewChat({ onClose, className }: NewChatProps) {
         },
         {
           onSuccess: ({ newChannel }) => {
-            setActiveChannelId(newChannel.id);
+            onChatStart(newChannel.id);
+            setName("");
             onClose();
             setSelectedUsers([]);
           },
@@ -172,7 +186,8 @@ export default function NewChat({ onClose, className }: NewChatProps) {
         },
         {
           onSuccess: ({ newChannel }) => {
-            setActiveChannelId(newChannel.id);
+            onChatStart(newChannel.id);
+            setName("");
             onClose();
             setSelectedUsers([]);
           },
@@ -205,7 +220,7 @@ export default function NewChat({ onClose, className }: NewChatProps) {
           className,
         )}
       >
-        <div className="flex items-center bg-accent px-2 py-4 text-xl font-bold">
+        <div className="flex items-center bg-card/40 px-2 py-4 text-xl font-bold">
           {isGroup ? (
             <div className="cursor-pointer p-2" onClick={disableGroup}>
               <ArrowLeft />
@@ -258,49 +273,60 @@ export default function NewChat({ onClose, className }: NewChatProps) {
                 </LoadingButton>
               </li>
             )}
-            <li
-              className="cursor-pointer p-3 px-4 hover:bg-primary/5 active:bg-primary/5"
-              onClick={() => {
-                handleChatStart(loggedinUser);
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <UserAvatar avatarUrl={loggedinUser.avatarUrl} size={35} />
-                <div>
-                  <p>
-                    {loggedinUser.displayName} ({you})
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {messageYourself}
-                  </p>
-                </div>
-              </div>
+            <li className="h-full w-full overflow-y-auto">
+              <ul className="w-full">
+                <li
+                  className="cursor-pointer p-3 px-4 hover:bg-primary/5 active:bg-primary/5"
+                  onClick={() => {
+                    onChatStart("saved-" + loggedinUser.id);
+                    onClose();
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <UserAvatar avatarUrl={loggedinUser.avatarUrl} size={35} />
+                    <div>
+                      <p>
+                        {loggedinUser.displayName} ({you})
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {messageYourself}
+                      </p>
+                    </div>
+                  </div>
+                </li>
+                {isFetchingAll && (
+                  <div className="mx-auto py-5">
+                    <Loader2 className="animate-spin" />
+                  </div>
+                )}
+                {isErrorAll && (
+                  <div className="flex flex-col w-full flex-1 select-none items-center px-3 py-8 text-center italic text-muted-foreground">
+                    <Frown size={100} />
+                    <h2 className="text-xl">{dataError}</h2>
+                  </div>
+                )}
+                <UsersList
+                  query={friendsQuery}
+                  title={friends}
+                  onSelect={handleChatStart}
+                />
+                <UsersList
+                  query={followersQuery}
+                  title={followers}
+                  onSelect={handleChatStart}
+                />
+                <UsersList
+                  query={followingQuery}
+                  title={followings}
+                  onSelect={handleChatStart}
+                />
+                <UsersList
+                  query={suggestionsQuery}
+                  title={suggestions}
+                  onSelect={handleChatStart}
+                />
+              </ul>
             </li>
-            {isFetchingAll && (
-              <div className="mx-auto py-5">
-                <Loader2 className="animate-spin" />
-              </div>
-            )}
-            <UsersList
-              query={friendsQuery}
-              title={friends}
-              onSelect={handleChatStart}
-            />
-            <UsersList
-              query={followersQuery}
-              title={followers}
-              onSelect={handleChatStart}
-            />
-            <UsersList
-              query={followingQuery}
-              title={followings}
-              onSelect={handleChatStart}
-            />
-            <UsersList
-              query={suggestionsQuery}
-              title={suggestions}
-              onSelect={handleChatStart}
-            />
           </ul>
           <ul
             className={cn(
@@ -367,7 +393,7 @@ export default function NewChat({ onClose, className }: NewChatProps) {
                     loading={isPending}
                     className="flex-1"
                     disabled={isPending}
-                    onClick={()=>handleChatStart()}
+                    onClick={() => handleChatStart()}
                   >
                     {create}
                   </LoadingButton>

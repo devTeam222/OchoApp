@@ -20,7 +20,7 @@ export default function Messages() {
   const [newChat, setNewChat] = useState(false);
   const [selectedChannel, setSelectedChannel] = useState<ChannelData>();
   const { user } = useSession();
-  const { setActiveChannelId } = useActiveChannel();
+  const { activeChannelId, setActiveChannelId } = useActiveChannel();
   const queryClient = useQueryClient();
   const { startNavigation: navigate } = useProgress();
   const { messagesOnApp, selectChatToStart } = t();
@@ -40,9 +40,12 @@ export default function Messages() {
 
   return (
     <div
-      className={`flex h-full rounded-2xl bg-card shadow-sm transition-all max-sm:relative max-sm:h-full max-sm:w-screen max-sm:bg-transparent ${((selectedChannelId && selectedChannel) || newChat) && "max-sm:translate-x-[-100vw]"}`}
+      className={cn(
+        "flex h-full rounded-2xl bg-card shadow-sm transition-all max-sm:relative max-sm:h-full max-sm:w-screen max-sm:bg-transparent",
+        (activeChannelId || newChat) && "max-sm:translate-x-[-100vw]",
+      )}
     >
-      <div className="h-full w-screen min-w-60 max-sm:min-w-[100vw] sm:w-1/4 sm:border-r-2">
+      <div className="h-full w-screen min-w-60 max-sm:min-w-[100vw] sm:w-1/3 sm:border-r-2">
         <ChatList
           onChannelSelect={handleChannelSelect}
           activeChannel={(channel) => setSelectedChannel(channel)}
@@ -56,20 +59,9 @@ export default function Messages() {
         />
       </div>
       <div
-        className={`relative flex h-full w-screen flex-col max-sm:min-w-[100vw] sm:w-3/4 ${!((selectedChannelId && selectedChannel) || newChat) && "max-sm:hidden"}`}
+        className={"relative flex h-full w-screen flex-col max-sm:min-w-[100vw] sm:w-3/4"}
       >
-        {selectedChannelId && selectedChannel ? (
-          <Chat
-            channelId={selectedChannelId}
-            initialData={selectedChannel}
-            onClose={() => {
-              navigate(`/messages`);
-              setSelectedChannelId(null);
-              setSelectedChannel(undefined);
-              setActiveChannelId(null);
-            }}
-          />
-        ) : (
+        {!activeChannelId && (
           <div className="flex h-full select-none flex-col items-center justify-center px-4 text-center">
             <div className="text-muted-foreground/50">
               <AppLogo
@@ -82,8 +74,26 @@ export default function Messages() {
             <p className="text-muted-foreground">{selectChatToStart}</p>
           </div>
         )}
+        <Chat
+          channelId={activeChannelId || selectedChannelId}
+          initialData={selectedChannel}
+          onClose={() => {
+            navigate(`/messages`);
+            setSelectedChannelId(null);
+            setSelectedChannel(undefined);
+            setActiveChannelId(null);
+          }}
+        />
         <NewChat
           onClose={closeNewChat}
+          onChatStart={(id)=>{
+            if (activeChannelId !== id) {
+              setSelectedChannelId(null);
+              setSelectedChannel(undefined);
+              setActiveChannelId(null);
+            }
+            setActiveChannelId(id);
+          }}
           className={cn(
             !newChat && "pointer-events-none select-none opacity-0",
             "z-20",

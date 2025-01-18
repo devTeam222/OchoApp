@@ -5,7 +5,7 @@ import kyInstance from "@/lib/ky";
 import { ChannelData, MessagesSection } from "@/lib/types";
 import Message from "./Message";
 import InfiniteScrollContainer from "@/components/InfiniteScrollContainer";
-import { ArrowLeft, Loader2, X } from "lucide-react";
+import { ArrowLeft, Frown, Loader2, X } from "lucide-react";
 import { useSession } from "../SessionProvider";
 import MessageForm from "./MessageForm";
 import MessagesLoadingSkeleton from "./MessagesLoadingSkeleton";
@@ -16,10 +16,12 @@ import { useEffect, useState } from "react";
 import { useActiveChannel } from "@/context/ChatContext";
 import { usePathname, useRouter } from "next/navigation";
 import { t } from "@/context/LanguageContext";
+import ChatLoadingSkeleton from "./ChatLoadingSkeleton";
+import { useProgress } from "@/context/ProgressContext";
 
 interface ChatProps {
   channelId: string | null;
-  initialData: ChannelData;
+  initialData: ChannelData | undefined;
   onClose: () => void;
 }
 
@@ -29,19 +31,22 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
   const { isVisible, setIsVisible } = useMenuBar();
   const pathname = usePathname();
   const router = useRouter();
+  const { startNavigation: navigate } = useProgress();
   const [prevPathname, setPrevPathname] = useState(pathname);
 
-  const { unableToLoadChat } = t();
-
+  const { unableToLoadChat, noMessage, dataError } = t();
 
   useEffect(() => {
-    setIsVisible(false);
-    router.push("/messages/chat");
+    setIsVisible(!channelId);
+    if (channelId && window.location.pathname !== "/messages/chat") {
+      history.pushState(null, "", "/messages/chat");
+      navigate("/messages/chat");
+    }
     // Show the menu bar when ActiveChat unmounts
     return () => {
       setIsVisible(true);
     };
-  }, [isVisible, setIsVisible, router, pathname]);
+  }, [isVisible, setIsVisible, router, pathname, channelId, navigate]);
 
   const handlePopState = () => {
     const currentPathname = window.location.pathname;
@@ -52,8 +57,6 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
     setPrevPathname(currentPathname);
   };
 
-  // Ajouter un écouteur d'événement popstate
-  window.addEventListener("popstate", handlePopState);
   useEffect(() => {
     // Ajouter un écouteur d'événement popstate
     window.addEventListener("popstate", handlePopState);
@@ -68,9 +71,18 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
   useEffect(() => {
     setPrevPathname(pathname);
   }, [pathname]);
+  useEffect(() => {
+    // Ajouter un écouteur d'événement popstate
+    window.addEventListener("popstate", handlePopState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Fetching ChannelData using useQuery with initialData for caching
-  const { data: channel, isError: isChannelError } = useQuery({
+  const {
+    data: channel,
+    isError: isChannelError,
+    isLoading,
+  } = useQuery({
     queryKey: ["chat", channelId],
     queryFn: () =>
       kyInstance
@@ -80,19 +92,8 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
     staleTime: 600_000, // Cache data for 10 minutes
     throwOnError: false,
     refetchOnWindowFocus: false,
+    enabled: !!channelId,
   });
-
-  const channelName = channel.name || channelId || "Chat"
-  if (isChannelError) {
-    toast({
-      variant: "destructive",
-      description: unableToLoadChat.replace(
-        "[name]",
-        channelName,
-      ),
-    });
-    onClose();
-  }
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
@@ -106,23 +107,12 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
           .json<MessagesSection>(),
       initialPageParam: null as string | null,
       getNextPageParam: (lastPage) => lastPage.nextCursor,
-      refetchInterval: isProduction ? 5000 : 10000,
+      refetchInterval: 2000,
       staleTime: Infinity,
       throwOnError: false,
+      enabled: !!channelId,
     });
   const { user: loggedUser } = useSession();
-
-  if (!loggedUser) {
-    toast({
-      variant: "destructive",
-      description: unableToLoadChat.replace(
-        "[name]",
-        channelName,
-      ),
-    });
-    setActiveChannelId(null);
-    onClose();
-  }
 
   useQuery({
     queryKey: ["mark-as-read", channelId],
@@ -133,6 +123,42 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
     staleTime: Infinity,
     throwOnError: false,
   });
+
+  if (!channelId) {
+    return null;
+  }
+
+  if (isLoading) {
+    return <ChatLoadingSkeleton onChatClose={onClose} />;
+  }
+  const channelName = channel?.name || channelId || "Chat";
+  if (!channel) {
+    toast({
+      variant: "destructive",
+      description: unableToLoadChat.replace("[name]", channelName),
+    });
+    onClose();
+    return null;
+  }
+
+  if (isChannelError) {
+    toast({
+      variant: "destructive",
+      description: unableToLoadChat.replace("[name]", channelName),
+    });
+    onClose();
+    return null;
+  }
+
+  if (!loggedUser) {
+    toast({
+      variant: "destructive",
+      description: unableToLoadChat.replace("[name]", channelName),
+    });
+    setActiveChannelId(null);
+    onClose();
+    return null;
+  }
 
   const loggedMember = channel.members.find(
     (member) => member.userId === loggedUser.id,
@@ -150,8 +176,6 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
         ?.user || null
     : null;
 
-    
-
   return (
     <div className="absolute flex h-full w-full flex-1 flex-col max-sm:bg-card/30">
       <div className="flex w-full items-center gap-2 px-4 py-3 max-sm:bg-card/50">
@@ -162,7 +186,7 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
         >
           <ArrowLeft size={35} className="sm:hidden" />
         </div>
-        <ChatHeader channel={channel} onDelete={onClose}/>
+        <ChatHeader channel={channel} onDelete={onClose} />
         <div
           className="flex cursor-pointer hover:text-red-500"
           onClick={onClose}
@@ -173,32 +197,40 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
       </div>
 
       <InfiniteScrollContainer
-        className="relative flex flex-1 flex-col-reverse space-y-4 overflow-y-auto overflow-x-hidden px-2 py-4 shadow-inner scrollbar-track-primary scrollbar-track-rounded-full sm:bg-background/50"
+        className="relative flex flex-1 flex-col-reverse overflow-y-auto overflow-x-hidden shadow-inner scrollbar-track-primary scrollbar-track-rounded-full has-[.reaction-open]:z-50 sm:bg-background/50"
         onBottomReached={() =>
           hasNextPage && !isFetchingNextPage && fetchNextPage()
         }
       >
-        {status === "pending" && <MessagesLoadingSkeleton />}
-        {status === "success" &&  !hasNextPage && !messages.length && (
-          <p className="my-auto flex w-full flex-1 select-none items-center justify-center px-2 text-center italic text-muted-foreground">
-            Aucun message à afficher. Envoyez un nouveau message.
-          </p>
-        )}
-        {status === "success" &&
-          messages.map((message, index) => {
-            const showTime =
-              index === messages.length - 1 ||
-              (index % 20 === 0 && index !== 0);
+        <div className="flex w-full flex-col-reverse gap-4 p-4 px-2">
+          {status === "pending" && <MessagesLoadingSkeleton />}
+          {status === "success" && !hasNextPage && !messages.length && (
+            <p className="my-auto flex w-full flex-1 select-none items-center justify-center px-2 text-center italic text-muted-foreground">
+              {noMessage}
+            </p>
+          )}
+          {status === "error" && (
+            <div className="flex w-full flex-1 select-none flex-col items-center px-3 py-8 text-center italic text-muted-foreground">
+              <Frown size={100} />
+              <h2 className="text-xl">{dataError}</h2>
+            </div>
+          )}
+          {status === "success" &&
+            messages.map((message, index) => {
+              const showTime =
+                index === messages.length - 1 ||
+                (index % 20 === 0 && index !== 0);
 
-            return (
-              <Message
-                key={index}
-                message={message}
-                channel={channel}
-                showTime={showTime}
-              />
-            );
-          })}
+              return (
+                <Message
+                  key={index}
+                  message={message}
+                  channel={channel}
+                  showTime={showTime}
+                />
+              );
+            })}
+        </div>
         {isFetchingNextPage && (
           <div className="flex w-full justify-center">
             <Loader2 className="mx-auto my-3 animate-spin" />
