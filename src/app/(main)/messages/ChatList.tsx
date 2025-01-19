@@ -8,7 +8,7 @@ import ChannelsLoadingSkeleton from "./ChanneLoadingSkeleton";
 import { useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { useActiveChannel } from "@/context/ChatContext";
-import { Frown, MessageSquare, SquarePen } from "lucide-react";
+import { Frown, Loader2, MessageSquare, SquarePen } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { t } from "@/context/LanguageContext";
 import { useProgress } from "@/context/ProgressContext";
@@ -39,11 +39,11 @@ export default function ChatList({
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
-      queryKey: ["chat-channels", userId],
+      queryKey: ["chat-list", userId],
       queryFn: ({ pageParam }) =>
         kyInstance
           .get(
-            "/api/chat-channels",
+            "/api/chat-list",
             pageParam ? { searchParams: { cursor: pageParam } } : {},
           )
           .json<ChannelsSection>(),
@@ -108,8 +108,10 @@ export default function ChatList({
       </div>
       <InfiniteScrollContainer
         className="relative flex max-w-full flex-1 flex-col space-y-5 overflow-y-auto bg-card/30 sm:bg-background/50"
-        onBottomReached={() =>
-          hasNextPage && !isFetchingNextPage && fetchNextPage()
+        onBottomReached={() =>{
+          hasNextPage && !isFetchingNextPage && fetchNextPage();
+          console.log("recahed");
+        }
         }
       >
         {status === "success" && !channels.length && (
@@ -148,6 +150,11 @@ export default function ChatList({
           </ul>
         )}
       </InfiniteScrollContainer>
+      {isFetchingNextPage && (
+          <div className="flex w-full justify-center">
+            <Loader2 className="mx-auto my-3 animate-spin" />
+          </div>
+        )}
       <div
         className="fixed bottom-20 right-5 aspect-square h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary max-sm:flex sm:hidden"
         onClick={onNewChat}

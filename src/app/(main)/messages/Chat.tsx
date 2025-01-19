@@ -200,7 +200,6 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
         <InfiniteScrollContainer
           className="flex w-full flex-col-reverse gap-4 p-4 px-2"
           onBottomReached={() => {
-            console.log(isFetchingNextPage);
             hasNextPage && !isFetchingNextPage && fetchNextPage();
           }}
         >

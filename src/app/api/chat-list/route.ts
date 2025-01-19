@@ -41,79 +41,80 @@ export async function GET(req: NextRequest) {
             userId: user.id,
           },
         },
-        ...(cursor
-          ? {
-              OR: [
-                {
-                  messages: {
-                    some: {
-                      createdAt: {
-                        lt: new Date(cursor),
-                      },
-                      OR: [
-                        {
-                          type: {
-                            not: "REACTION", // Inclure les messages qui ne sont pas des "REACTION"
-                          },
-                        },
-                        {
-                          AND: [
-                            {
-                              type: "REACTION", // Ajouter une condition spécifique pour les "REACTION"
-                            },
-                            {
-                              OR: [
-                                { recipientId: loggedInUser.id },
-                                { senderId: loggedInUser.id },
-                              ],
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                  },
-                },
-                {
-                  AND: [
-                    {
-                      messages: {
-                        none: {
-                          OR: [
-                            {
-                              type: {
-                                not: "REACTION", // Aucun message sauf "REACTION"
-                              },
-                            },
-                            {
-                              AND: [
-                                {
-                                  type: "REACTION", // Vérifier uniquement les "REACTION"
-                                },
-                                {
-                                  OR: [
-                                    { recipientId: loggedInUser.id },
-                                    { senderId: loggedInUser.id },
-                                  ],
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                      },
-                    },
-                    {
-                      createdAt: {
-                        lt: new Date(cursor),
-                      },
-                    },
-                  ],
-                },
-              ],
-            }
-          : undefined), // Filtrer par le dernier message ou la date de création
+        // ...(cursor
+        //   ? {
+        //       OR: [
+        //         {
+        //           messages: {
+        //             some: {
+        //               createdAt: {
+        //                 lt: new Date(cursor),
+        //               },
+        //               OR: [
+        //                 {
+        //                   type: {
+        //                     not: "REACTION", // Inclure les messages qui ne sont pas des "REACTION"
+        //                   },
+        //                 },
+        //                 {
+        //                   AND: [
+        //                     {
+        //                       type: "REACTION", // Ajouter une condition spécifique pour les "REACTION"
+        //                     },
+        //                     {
+        //                       OR: [
+        //                         { recipientId: loggedInUser.id },
+        //                         { senderId: loggedInUser.id },
+        //                       ],
+        //                     },
+        //                   ],
+        //                 },
+        //               ],
+        //             },
+        //           },
+        //         },
+        //         {
+        //           AND: [
+        //             {
+        //               messages: {
+        //                 none: {
+        //                   OR: [
+        //                     {
+        //                       type: {
+        //                         not: "REACTION", // Aucun message sauf "REACTION"
+        //                       },
+        //                     },
+        //                     {
+        //                       AND: [
+        //                         {
+        //                           type: "REACTION", // Vérifier uniquement les "REACTION"
+        //                         },
+        //                         {
+        //                           OR: [
+        //                             { recipientId: loggedInUser.id },
+        //                             { senderId: loggedInUser.id },
+        //                           ],
+        //                         },
+        //                       ],
+        //                     },
+        //                   ],
+        //                 },
+        //               },
+        //             },
+        //             {
+        //               createdAt: {
+        //                 lt: new Date(cursor),
+        //               },
+        //             },
+        //           ],
+        //         },
+        //       ],
+        //     }
+        //   : undefined), // Filtrer par le dernier message ou la date de création
       },
       include: getChatChannelDataInclude(),
       take: pageSize + 1, // Récupérer une page supplémentaire pour déterminer s'il y a une page suivante
+      cursor: cursor ? {id: cursor} : undefined
     });
 
     // Récupérer le membre actuel dans la base de données

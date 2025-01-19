@@ -106,6 +106,18 @@ export function getMessageDataSelect() {
   } satisfies Prisma.MessageSelect;
 }
 
+export function getLastMsgInclude(){
+  return {
+    channel: {
+      include: getChatChannelDataInclude(),
+    }
+  } satisfies Prisma.MessageInclude
+}
+
+export type LastMsgData = Prisma.MessageGetPayload<{
+  include: ReturnType<typeof getLastMsgInclude>;
+}>;
+
 export function getChatChannelDataInclude(
   userId: string | undefined = undefined,
 ) {
