@@ -11,7 +11,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Frown, Loader2, SmilePlus } from "lucide-react";
 
 export default function FollowingFeed() {
-  
+  const viewedPosts: string[] = [];
 
   const { noPostOnFollowing, dataError } : VocabularyObject = t();
 
@@ -67,9 +67,13 @@ export default function FollowingFeed() {
       className="space-y-2 sm:space-y-5"
       onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
     >
-      {posts.map((post, key) => (
-        <Post key={key} post={post} />
-      ))}
+      {posts.map((post, key) => {
+        if (post.id in viewedPosts) {
+          return null;
+        }
+        viewedPosts.push(post.id);
+        return <Post key={key} post={post} />;
+      })}
       {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
     </InfiniteScrollContainer>
   );

@@ -11,11 +11,9 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Frown, Loader2, PackageOpen } from "lucide-react";
 
 export default function ForYouFeed() {
+  const viewedPosts: string[] = [];
 
-  const vocabulary: VocabularyKey[] = [
-    "noPostOnForYou",
-    "dataError",
-  ];
+  const vocabulary: VocabularyKey[] = ["noPostOnForYou", "dataError"];
 
   const { noPostOnForYou, dataError } = t(vocabulary);
 
@@ -49,9 +47,7 @@ export default function ForYouFeed() {
     return (
       <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
         <PackageOpen size={150} />
-        <h2 className="text-xl">
-          {noPostOnForYou}
-        </h2>
+        <h2 className="text-xl">{noPostOnForYou}</h2>
       </div>
     );
   }
@@ -59,24 +55,25 @@ export default function ForYouFeed() {
     return (
       <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
         <Frown size={150} />
-        <h2 className="text-xl">
-        {dataError} 
-        </h2>
+        <h2 className="text-xl">{dataError}</h2>
       </div>
     );
   }
-  
 
   return (
     <InfiniteScrollContainer
       className="flex flex-col gap-2"
       onBottomReached={() => {
-        hasNextPage && !isFetchingNextPage && fetchNextPage()
+        hasNextPage && !isFetchingNextPage && fetchNextPage();
       }}
     >
-      {posts.map((post, key) => (
-        <Post key={key} post={post} />
-      ))}
+      {posts.map((post, key) => {
+        if (post.id in viewedPosts) {
+          return null;
+        }
+        viewedPosts.push(post.id);
+        return <Post key={key} post={post} />;
+      })}
       {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
     </InfiniteScrollContainer>
   );

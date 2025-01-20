@@ -1,5 +1,4 @@
 import { validateRequest } from "@/auth";
-import { calculateAndStoreScoresForUser, calculateRelevanceScore } from "@/lib/postScore";
 import prisma from "@/lib/prisma";
 import { getPostDataIncludes, PostsPage } from "@/lib/types";
 import { NextRequest } from "next/server";
@@ -21,9 +20,18 @@ export async function GET(req: NextRequest) {
         createdAt: "desc",
       },
       take: !cursor ? 3 : 0,
+      where: {
+        user: {
+          followers: {
+            some: {
+              followerId: user.id,
+            },
+          },
+        },
+      },
     });
 
-    const pageSize = 5 + latestPosts.length
+    const pageSize = 5 + latestPosts.length;
 
     // Récupérer les posts suivants triés par pertinence
     const relevantPosts = await prisma.post.findMany({
@@ -39,14 +47,31 @@ export async function GET(req: NextRequest) {
       take: pageSize + 1,
       cursor: cursor ? { id: cursor } : undefined,
       where: {
-        id: {
-          notIn: latestPosts.map(post => post.id), // Exclure les posts déjà récupérés
-        },
+        AND: [
+          {
+            user: {
+              followers: {
+                some: {
+                  followerId: user.id,
+                },
+              },
+              NOT: {
+                id: user.id,
+              },
+            },
+          },
+          {
+            id: {
+              notIn: latestPosts.map((post) => post.id), // Exclure les posts déjà récupérés
+            },
+          },
+        ],
       },
     });
 
     const allPosts = [...latestPosts, ...relevantPosts];
-    const nextCursor = allPosts.length > pageSize + 3 ? allPosts[pageSize + 3].id : null;
+    const nextCursor =
+      allPosts.length > pageSize + 3 ? allPosts[pageSize + 3].id : null;
 
     const data: PostsPage = {
       posts: allPosts.slice(0, pageSize), // Limiter le nombre de posts retournés

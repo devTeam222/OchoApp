@@ -60,31 +60,3 @@ export const calculateRelevanceScore = cache(
     );
   },
 );
-
-export const calculateAndStoreScoresForUser = cache(async (user: UserData) => {
-  const userId = user.id;
-  const posts = await prisma.post.findMany({
-    include: getPostDataIncludes(userId),
-  });
-
-  await Promise.all(
-    posts.map(async (post) => {
-      const score = calculateRelevanceScore(post, user);
-
-      const postId = post.id;
-
-      await prisma.post.update({
-        where: { id: postId },
-        data: { relevanceScore: score },
-      });
-
-      await prisma.postUserScore.upsert({
-        where: { postId_userId: { postId, userId } },
-        update: { relevanceScore: score },
-        create: { postId: post.id, userId, relevanceScore: score },
-      });
-    }),
-  );
-});
-
-

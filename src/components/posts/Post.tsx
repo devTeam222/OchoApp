@@ -35,6 +35,7 @@ import Zoomable from "../Zoomable";
 import { t } from "@/context/LanguageContext";
 import Verified from "../Verified";
 import { useProgress } from "@/context/ProgressContext";
+import kyInstance from "@/lib/ky";
 
 interface PostProps {
   post: PostData;
@@ -54,6 +55,7 @@ export default function Post({ post }: PostProps) {
     comments: commentsText,
     viewUserSProfile,
   } = t();
+  kyInstance.post(`/api/posts/${post.id}/relevance/`, {throwHttpErrors: false});
 
   const searchParams = useSearchParams();
   const comment = searchParams.get("comment");

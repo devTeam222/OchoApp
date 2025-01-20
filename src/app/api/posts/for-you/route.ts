@@ -1,5 +1,4 @@
 import { validateRequest } from "@/auth";
-import { calculateAndStoreScoresForUser, calculateRelevanceScore } from "@/lib/postScore";
 import prisma from "@/lib/prisma";
 import { getPostDataIncludes, PostsPage } from "@/lib/types";
 import { NextRequest } from "next/server";
@@ -14,8 +13,6 @@ export async function GET(req: NextRequest) {
       return Response.json({ error: "Action non autorisée" }, { status: 401 });
     }
 
-    await calculateAndStoreScoresForUser(user);
-
     // Récupérer les trois derniers posts triés par date
     const latestPosts = await prisma.post.findMany({
       include: getPostDataIncludes(user.id),
@@ -25,7 +22,7 @@ export async function GET(req: NextRequest) {
       take: !cursor ? 3 : 0,
     });
 
-    const pageSize = 5 + latestPosts.length
+    const pageSize = 5
 
     // Récupérer les posts suivants triés par pertinence
     const relevantPosts = await prisma.post.findMany({
