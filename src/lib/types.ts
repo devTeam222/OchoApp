@@ -256,6 +256,14 @@ export function getPostDataIncludes(
         userId: true,
       },
     },
+    relevance: {
+      where: {
+        userId: loggedInUserId,
+      },
+      select: {
+        relevanceScore: true,
+      },
+    },
     _count: {
       select: {
         likes: true,

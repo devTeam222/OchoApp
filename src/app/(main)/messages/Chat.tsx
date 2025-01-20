@@ -202,6 +202,7 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
           onBottomReached={() => {
             hasNextPage && !isFetchingNextPage && fetchNextPage();
           }}
+          reversed
         >
           {status === "pending" && <MessagesLoadingSkeleton />}
           {status === "success" && !hasNextPage && !messages.length && (

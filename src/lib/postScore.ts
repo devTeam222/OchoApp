@@ -73,6 +73,11 @@ export const calculateAndStoreScoresForUser = cache(async (user: UserData) => {
 
       const postId = post.id;
 
+      await prisma.post.update({
+        where: { id: postId },
+        data: { relevanceScore: score },
+      });
+
       await prisma.postUserScore.upsert({
         where: { postId_userId: { postId, userId } },
         update: { relevanceScore: score },
@@ -81,3 +86,5 @@ export const calculateAndStoreScoresForUser = cache(async (user: UserData) => {
     }),
   );
 });
+
+

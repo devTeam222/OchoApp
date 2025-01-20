@@ -69,9 +69,8 @@ export default function ForYouFeed() {
 
   return (
     <InfiniteScrollContainer
-      className="space-y-2 sm:space-y-5"
+      className="flex flex-col gap-2"
       onBottomReached={() => {
-        
         hasNextPage && !isFetchingNextPage && fetchNextPage()
       }}
     >

@@ -13,7 +13,7 @@ export default async function Home() {
   return (
     <>
       <SetNavigation navPage="home" />
-      <div className="w-full min-w-0 space-y-2 sm:space-y-2.5 max-w-lg">
+      <div className="w-full min-w-0 h-full flex flex-col gap-2 sm:gap-4 max-w-lg overflow-y-auto sm:px-1">
         <PostEditor />
         <Tabs defaultValue="for-you">
           {/* Liste des onglets en haut  */}

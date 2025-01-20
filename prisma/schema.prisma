@@ -208,7 +208,8 @@ model Post {
   linkedNotifications Notification[]
 
   createdAt      DateTime        @default(now())
-  relevanceScore PostUserScore[]
+  relevanceScore Int @default(0)
+  relevance PostUserScore[]
 
   @@map("posts")
 }
