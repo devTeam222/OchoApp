@@ -54,9 +54,13 @@ export async function generateMetadata({ params: { postId } }: PageProps) {
   if (!user) return;
 
   const post = await getPost(postId, user.id);
+  const hasImage = post.attachments.some((attachment) => attachment.type === "IMAGE");
+  const hasVideo = post.attachments.some((attachment) => attachment.type === "VIDEO");
+  const attachmentTitle  = hasImage && hasVideo ? "Images et vidéos" : hasImage ? "Images" : hasVideo ? "Vidéos" : "Medias";
+  const title = post.content ? `${post.content.slice(0, 50)}${post.content.length > 50 ? "..." : "" }` : attachmentTitle;
 
   return {
-    title: `${post.content.slice(0, 50)}${post.content.length > 50 ? "..." : ""}`,
+    title,
   };
 }
 

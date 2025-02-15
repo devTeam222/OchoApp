@@ -219,8 +219,8 @@ model PostUserScore {
   postId         String
   userId         String
   relevanceScore Float
-  post           Post   @relation(fields: [postId], references: [id])
-  user           User   @relation(fields: [userId], references: [id])
+  post           Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user           User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
   @@map("post_user_scores")
