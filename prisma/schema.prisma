@@ -193,7 +193,7 @@ model Reaction {
 
   @@unique([userId, messageId])
   @@map("reactions")
-}
+} 
 
 model Post {
   id                  String         @id @default(cuid())
