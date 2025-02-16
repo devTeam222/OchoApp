@@ -28,7 +28,6 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "@radix-ui/react-popover";
-import { text } from "stream/consumers";
 
 interface CommentProps {
   comment: CommentData & { isRepliedByAuthor?: boolean };
@@ -73,7 +72,7 @@ export default function Comment({ comment, isTarget = false }: CommentProps) {
         <UserTooltip user={comment.user} verified={verifiedCheck}>
           <span>
             <OchoLink
-              href={`users/${comment.user.username || "-"}`}
+              href={`/users/${comment.user.username || "-"}`}
               className="max-sm:hidden"
             >
               <UserAvatar avatarUrl={comment.user.avatarUrl} size={36} />
@@ -90,7 +89,7 @@ export default function Comment({ comment, isTarget = false }: CommentProps) {
                 <div className="items-center">
                   <span className="inline-flex items-center gap-0.5">
                     <OchoLink
-                      href={`users/${comment.user.username || "-"}`}
+                      href={`/users/${comment.user.username || "-"}`}
                       className="font-medium text-inherit max-sm:hidden"
                     >
                       {comment.user.displayName || appUser}

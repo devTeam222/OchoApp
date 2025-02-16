@@ -107,7 +107,7 @@ export default function PostEditor() {
         onPaste={onPaste}
       >
         <div className="flex flex-col justify-between">
-          {!!gradient && (
+          {!!canShowGradient && (
             <Button
               onClick={() => {
                 setGradient(null);

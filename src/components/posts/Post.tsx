@@ -49,6 +49,7 @@ export default function Post({ post }: PostProps) {
   const [showComment, setShowComment] = useState(false);
   const [firstCommentRender, setFirstCommentRender] = useState(false);
   const [targetComment, setTargetComment] = useState<string | null>(null);
+  const [isTouch, setIsTouch] = useState(false);
   const {
     hideComments,
     comment: commentText,
@@ -60,6 +61,13 @@ export default function Post({ post }: PostProps) {
   const searchParams = useSearchParams();
   const comment = searchParams.get("comment");
   const showCommentParam = searchParams.get("show-comment");
+
+  useEffect(() => {
+    addEventListener("touchstart", (e) => {
+      setIsTouch(true);
+    });
+  }, [])
+  
 
   const gradient = post.gradient
     ? `gadient-post gradient-${post.gradient} *:*:text-[inherit] *:*:font-bold`
@@ -106,6 +114,7 @@ export default function Post({ post }: PostProps) {
     : "STANDARD";
 
   const verifiedCheck = isVerified ? <Verified type={verifiedType} /> : null;
+
 
   return (
     <article className="group/post flex flex-col bg-card/50 p-0.5 shadow-sm sm:rounded-md sm:bg-card">
@@ -154,7 +163,7 @@ export default function Post({ post }: PostProps) {
         {post.user.id === user.id && (
           <PostMoreButton
             post={post}
-            className="opacity-0 transition-opacity group-hover/post:opacity-100 max-sm:opacity-100"
+            className={cn(!isTouch && "sm:opacity-0", "transition-opacity group-hover/post:opacity-100 max-sm:opacity-100")}
           />
         )}
       </div>
