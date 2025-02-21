@@ -9,6 +9,7 @@ import { VocabularyKey } from "@/lib/vocabulary";
 import { useQuery } from "@tanstack/react-query";
 import { Bell } from "lucide-react";
 import OchoLink from "@/components/ui/OchoLink";
+import { usePathname } from "next/navigation";
 
 interface NotificationsButtonProps extends ButtonProps {
   initialState: NotificationCountInfo;
@@ -22,6 +23,8 @@ export default function NotificationsButton({
 }: NotificationsButtonProps) {
   const isProduction = process.env.NODE_ENV === "production";
   const { activity, activityCenter, notifications } = t();
+  const pathname = usePathname();
+  const isMessagesPage = pathname.startsWith("/messages");
 
   const { data } = useQuery({
     queryKey: ["unread-notifications"],
@@ -59,7 +62,7 @@ export default function NotificationsButton({
           )}
         </div>
         <span className="text-xs sm:hidden">{activity}</span>
-        <span className="max-lg:hidden">{notifications}</span>
+        <span className={cn("max-lg:hidden", isMessagesPage && "hidden")}>{notifications}</span>
       </OchoLink>
     </Button>
   );

@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { MessageCircleMore } from "lucide-react";
 import OchoLink from "@/components/ui/OchoLink";
+import { usePathname } from "next/navigation";
 
 interface MessagesButtonProps {
   initialState: NotificationCountInfo;
@@ -19,6 +20,8 @@ export default function MessagesButton({
   className,
 }: MessagesButtonProps) {
   const isProduction = process.env.NODE_ENV === "production";
+  const pathname = usePathname();
+  const isMessagesPage = pathname.startsWith("/messages");
 
       const {
         messages,
@@ -59,7 +62,7 @@ export default function MessagesButton({
           )}
         </div>
         <span className="text-xs sm:hidden">{messages}</span>
-        <span className="max-lg:hidden">{messages}</span>
+        <span className={cn("max-lg:hidden", isMessagesPage && "hidden")}>{messages}</span>
       </OchoLink>
     </Button>
   );

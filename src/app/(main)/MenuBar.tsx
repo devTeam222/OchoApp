@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import MessagesButton from "./MessagesButton";
 import { t } from "@/context/LanguageContext";
 import { VocabularyObject } from "@/lib/vocabulary";
+import { usePathname } from "next/navigation";
 
 interface MenuBarProps {
   className?: string;
@@ -22,11 +23,13 @@ export default function MenuBar({ className }: MenuBarProps) {
   const { currentNavigation } = useNavigation();
 
   const { home, explore, search, settings, menu }: VocabularyObject = t();
+  const pathname = usePathname();
+  const isMessagesPage = pathname.startsWith("/messages");
 
   if (!user) return null;
 
   return (
-    <div className={className}>
+    <div className={cn(className, isMessagesPage && "xl:w-fit")}>
       <Button
         variant="ghost"
         className={cn(
@@ -47,7 +50,7 @@ export default function MenuBar({ className }: MenuBarProps) {
         >
           <Home />
           <span className="text-xs sm:hidden">{home}</span>
-          <span className="max-lg:hidden">{home}</span>
+          <span className={cn("max-lg:hidden", isMessagesPage && "hidden")}>{home}</span>
         </OchoLink>
       </Button>
       <Button
@@ -92,7 +95,7 @@ export default function MenuBar({ className }: MenuBarProps) {
           onClick={() => setSearchActive(true)}
         >
           <Search />
-          <span className="max-lg:hidden">{search}</span>
+          <span className={cn("max-lg:hidden", isMessagesPage && "hidden")}>{search}</span>
         </OchoLink>
       </Button>
 
@@ -147,7 +150,7 @@ export default function MenuBar({ className }: MenuBarProps) {
           )}
         >
           <Settings className="max-sm" />
-          <span className="max-lg:hidden">{settings}</span>
+          <span className={cn("max-lg:hidden", isMessagesPage && "hidden")}>{settings}</span>
         </OchoLink>
       </Button>
     </div>
