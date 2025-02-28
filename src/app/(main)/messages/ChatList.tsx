@@ -156,7 +156,7 @@ export default function ChatList({
           </div>
         )}
       <div
-        className="fixed bottom-20 right-5 aspect-square h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary max-sm:flex sm:hidden"
+        className="fixed bottom-20 right-5 aspect-square h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary flex sm:absolute sm:bottom-5"
         onClick={onNewChat}
         title={startNewChat}
       >
