@@ -30,7 +30,7 @@ export default function SearchResults({
   query,
   filter: initialFilter = "posts",
 }: SearchResultsProps) {
-  const {startNavigation: navigate} = useProgress();
+  const { startNavigation: navigate } = useProgress();
   const { posts: postsText, noSearchResultFor, tryNewSearch, dataError } = t();
   const { user: loggedInUser } = useSession();
   const [filter, setFilter] = useState<SearchFilter>(initialFilter);
@@ -40,7 +40,7 @@ export default function SearchResults({
     const currentUrl = new URL(window.location.href);
     currentUrl.searchParams.set("filter", filter);
     navigate(currentUrl.pathname + currentUrl.search);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
   const {
@@ -73,7 +73,7 @@ export default function SearchResults({
     if (status === "pending") {
       return <PostsLoadingSkeleton />;
     }
-  
+
     if (status === "success" && !posts.length && !hasNextPage) {
       return (
         <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
@@ -83,7 +83,7 @@ export default function SearchResults({
         </div>
       );
     }
-  
+
     if (status === "error") {
       return (
         <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
@@ -92,11 +92,13 @@ export default function SearchResults({
         </div>
       );
     }
-  }
-
+  };
 
   return (
-    <Tabs defaultValue={filter} onValueChange={(value: string) => setFilter(value as SearchFilter)}>
+    <Tabs
+      defaultValue={filter}
+      onValueChange={(value: string) => setFilter(value as SearchFilter)}
+    >
       <TabsList scrollable variant="soft">
         <TabsTrigger value="posts">{postsText}</TabsTrigger>
         <TabsTrigger value="users">{t().users}</TabsTrigger>
@@ -117,7 +119,9 @@ export default function SearchResults({
             const postData = post as PostData;
             return <Post key={postData.id} post={postData} />;
           })}
-          {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
+          {isFetchingNextPage && (
+            <Loader2 className="mx-auto my-3 animate-spin" />
+          )}
         </InfiniteScrollContainer>
       </TabsContent>
 
@@ -132,15 +136,21 @@ export default function SearchResults({
             const user = post as UserData;
             if (user.username) {
               return (
-                <UserItem key={user.id} user={user} loggedInUser={loggedInUser} />
+                <UserItem
+                  key={user.id}
+                  user={user}
+                  loggedInUser={loggedInUser}
+                />
               );
             }
             return null;
           })}
-          {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
+          {isFetchingNextPage && (
+            <Loader2 className="mx-auto my-3 animate-spin" />
+          )}
         </InfiniteScrollContainer>
       </TabsContent>
-      
+
       {/* Onglet Verified Users */}
       <TabsContent value="verified-users" className="pb-2">
         {jsxState()}
@@ -152,15 +162,21 @@ export default function SearchResults({
             const user = post as UserData;
             if (user.username) {
               return (
-                <UserItem key={user.id} user={user} loggedInUser={loggedInUser} />
+                <UserItem
+                  key={user.id}
+                  user={user}
+                  loggedInUser={loggedInUser}
+                />
               );
             }
             return null;
           })}
-          {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
+          {isFetchingNextPage && (
+            <Loader2 className="mx-auto my-3 animate-spin" />
+          )}
         </InfiniteScrollContainer>
       </TabsContent>
-      
+
       {/* Onglet Friends */}
       <TabsContent value="friend" className="pb-2">
         {jsxState()}
@@ -172,12 +188,18 @@ export default function SearchResults({
             const user = post as UserData;
             if (user.username) {
               return (
-                <UserItem key={user.id} user={user} loggedInUser={loggedInUser} />
+                <UserItem
+                  key={user.id}
+                  user={user}
+                  loggedInUser={loggedInUser}
+                />
               );
             }
             return null;
           })}
-          {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
+          {isFetchingNextPage && (
+            <Loader2 className="mx-auto my-3 animate-spin" />
+          )}
         </InfiniteScrollContainer>
       </TabsContent>
 
@@ -192,12 +214,18 @@ export default function SearchResults({
             const user = post as UserData;
             if (user.username) {
               return (
-                <UserItem key={user.id} user={user} loggedInUser={loggedInUser} />
+                <UserItem
+                  key={user.id}
+                  user={user}
+                  loggedInUser={loggedInUser}
+                />
               );
             }
             return null;
           })}
-          {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
+          {isFetchingNextPage && (
+            <Loader2 className="mx-auto my-3 animate-spin" />
+          )}
         </InfiniteScrollContainer>
       </TabsContent>
 
@@ -212,18 +240,23 @@ export default function SearchResults({
             const user = post as UserData;
             if (user.username) {
               return (
-                <UserItem key={user.id} user={user} loggedInUser={loggedInUser} />
+                <UserItem
+                  key={user.id}
+                  user={user}
+                  loggedInUser={loggedInUser}
+                />
               );
             }
             return null;
           })}
-          {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
+          {isFetchingNextPage && (
+            <Loader2 className="mx-auto my-3 animate-spin" />
+          )}
         </InfiniteScrollContainer>
       </TabsContent>
     </Tabs>
   );
 }
-
 
 interface UserItemProps {
   user: UserData;
@@ -233,18 +266,18 @@ interface UserItemProps {
 export function UserItem({ user, loggedInUser }: UserItemProps) {
   const isUserOnline = user.lastSeen > new Date(Date.now() - 60 * 1000);
   const expiresAt = user.verified?.[0]?.expiresAt;
-    const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
-  
-    const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
-  
-    const isVerified = !!user.verified[0] && !expired;
-    const verifiedType: VerifiedType = isVerified
-      ? user.verified[0].type
-      : "STANDARD";
-  
-    const verifiedCheck = isVerified ? <Verified type={verifiedType} /> : null;
+  const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
+
+  const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
+
+  const isVerified = !!user.verified[0] && !expired;
+  const verifiedType: VerifiedType = isVerified
+    ? user.verified[0].type
+    : "STANDARD";
+
+  const verifiedCheck = isVerified ? <Verified type={verifiedType} /> : null;
   return (
-    <div className="flex items-center justify-between gap-3 p-3 bg-card rounded-xl">
+    <div className="flex items-center justify-between gap-3 rounded-xl bg-card p-3">
       <UserTooltip user={user}>
         <OchoLink
           href={`/users/${user.username}`}
@@ -256,10 +289,12 @@ export function UserItem({ user, loggedInUser }: UserItemProps) {
             online={isUserOnline}
           />
           <div>
-            <h3 className={cn(
-                            "line-clamp-1 break-all font-semibold hover:underline",
-                            isVerified && "flex items-center gap-1.5",
-                          )}>
+            <h3
+              className={cn(
+                "line-clamp-1 break-all font-semibold hover:underline",
+                isVerified && "flex items-center gap-1.5",
+              )}
+            >
               {user.displayName}
               {verifiedCheck}
             </h3>
@@ -270,25 +305,26 @@ export function UserItem({ user, loggedInUser }: UserItemProps) {
         </OchoLink>
       </UserTooltip>
       {user.id !== loggedInUser.id && (
-      <FollowButton
-        userId={user.id}
-        initialState={{
-          followers: user._count.followers,
-          isFollowedByUser: user.followers.some(
-            ({ followerId }) => followerId === user.id
-          ),
-          isFolowing: loggedInUser.followers.some(
-            ({ followerId }) => followerId === user.id
-          ),
-          isFriend:
-            user.followers.some(
-              ({ followerId }) => followerId === loggedInUser.id
-            ) &&
-            loggedInUser.followers.some(
-              ({ followerId }) => followerId === user.id
+        <FollowButton
+          userId={user.id}
+          initialState={{
+            followers: user._count.followers,
+            isFollowedByUser: user.followers.some(
+              ({ followerId }) => followerId === loggedInUser.id,
             ),
-        }}
-      />)}
+            isFolowing: loggedInUser.followers.some(
+              ({ followerId }) => followerId === user.id,
+            ),
+            isFriend:
+              user.followers.some(
+                ({ followerId }) => followerId === loggedInUser.id,
+              ) &&
+              loggedInUser.followers.some(
+                ({ followerId }) => followerId === user.id,
+              ),
+          }}
+        />
+      )}
     </div>
   );
 }

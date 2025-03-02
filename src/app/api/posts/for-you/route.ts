@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
     });
 
     const allPosts = [...latestPosts, ...relevantPosts];
-    const nextCursor = allPosts.length > pageSize + 3 ? allPosts[pageSize + 3].id : null;
+    const nextCursor = allPosts.length > pageSize + latestPosts.length ? allPosts[pageSize + latestPosts.length].id : null;
 
     const data: PostsPage = {
       posts: allPosts.slice(0, pageSize), // Limiter le nombre de posts retournés
