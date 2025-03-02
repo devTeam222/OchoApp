@@ -13,8 +13,9 @@ export default function SearchField() {
   const { isSearchActive, setSearchActive } = useSearch(); // Use context instead of local state
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const {startNavigation: navigate} = useProgress();
-  const {search} = t("search");
+  const {search} = t();
   // ecouter isSesrchActive avec un use effect
   useEffect(() => {
     isSearchActive ? activeSearch() : hideSearch();
@@ -26,8 +27,13 @@ export default function SearchField() {
     const form = e.currentTarget;
     const q = (form.q as HTMLInputElement).value.trim();
     if (!q) return;
-    navigate(`search?q=${encodeURIComponent(q)}`);
+  
+    const params = new URLSearchParams(window.location.search);
+    params.set("q", q); // Ajoute ou met à jour le paramètre "q"
+  
+    navigate(`?${params.toString()}`);
   }
+  
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     setInput(e.target.value);
@@ -51,7 +57,7 @@ export default function SearchField() {
   }
 
   return (
-    <form onSubmit={handleSubmit} method="GET" action="/search">
+    <form onSubmit={handleSubmit} method="GET" action="/search" ref={formRef}>
       <div className={cn("relative h-10")}>
         <Input
           ref={inputRef}
@@ -74,14 +80,16 @@ export default function SearchField() {
             className="absolute right-10 top-1/2 -translate-y-1/2 cursor-pointer text-muted-foreground"
           />
         )}
+        <button type="submit">
         <SearchIcon
           size={40}
           className={cn(
             "absolute top-1/2 size-5 -translate-y-1/2 transform text-muted-foreground sm:right-3",
             isSearchActive && "right-3",
           )}
-          onClick={activeSearch}
         />
+
+        </button>
       </div>
     </form>
   );

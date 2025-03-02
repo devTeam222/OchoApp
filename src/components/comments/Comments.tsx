@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Draggable from "../Draggable";
 import { t } from "@/context/LanguageContext";
+import { useProgress } from "@/context/ProgressContext";
 
 interface CommentsProps {
   post: PostData;
@@ -24,6 +25,7 @@ interface CommentsProps {
 export default function Comments({ post, onClose }: CommentsProps) {
   const [targetComment, setTargetComment] = useState<string | null>(null);
   const [isDraggable, setIsDraggable] = useState(false);
+  const {startNavigation: navigate} = useProgress();
   const router = useRouter();
 
   const {
@@ -101,7 +103,7 @@ export default function Comments({ post, onClose }: CommentsProps) {
         variant: "destructive",
         description: noLongerAvailablecomment,
       });
-      router.push(`/posts/${post.id}`);
+      navigate(`/posts/${post.id}`);
       onClose();
     }
     if (
