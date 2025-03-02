@@ -24,6 +24,15 @@ export type LanguageContextType = {
   vocabulary: Vocabulary;
 };
 
+export type SearchFilter = 
+  | "posts"
+  | "users"
+  | "friend"
+  | "followers"
+  | "following"
+  | "verified-users"
+  | "unrelated-users";
+
 export function getUserDataSelect(
   loggedInUserId: string,
   username: string | undefined = undefined,
@@ -284,6 +293,10 @@ export interface UsersPage {
 
 export interface PostsPage {
   posts: PostData[];
+  nextCursor: string | null;
+}
+export interface SearchPage {
+  posts: (PostData | UserData)[];
   nextCursor: string | null;
 }
 export interface UsersPage {

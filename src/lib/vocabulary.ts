@@ -23,6 +23,7 @@ export const english = {
   noSearchResultFor: 'No result for "[q]".',
   searchEmptyKeyword: "Please enter keywords in your search",
   tryNewSearch: "Try a new search.",
+  users: "Users",
   searchUsers: "Search users",
   loggedIn: "Logged in as",
   profile: "Profile",
@@ -275,6 +276,7 @@ export const english = {
   seenByAnd: "-Seen- by [names] and [name]",
   typeMessage: "Type a message...",
   // Verified
+  verifiedUsers: "Verified users",
   veriFiedPrompt:
     "Verified badge accounts have been authenticated. These can be paid subscribers or notable people/brands.",
 };
@@ -304,6 +306,7 @@ export const french: Vocabulary = {
   noSearchResultFor: 'Aucun résultat pour "[q]".',
   searchEmptyKeyword: "Veuillez saisir des mots-clés dans votre recherche",
   tryNewSearch: "Essayez une nouvelle recherche.",
+  users: "Utilisateurs",
   searchUsers: "Rechercher des utilisateurs",
   loggedIn: "Connecté(e) en tant que",
   profile: "Profil",
@@ -568,6 +571,7 @@ export const french: Vocabulary = {
   seenByAnd: "-Vu- par [names] et [name]",
   typeMessage: "Écrivez un message...",
   // Verified
+  verifiedUsers: "Utilisateurs certifiés",
   veriFiedPrompt:
     "Les comptes avec un badge Vérifié ont été authentifiés. Il peut s’agir de personnes payant un abonnement ou de personnes ou de marques notables.",
 };

@@ -5,20 +5,21 @@ import { Search } from "lucide-react";
 import SearchTrend from "@/components/search/SearchTrend";
 import SetNavigation from "@/components/SetNavigation";
 import { getTranslation } from "@/lib/language";
+import { SearchFilter } from "@/lib/types";
 
 export interface PageProps {
-  searchParams: { q: string };
+  searchParams: { q: string; filter?: SearchFilter };
 }
 
-export async function generateMetadata({ searchParams: { q } }: PageProps) {
-  const {searchResultFor, search} = await getTranslation();
+export async function generateMetadata({ searchParams: { q } }: PageProps): Promise<Metadata> {
+  const { searchResultFor, search } = await getTranslation();
   return {
     title: q ? searchResultFor.replace("[q]", q) : search,
   };
 }
 
-export default async function Page({ searchParams: { q } }: PageProps) {
-  const {searchResultFor, search, searchEmptyKeyword} = await getTranslation();
+export default async function Page({ searchParams: { q, filter } }: PageProps) {
+  const { searchResultFor, search, searchEmptyKeyword } = await getTranslation();
 
   return (
     <>
@@ -30,14 +31,14 @@ export default async function Page({ searchParams: { q } }: PageProps) {
           </h2>
         </div>
         {q ? (
-          <SearchResults query={q} />
+          <SearchResults query={q} filter={filter} />
         ) : (
           <div className="my-8 w-full text-center text-muted-foreground flex flex-col gap-2 items-center max-sm:hidden">
-            <Search size={150}/>
+            <Search size={150} />
             <h2 className="text-xl">{searchEmptyKeyword}</h2>
           </div>
         )}
-        {!q && (<SearchTrend/>)}
+        {!q && <SearchTrend />}
       </div>
       <TrendsSidebar />
     </>
