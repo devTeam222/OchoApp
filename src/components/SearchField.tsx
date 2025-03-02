@@ -24,6 +24,7 @@ export default function SearchField() {
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    activeSearch()
     const form = e.currentTarget;
     const q = (form.q as HTMLInputElement).value.trim();
     if (!q) return;
