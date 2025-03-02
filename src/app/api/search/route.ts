@@ -100,7 +100,7 @@ export async function GET(req: NextRequest) {
                   id: user.id,
                 },
               },
-              { followers: { some: { followerId: user.id } } },
+              { following: { some: { followingId: user.id } } },
               {
                 OR: [
                   { displayName: { search: searchQuery } },
@@ -125,7 +125,7 @@ export async function GET(req: NextRequest) {
                   id: user.id,
                 },
               },
-              { following: { some: { followingId: user.id } } },
+              { followers: { some: { followerId: user.id } } },
               {
                 OR: [
                   { displayName: { search: searchQuery } },

@@ -16,9 +16,9 @@ export type TabVariants =
 const tabsConfig = {
   list: {
     default: "bg-card/50 sm:bg-card",
-    soft: "bg-none sm:bg-none gap-4 sm:gap-4",
-    outline: "border bg-transparent",
-    underline: "border-b bg-transparent rounded-none sm:rounded-none",
+    soft: "bg-none sm:bg-none gap-4 sm:gap-4 h-fit",
+    outline: "border bg-transparent h-fit ",
+    underline: "border-b bg-transparent rounded-none sm:rounded-none ",
   },
   trigger: {
     default:

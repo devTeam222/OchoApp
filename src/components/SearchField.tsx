@@ -32,7 +32,7 @@ export default function SearchField() {
     const params = new URLSearchParams(window.location.search);
     params.set("q", q); // Ajoute ou met à jour le paramètre "q"
   
-    navigate(`?${params.toString()}`);
+    navigate(`search?${params.toString()}`);
   }
   
 

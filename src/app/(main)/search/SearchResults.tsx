@@ -99,7 +99,7 @@ export default function SearchResults({
       defaultValue={filter}
       onValueChange={(value: string) => setFilter(value as SearchFilter)}
     >
-      <TabsList scrollable variant="soft">
+      <TabsList scrollable variant="soft" className="py-4">
         <TabsTrigger value="posts">{postsText}</TabsTrigger>
         <TabsTrigger value="users">{t().users}</TabsTrigger>
         <TabsTrigger value="verified-users">{t().verifiedUsers}</TabsTrigger>
@@ -277,7 +277,7 @@ export function UserItem({ user, loggedInUser }: UserItemProps) {
 
   const verifiedCheck = isVerified ? <Verified type={verifiedType} /> : null;
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl bg-card p-3">
+    <div className="flex items-center justify-between gap-3 sm:rounded-xl bg-card p-3">
       <UserTooltip user={user}>
         <OchoLink
           href={`/users/${user.username}`}
