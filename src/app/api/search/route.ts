@@ -148,9 +148,7 @@ export async function GET(req: NextRequest) {
              
               {
                 verified: {
-                  some: {
-                    userId: user.id,
-                  },
+                  some: {}
                 },
               },
               {
