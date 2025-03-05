@@ -199,7 +199,19 @@ export async function GET(req: NextRequest) {
         });
         break;
       default:
-        return Response.json({ error: "Filtre invalide" }, { status: 400 });
+        results = await prisma.post.findMany({
+          where: {
+            OR: [
+              { content: { search: searchQuery } },
+              { user: { displayName: { search: searchQuery } } },
+              { user: { username: { search: searchQuery } } },
+            ],
+          },
+          include: getPostDataIncludes(user.id),
+          orderBy: { createdAt: "desc" },
+          take: pageSize + 1,
+          cursor: cursor ? { id: cursor } : undefined,
+        });
     }
 
     const nextCursor = results.length > pageSize ? results[pageSize].id : null;
