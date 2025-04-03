@@ -21,6 +21,7 @@ model User {
   displayName          String
   email                String?         @unique
   passwordHash         String?
+  birthday             DateTime?
   googleId             String?         @unique
   githubId             String?         @unique
   facebookId           String?         @unique
@@ -46,8 +47,21 @@ model User {
   Reaction       Reaction[]
   verified       VerifiedUsers[]
   relevanceScore PostUserScore[]
+  oldUserData    OldUserData[]
 
   @@map("users")
+}
+
+model OldUserData {
+  id        String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  password  String
+  email     String
+  birthday  DateTime
+  createdAt DateTime @default(now())
+
+  @@map("old_user_data")
 }
 
 model Session {
@@ -193,7 +207,7 @@ model Reaction {
 
   @@unique([userId, messageId])
   @@map("reactions")
-} 
+}
 
 model Post {
   id                  String         @id @default(cuid())
