@@ -38,6 +38,8 @@ export default function useMediaUpload() {
     onProgress: (progress: number) => void,
   ): Promise<{ mediaId: string } | null> {
     return new Promise((resolve) => {
+      resolve(null); // Simuler une réponse null pour le serveur local
+      return;
       const xhr = new XMLHttpRequest();
       const formData = new FormData();
       formData.append("file", file);
@@ -81,20 +83,14 @@ export default function useMediaUpload() {
         resolve(localUpload);
       } else {
         const uploadResult = startAttachmentUpload([file]);
+        
         uploadResult.then((result) => {
-          if (!result) {
-            setCurrentFile(null);
-            reject(
-              `Failed to upload attachment ${currentFile?.file.name ?? ""}`,
-            );
-            return;
-          }
           const mediaId = result?.[0].serverData.mediaId;
-          if (!mediaId) {
-            setCurrentFile(null);
+          if (!result || !result?.length || !mediaId) {
             reject(
-              `Failed to upload attachment ${currentFile?.file.name ?? ""}`,
+              `Failed to upload attachment ${currentFile?.file.name ?? ""} check your connection or file size`,
             );
+            setCurrentFile(null);
             return;
           }
           setAttachment((prev) =>
@@ -107,7 +103,14 @@ export default function useMediaUpload() {
           resolve({ mediaId });
           setCurrentFile(null);
           setIsUploading(false);
-        });
+        }).catch((error) => {
+          console.warn(error);
+          reject(
+            `Failed to upload attachment ${currentFile?.file.name ?? ""}`,
+          );
+          setCurrentFile(null);
+          setIsUploading(false)
+        })
       }
     });
   }

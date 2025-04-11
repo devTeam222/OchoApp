@@ -494,7 +494,7 @@ export const french: Vocabulary = {
   seeAllMore: "Tout voir ([len] de plus)",
   groupAddSuccess: "Les utilisateurs selectionnes ont bien été ajoutés",
   groupAddError: "Vous ne pouvez pas ajouter de nouveaux membres à ce groupe",
-  removeFromGroup: "Remove from group",
+  removeFromGroup: "Retirer du groupe",
   groupRemovePrompt: "Vous êtes sur le point de supprimer [name] de [group]",
   banFromGroup: "Suspendre",
   groupBanPrompt: "Vous êtes sur le point de bannir [name] de [group]",

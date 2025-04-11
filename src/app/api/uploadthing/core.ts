@@ -189,11 +189,33 @@ export const fileRouter = {
     image: { maxFileSize: "2MB", maxFileCount: 4 },
     video: { maxFileSize: "64MB", maxFileCount: 1 },
   })
-    .middleware(async () => {
+    .middleware(async ({files}) => {
       const { user } = await validateRequest();
 
       if (!user) throw new UploadThingError("Action non autorisée");
-
+      
+      // Vérifier si les fichiers ont tous une taille valide et recuperer les fichiers image et video avec taille invalide et afficher en fonction du type et de la taille autoriséé
+      files.map((file) => {
+        
+        const fileSizeMB = file.size / 1024 ** 2;
+        console.log("file", fileSizeMB);
+        if (file.type.startsWith("image/")) {
+          if (fileSizeMB > 2) {
+            throw new UploadThingError(
+              `L'image ne doit pas depasser 2 Mo`,
+            );
+          }
+        } else if (file.type.startsWith("video/")) {
+          if (fileSizeMB > 64) {
+            throw new UploadThingError(
+              `La vidéo ne doit pas depasser 64 Mo`,
+            );
+          }
+        }
+      });
+      
+      
+      
       return { user };
     })
     .onUploadComplete(async ({ file }) => {
