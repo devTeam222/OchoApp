@@ -1,6 +1,5 @@
 // components/posts/editors/useMediaUpload.ts
 import { useToast } from "@/components/ui/use-toast";
-import { t } from "@/context/LanguageContext";
 import { useUploadThing } from "@/lib/uploadthing";
 import { VocabularyObject } from "@/lib/vocabulary";
 import { useState } from "react";
@@ -38,8 +37,7 @@ export default function useMediaUpload() {
     onProgress: (progress: number) => void,
   ): Promise<{ mediaId: string } | null> {
     return new Promise((resolve) => {
-      resolve(null); // Simuler une réponse null pour le serveur local
-      return;
+      // resolve(null); // Simuler une réponse null pour le serveur local
       const xhr = new XMLHttpRequest();
       const formData = new FormData();
       formData.append("file", file);

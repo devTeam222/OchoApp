@@ -172,9 +172,9 @@ export const fileRouter = {
       return { user };
     })
     .onUploadComplete((data) => console.log("file", data)),
-  // Takes exactly ONE image up to 2MB
+  // Takes exactly ONE image up to 4MB
   strictImageAttachment: f({
-    image: { maxFileSize: "2MB", maxFileCount: 1, minFileCount: 1 },
+    image: { maxFileSize: "4MB", maxFileCount: 1, minFileCount: 1 },
   })
     .middleware(async () => {
       const { user } = await validateRequest();
@@ -184,37 +184,15 @@ export const fileRouter = {
       return { user };
     })
     .onUploadComplete((data) => console.log("file", data)),
-  // Takes up to 4 2mb images and/or 1 64MB video
+  // Takes up to 4MB images and/or 1 64MB video
   attachment: f({
-    image: { maxFileSize: "2MB", maxFileCount: 4 },
+    image: { maxFileSize: "4MB", maxFileCount: 4 },
     video: { maxFileSize: "64MB", maxFileCount: 1 },
   })
     .middleware(async ({files}) => {
       const { user } = await validateRequest();
 
       if (!user) throw new UploadThingError("Action non autorisée");
-      
-      // Vérifier si les fichiers ont tous une taille valide et recuperer les fichiers image et video avec taille invalide et afficher en fonction du type et de la taille autoriséé
-      files.map((file) => {
-        
-        const fileSizeMB = file.size / 1024 ** 2;
-        console.log("file", fileSizeMB);
-        if (file.type.startsWith("image/")) {
-          if (fileSizeMB > 2) {
-            throw new UploadThingError(
-              `L'image ne doit pas depasser 2 Mo`,
-            );
-          }
-        } else if (file.type.startsWith("video/")) {
-          if (fileSizeMB > 64) {
-            throw new UploadThingError(
-              `La vidéo ne doit pas depasser 64 Mo`,
-            );
-          }
-        }
-      });
-      
-      
       
       return { user };
     })
@@ -235,10 +213,10 @@ export const fileRouter = {
       });
       return { mediaId: media.id };
     }),
-  // Takes up to 4 2mb images, and the client will not resolve
+  // Takes up to 4MB images, and the client will not resolve
   // the upload until the `onUploadComplete` resolved.
   withAwaitedServerData: f(
-    { image: { maxFileSize: "2MB", maxFileCount: 4 } },
+    { image: { maxFileSize: "4MB", maxFileCount: 4 } },
     { awaitServerData: true },
   )
     .middleware(async () => {
