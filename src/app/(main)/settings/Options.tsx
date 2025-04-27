@@ -17,16 +17,15 @@ import {
   Moon,
 } from "lucide-react";
 import Settings, { SettingsOption } from "./Settings";
-import { useRouter } from "next/navigation";
 import { logout } from "@/app/(auth)/actions";
 import { useQueryClient } from "@tanstack/react-query";
-import { late } from "zod";
 import French from "@/components/flags/French";
 import { useTheme } from "next-themes";
 import US from "@/components/flags/US";
 import { t, useLanguage } from "@/context/LanguageContext";
-import { Language, VocabularyKey, getVocabularyObject } from "@/lib/vocabulary";
+import { Language } from "@/lib/vocabulary";
 import { useProgress } from "@/context/ProgressContext";
+import BirthdayDialog from "./BirthdayDialog";
 
 interface OptionsProps {
   setting?: string | null;
@@ -68,7 +67,10 @@ export default function Options({
         label: birthday,
         icon: <Cake size={24} />,
         action: "default" as const,
-        onClick: (value: string) => console.log(value),
+        onClick: (value) => {
+          console.log(value);
+        },
+        dialogElement: <BirthdayDialog />,
       },
       {
         value: "password",
@@ -216,6 +218,7 @@ export default function Options({
     }
     return <Settings options={option} setting={setting} label={label} />;
   }
+
 
   return <Settings options={options} setting={setting} />;
 }

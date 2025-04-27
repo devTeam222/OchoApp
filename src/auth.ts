@@ -34,6 +34,7 @@ export const lucia = new Lucia(adapter, {
       googleId: databaseUserAttributes.googleId,
       facebookId: databaseUserAttributes.facebookId,
       bio: databaseUserAttributes.bio,
+      birthday: databaseUserAttributes.birthday,
       followers,
       following,
       _count: {
@@ -62,6 +63,7 @@ interface DatabaseUserAttributes {
   googleId: string | null;
   facebookId: string | null;
   bio: string | null;
+  birthday: Date | null;
   followers: {
     followerId: string;
   }[];

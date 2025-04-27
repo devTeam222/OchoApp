@@ -3,5 +3,7 @@
       // "other": true,
       "comments": false,
       "strings": true
-   }
+   },
+   "editor.fontLigatures": true,
+   "editor.fontFamily": "'Fira Code', Consolas, 'Courier New', monospace",
 }
