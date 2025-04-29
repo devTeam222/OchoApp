@@ -2,7 +2,9 @@
 
 import InfiniteScrollContainer from "@/components/InfiniteScrollContainer";
 import Post from "@/components/posts/Post";
-import PostsLoadingSkeleton from "@/components/posts/PostsLoadingSkeleton";
+import PostsLoadingSkeleton, {
+  PostLoadingSkeleton,
+} from "@/components/posts/PostsLoadingSkeleton";
 import { t } from "@/context/LanguageContext";
 import kyInstance from "@/lib/ky";
 import { PostsPage } from "@/lib/types";
@@ -13,14 +15,16 @@ import { Frown, Loader2, SmilePlus } from "lucide-react";
 export default function FollowingFeed() {
   const viewedPosts: string[] = [];
 
-  const { noPostOnFollowing, dataError } : VocabularyObject = t();
+  const { noPostOnFollowing, dataError }: VocabularyObject = t();
 
   const {
     data,
     fetchNextPage,
     hasNextPage,
     isFetching,
+    isLoadingError,
     isFetchingNextPage,
+    isFetchNextPageError,
     status,
   } = useInfiniteQuery({
     queryKey: ["post-feed", "following"],
@@ -33,6 +37,7 @@ export default function FollowingFeed() {
         .json<PostsPage>(),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
+    throwOnError: false,
   });
 
   const posts = data?.pages.flatMap((page) => page.posts) || [];
@@ -45,19 +50,15 @@ export default function FollowingFeed() {
     return (
       <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
         <SmilePlus size={150} />
-        <h2 className="text-xl">
-        {noPostOnFollowing}
-        </h2>
+        <h2 className="text-xl">{noPostOnFollowing}</h2>
       </div>
     );
   }
-  if (status === "error") {
+  if (isLoadingError) {
     return (
       <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
         <Frown size={150} />
-        <h2 className="text-xl">
-        {dataError} 
-        </h2>
+        <h2 className="text-xl">{dataError}</h2>
       </div>
     );
   }
@@ -65,7 +66,9 @@ export default function FollowingFeed() {
   return (
     <InfiniteScrollContainer
       className="space-y-2 sm:space-y-5"
-      onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
+      onBottomReached={() =>
+        hasNextPage && !isFetchingNextPage && !isFetching && fetchNextPage()
+      }
     >
       {posts.map((post, key) => {
         if (post.id in viewedPosts) {
@@ -74,7 +77,18 @@ export default function FollowingFeed() {
         viewedPosts.push(post.id);
         return <Post key={key} post={post} />;
       })}
-      {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
+      {isFetchNextPageError && (
+        <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
+          <Frown size={150} />
+          <h2 className="text-xl">{dataError}</h2>
+        </div>
+      )}
+      {isFetchingNextPage && !isFetchNextPageError && (
+        <div className="flex flex-col items-center gap-3 pb-3">
+          <PostLoadingSkeleton />
+          <Loader2 className="animate-spin" />
+        </div>
+      )}
     </InfiniteScrollContainer>
   );
 }

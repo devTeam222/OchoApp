@@ -2,7 +2,9 @@
 
 import InfiniteScrollContainer from "@/components/InfiniteScrollContainer";
 import Post from "@/components/posts/Post";
-import PostsLoadingSkeleton from "@/components/posts/PostsLoadingSkeleton";
+import PostsLoadingSkeleton, {
+  PostLoadingSkeleton,
+} from "@/components/posts/PostsLoadingSkeleton";
 import { t } from "@/context/LanguageContext";
 import kyInstance from "@/lib/ky";
 import { PostsPage } from "@/lib/types";
@@ -20,9 +22,11 @@ export default function ForYouFeed() {
   const {
     data,
     fetchNextPage,
-    hasNextPage,
     isFetching,
+    hasNextPage,
+    isLoadingError,
     isFetchingNextPage,
+    isFetchNextPageError,
     status,
   } = useInfiniteQuery({
     queryKey: ["post-feed", "for-you"],
@@ -35,6 +39,7 @@ export default function ForYouFeed() {
         .json<PostsPage>(),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
+    throwOnError: false,
   });
 
   const posts = data?.pages.flatMap((page) => page.posts) || [];
@@ -51,7 +56,7 @@ export default function ForYouFeed() {
       </div>
     );
   }
-  if (status === "error") {
+  if (isLoadingError) {
     return (
       <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
         <Frown size={150} />
@@ -64,7 +69,7 @@ export default function ForYouFeed() {
     <InfiniteScrollContainer
       className="flex flex-col gap-2"
       onBottomReached={() => {
-        hasNextPage && !isFetchingNextPage && fetchNextPage();
+        hasNextPage && !isFetchingNextPage && !isFetching && fetchNextPage();
       }}
     >
       {posts.map((post, key) => {
@@ -74,7 +79,18 @@ export default function ForYouFeed() {
         viewedPosts.push(post.id);
         return <Post key={key} post={post} />;
       })}
-      {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
+      {isFetchNextPageError && (
+        <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
+          <Frown size={150} />
+          <h2 className="text-xl">{dataError}</h2>
+        </div>
+      )}
+      {isFetchingNextPage && !isFetchNextPageError && (
+        <div className="flex flex-col items-center gap-3 pb-3">
+          <PostLoadingSkeleton />
+          <Loader2 className="animate-spin" />
+        </div>
+      )}
     </InfiniteScrollContainer>
   );
 }
