@@ -20,7 +20,8 @@ function isLeapYear(year: number) {
 
 // Fonction pour connaître le nombre de jours dans un mois donné
 function getDaysInMonth(month: number, year: number) {
-  if (month === 1) { // Février
+  if (month === 1) {
+    // Février
     return isLeapYear(year) ? 29 : 28;
   }
   const monthDays = [31, 30, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
@@ -36,16 +37,20 @@ export default function BirthdayDialog() {
   const minimumYear = currentYear - 13;
 
   const currentBirthday = user?.birthday ? new Date(user.birthday) : null;
-  const [selectedDate, setSelectedDate] = useState<Date>(currentBirthday ?? (new Date(minimumYear, today.getMonth(), today.getDate())));
+  const [selectedDate, setSelectedDate] = useState<Date>(
+    currentBirthday ?? new Date(minimumYear, today.getMonth(), today.getDate()),
+  );
 
   useEffect(() => {
     console.log("Selected date changed:", selectedDate);
-  }, [selectedDate])
-  
+  }, [selectedDate]);
 
   const day = selectedDate.getDate();
   const month = selectedDate.getMonth();
   const year = selectedDate.getFullYear();
+
+  const [tempYear, setTempYear] = useState<string>(year.toString());
+  const [tempDay, setTempDay] = useState<string>(day.toString());
 
   const maxDaysInSelectedMonth = getDaysInMonth(month, year);
 
@@ -53,7 +58,8 @@ export default function BirthdayDialog() {
     const age = refDate.getFullYear() - date.getFullYear();
     const hasHadBirthdayThisYear =
       refDate.getMonth() > date.getMonth() ||
-      (refDate.getMonth() === date.getMonth() && refDate.getDate() >= date.getDate());
+      (refDate.getMonth() === date.getMonth() &&
+        refDate.getDate() >= date.getDate());
     return age > 13 || (age === 13 && hasHadBirthdayThisYear);
   }
 
@@ -61,21 +67,61 @@ export default function BirthdayDialog() {
 
   // Gestion sécurisée des modifications
   const handleDayChange = (value: string) => {
-    const newDay = Math.max(1, Math.min(Number(value), maxDaysInSelectedMonth));
-    setSelectedDate(new Date(year, month, newDay));
+    setTempDay(value);
+    
+    if (value === "") return;
+    
+    const numValue = Number(value);
+    if (isNaN(numValue)) return;
+    
+    // Si l'utilisateur a entré 2 chiffres (jour complet)
+    if (value.length === 2) {
+      const newDay = Math.max(1, Math.min(numValue, maxDaysInSelectedMonth));
+      setSelectedDate(new Date(year, month, newDay));
+      setTempDay(newDay.toString()); // Réinitialise si nécessaire
+    }
   };
 
   const handleMonthChange = (newMonth: number) => {
     const maxDays = getDaysInMonth(newMonth, year);
     const newDay = Math.min(day, maxDays);
     setSelectedDate(new Date(year, newMonth, newDay));
+    if (tempDay === "" || isNaN(Number(tempDay))) {
+      setTempDay(day.toString());
+    } else {
+      const numDay = Number(tempDay);
+      const validDay = Math.max(1, Math.min(numDay, maxDaysInSelectedMonth));
+      if (numDay !== validDay) {
+        setTempDay(validDay.toString());
+        setSelectedDate(new Date(year, month, validDay));
+      }
+    }
   };
 
   const handleYearChange = (value: string) => {
-    const newYear = Math.max(1900, Math.min(Number(value), minimumYear));
-    const maxDays = getDaysInMonth(month, newYear);
-    const newDay = Math.min(day, maxDays);
-    setSelectedDate(new Date(newYear, month, newDay));
+    if (tempDay === "" || isNaN(Number(tempDay))) {
+      setTempDay(day.toString());
+    } else {
+      const numDay = Number(tempDay);
+      const validDay = Math.max(1, Math.min(numDay, maxDaysInSelectedMonth));
+      if (numDay !== validDay) {
+        setTempDay(validDay.toString());
+        setSelectedDate(new Date(year, month, validDay));
+      }
+    }
+    setTempYear(value);
+    if (value === "") return;
+
+    const numValue = Number(value);
+    if (isNaN(numValue)) return;
+
+    // On ne met à jour que si l'année est complète (4 chiffres)
+    if (value.length === 4) {
+      const newYear = Math.max(1900, Math.min(numValue, minimumYear));
+      const maxDays = getDaysInMonth(month, newYear);
+      const newDay = Math.min(day, maxDays);
+      setSelectedDate(new Date(newYear, month, newDay));
+    }
   };
 
   return (
@@ -92,8 +138,20 @@ export default function BirthdayDialog() {
             min={1}
             step={1}
             id="day"
-            value={day}
+            value={tempDay}
             onChange={(e) => handleDayChange(e.target.value)}
+            onBlur={() => {
+              if (tempDay === "" || isNaN(Number(tempDay))) {
+                setTempDay(day.toString());
+              } else {
+                const numDay = Number(tempDay);
+                const validDay = Math.max(1, Math.min(numDay, maxDaysInSelectedMonth));
+                if (numDay !== validDay) {
+                  setTempDay(validDay.toString());
+                  setSelectedDate(new Date(year, month, validDay));
+                }
+              }
+            }}
             placeholder={lang.day}
           />
           <MonthSelect currentMonth={month} onMonthSelect={handleMonthChange} />
@@ -103,8 +161,26 @@ export default function BirthdayDialog() {
             max={minimumYear}
             step={1}
             id="year"
-            value={year}
+            value={tempYear}
             onChange={(e) => handleYearChange(e.target.value)}
+            onBlur={() => {
+              if (tempYear === "" || isNaN(Number(tempYear))) {
+                setTempYear(year.toString());
+              } else if (tempYear.length < 4) {
+                // Si l'année n'est pas complète, on réinitialise
+                setTempYear(year.toString());
+              }
+              if (tempDay === "" || isNaN(Number(tempDay))) {
+                setTempDay(day.toString());
+              } else {
+                const numDay = Number(tempDay);
+                const validDay = Math.max(1, Math.min(numDay, maxDaysInSelectedMonth));
+                if (numDay !== validDay) {
+                  setTempDay(validDay.toString());
+                  setSelectedDate(new Date(year, month, validDay));
+                }
+              }
+            }}
             placeholder={lang.year}
           />
         </div>
