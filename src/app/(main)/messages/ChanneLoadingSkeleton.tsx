@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ChannelsLoadingSkeleton() {
   return (
-    <ul className="relative w-full animate-pulse divide-y-2">
+    <ul className="relative w-full animate-pulse">
       <ChannelSkeleton />
       <ChannelSkeleton />
       <ChannelSkeleton />

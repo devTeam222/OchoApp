@@ -1,6 +1,11 @@
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
-import { FollowerInfo, getUserDataSelect } from "@/lib/types";
+import {
+  ChannelData,
+  FollowerInfo,
+  getChatChannelDataInclude,
+  getUserDataSelect,
+} from "@/lib/types";
 
 export async function GET(
   req: Request,
@@ -105,6 +110,32 @@ export async function POST(
         },
       }),
     ]);
+
+    const existingChannel: ChannelData | null = await prisma.channel.findFirst({
+      where: {
+        isGroup: false,
+        AND: [
+          { members: { some: { userId } } },
+          { members: { some: { userId: loggedInUser.id } } },
+        ],
+      },
+      include: getChatChannelDataInclude(),
+    });
+    if (!existingChannel) {
+      await prisma.channel.create({
+        data: {
+          name: null,
+          isGroup: false,
+          members: {
+            create: [
+              { userId: loggedInUser.id, type: "MEMBER" },
+              { userId, type: "MEMBER" },
+            ],
+          },
+        },
+        include: getChatChannelDataInclude(), // Inclure les données requises
+      });
+    }
 
     return new Response();
   } catch (error) {

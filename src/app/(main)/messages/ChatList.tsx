@@ -136,7 +136,7 @@ export default function ChatList({
           </p>
         )}
         {status === "success" && (
-          <ul className="divide-y sm:divide-y-2">
+          <ul className="">
             {channels.map((channel) => (
               <Channel
                 key={channel.id}
