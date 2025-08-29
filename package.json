@@ -68,6 +68,7 @@
     "@tailwindcss/container-queries": "^0.1.1",
     "@types/js-cookie": "^3.0.6",
     "@types/node": "^22",
+    "@types/prop-types": "^15.7.15",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/uuid": "^10.0.0",

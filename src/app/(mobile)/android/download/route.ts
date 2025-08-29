@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     if (ext === ".apk") contentType = "application/vnd.android.package-archive";
 
     // Retourner le fichier avec le type de contenu approprié
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(new Uint8Array(fileBuffer), {
       headers: {
         "Content-Type": contentType,
         "Content-Disposition": `attachment; filename="${path.basename(filePath)}"`, // Pour forcer le téléchargement

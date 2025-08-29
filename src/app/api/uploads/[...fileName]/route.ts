@@ -27,7 +27,7 @@ export async function GET(request: NextRequest, { params }: { params: { fileName
     if (ext === ".mp4") contentType = "video/mp4";
 
     // Return the file with the appropriate content type
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(new Uint8Array(fileBuffer), {
       headers: {
         "Content-Type": contentType,
       },
