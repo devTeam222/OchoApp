@@ -37,7 +37,10 @@ export default function useMediaUpload() {
     onProgress: (progress: number) => void,
   ): Promise<{ mediaId: string } | null> {
     return new Promise((resolve) => {
-      // resolve(null); // Simuler une réponse null pour le serveur local
+      if (process.env.NODE_ENV === "production") {
+        resolve(null); // Simuler une réponse null pour le serveur local
+        return;
+      }
       const xhr = new XMLHttpRequest();
       const formData = new FormData();
       formData.append("file", file);
