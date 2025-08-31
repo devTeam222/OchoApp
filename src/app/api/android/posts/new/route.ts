@@ -50,7 +50,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       message: "Post publié avec succès.",
-      data: newPost,
+      data: {
+        ...newPost,
+        createdAt: newPost.createdAt.getTime(),
+        attachments: newPost.attachments.map((attachment) => ({
+          ...attachment,
+          createdAt: attachment.createdAt.getTime(),
+        })),
+        user: {
+          ...newPost.user,
+          createdAt: newPost.user.createdAt.getTime(),
+          lastSeen: newPost.user.lastSeen.getTime(),
+          verified: newPost.user.verified.map((item) => ({
+            ...item,
+            expiresAt: item.expiresAt?.getTime(),
+          })),
+        },
+      },
     });
   } catch (error) {
     console.error(error);
