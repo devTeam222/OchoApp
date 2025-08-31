@@ -57,6 +57,7 @@ export async function POST(req: NextRequest) {
           ...attachment,
           createdAt: attachment.createdAt.getTime(),
         })),
+        likes: newPost.likes.length,
         user: {
           ...newPost.user,
           createdAt: newPost.user.createdAt.getTime(),
