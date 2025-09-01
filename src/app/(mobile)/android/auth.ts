@@ -9,6 +9,6 @@ export const github = new GitHub(
   process.env.GITHUB_CLIENT_ID!,
   process.env.GITHUB_CLIENT_SECRET!,
   {
-    redirectURI: `${process.env.NEXT_PUBLIC_BASE_URL}/api/callback/github/android`,
+    redirectURI: `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback/github/android`,
   },
 );
