@@ -23,12 +23,14 @@ export async function GET(request: NextRequest) {
     const ext = path.extname(filePath).toLowerCase();
     let contentType = "application/octet-stream"; // Type par défaut
     if (ext === ".apk") contentType = "application/vnd.android.package-archive";
+    let size = fileBuffer.length;
 
     // Retourner le fichier avec le type de contenu approprié
     return new NextResponse(new Uint8Array(fileBuffer), {
       headers: {
         "Content-Type": contentType,
         "Content-Disposition": `attachment; filename="${path.basename(filePath)}"`, // Pour forcer le téléchargement
+        "Content-Length": size.toString(),
       },
     });
   } catch (error) {
