@@ -1,10 +1,7 @@
 import { github, lucia } from "@/auth";
 import kyInstance from "@/lib/ky";
 import prisma from "@/lib/prisma";
-import { LocalUpload } from "@/lib/types";
-import { slugify } from "@/lib/utils";
-import { OAuth2RequestError } from "arctic";
-import { generateId, generateIdFromEntropySize } from "lucia";
+import { generateId } from "lucia";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
