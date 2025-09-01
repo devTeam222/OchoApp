@@ -83,6 +83,48 @@ export function getUserDataSelect(
   } satisfies Prisma.UserSelect;
 }
 
+export function getPostDataIncludes(
+  loggedInUserId: string,
+  username: string | undefined = undefined,
+) {
+  return {
+    user: {
+      select: getUserDataSelect(loggedInUserId, username),
+    },
+    attachments: true,
+    likes: {
+      where: {
+        userId: loggedInUserId,
+      },
+      select: {
+        userId: true,
+      },
+    },
+    bookmarks: {
+      where: {
+        userId: loggedInUserId,
+      },
+      select: {
+        userId: true,
+      },
+    },
+    relevance: {
+      where: {
+        userId: loggedInUserId,
+      },
+      select: {
+        relevanceScore: true,
+      },
+    },
+    _count: {
+      select: {
+        likes: true,
+        comments: true,
+      },
+    },
+  } satisfies Prisma.PostInclude;
+}
+
 export type UserData = Prisma.UserGetPayload<{
   select: ReturnType<typeof getUserDataSelect>;
 }>;
@@ -231,6 +273,7 @@ export function getMessageDataInclude(loggedInUserId: string) {
   } satisfies Prisma.MessageInclude;
 }
 
+
 export type MessageData = Prisma.MessageGetPayload<{
   include: ReturnType<typeof getMessageDataInclude>;
 }>;
@@ -240,47 +283,6 @@ export interface MessagesSection {
   nextCursor: string | null;
 }
 
-export function getPostDataIncludes(
-  loggedInUserId: string,
-  username: string | undefined = undefined,
-) {
-  return {
-    user: {
-      select: getUserDataSelect(loggedInUserId, username),
-    },
-    attachments: true,
-    likes: {
-      where: {
-        userId: loggedInUserId,
-      },
-      select: {
-        userId: true,
-      },
-    },
-    bookmarks: {
-      where: {
-        userId: loggedInUserId,
-      },
-      select: {
-        userId: true,
-      },
-    },
-    relevance: {
-      where: {
-        userId: loggedInUserId,
-      },
-      select: {
-        relevanceScore: true,
-      },
-    },
-    _count: {
-      select: {
-        likes: true,
-        comments: true,
-      },
-    },
-  } satisfies Prisma.PostInclude;
-}
 
 export type PostData = Prisma.PostGetPayload<{
   include: ReturnType<typeof getPostDataIncludes>;

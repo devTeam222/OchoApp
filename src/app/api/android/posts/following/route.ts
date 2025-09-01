@@ -64,19 +64,28 @@ export async function GET(req: NextRequest) {
     // Récupération des posts
     const posts = await prisma.post.findMany({
       where: {
-        // Vérifie qu'il n'y a pas de pièces jointes
-        NOT: {
-          attachments: {
-            some: {}, // Ceci filtre les posts qui ont des pièces jointes
-          },
-        },
-         user: {
-          followers: {
-            some: {
-              followerId: user.id,
+        AND: [
+          {
+            // Vérifie qu'il n'y a pas de pièces jointes
+            NOT: {
+              attachments: {
+                some: {},
+              },
             },
           },
-        },
+          {
+            user: {
+              followers: {
+                some: {
+                  followerId: user.id,
+                },
+              },
+              NOT: {
+                id: user.id,
+              },
+            },
+          },
+        ],
       },
       include: getPostDataIncludes(user.id),
       orderBy: { createdAt: "desc" },
