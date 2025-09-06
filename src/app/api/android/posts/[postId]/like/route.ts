@@ -1,3 +1,4 @@
+// /api/android/posts/[postId]/like/route.ts
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
