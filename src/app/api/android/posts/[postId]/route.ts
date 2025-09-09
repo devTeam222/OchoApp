@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { postId: string } }
 ) {
   try {
     const authHeader = req.headers.get("Authorization");
@@ -30,9 +30,9 @@ export async function DELETE(
       );
     }
 
-    const { id } = params;
+    const { postId } = params;
 
-    if (!id) {
+    if (!postId) {
       return Response.json(
         { success: false, message: "ID de post manquant" }
       );
@@ -41,7 +41,7 @@ export async function DELETE(
     // On vérifie si l'utilisateur est bien l'auteur du post
     const postToDelete = await prisma.post.findUnique({
       where: {
-        id: id,
+        id: postId,
       },
     });
 
@@ -60,7 +60,7 @@ export async function DELETE(
 
     await prisma.post.delete({
       where: {
-        id: id,
+        id: postId,
       },
     });
 
