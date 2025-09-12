@@ -4,7 +4,10 @@ import { ApiResponse, User, VerifiedUser } from "../../utils/dTypes";
 import { UserData } from "@/lib/types";
 
 // Endpoint pour récupérer un profil utilisateur par ID
-export async function GET(req: NextRequest) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { userId: string } }
+) {
   try {
     const authHeader = req.headers.get("Authorization");
     const session_token = authHeader?.split(" ")[1];
@@ -41,7 +44,7 @@ export async function GET(req: NextRequest) {
       },
     });
     const currentUser: UserData | undefined = session?.user;
-    
+
     if (!currentUser) {
       return NextResponse.json({
         success: false,
@@ -50,10 +53,11 @@ export async function GET(req: NextRequest) {
         data: null,
       } as ApiResponse<null>);
     }
-    const userId = req.nextUrl.searchParams.get("userId");
+    
+    // Correction : l'ID de l'utilisateur est dans les params
+    const userId = params.userId;
+
     if (!userId) {
-        console.log(userId);
-        
       return NextResponse.json(
         {
           success: false,
@@ -97,7 +101,6 @@ export async function GET(req: NextRequest) {
           success: false,
           message: "User not found",
         } as ApiResponse<null>,
-        { status: 404 },
       );
     }
 
