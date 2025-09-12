@@ -90,7 +90,10 @@ export async function GET(req: NextRequest) {
       .sort((a, b) => b.relevanceScore - a.relevanceScore)
       .map((post) => {
         const verified: VerifiedUser = {
-          verified: !!post.user.verified?.[0],
+          verified:
+            (!!post.user.verified?.[0].expiresAt &&
+              post.user.verified?.[0].expiresAt > new Date()) ||
+            false,
           type: post.user.verified?.[0]?.type,
           expiresAt: post.user.verified?.[0]?.expiresAt,
         };

@@ -8,6 +8,8 @@ export interface User {
   verified: VerifiedUser;
   createdAt?: number;
   lastSeen?: number;
+  followersCount?: number;
+  postsCount?: number;
 }
 
 export interface VerifiedUser {
