@@ -52,6 +52,8 @@ export async function GET(req: NextRequest) {
     }
     const userId = req.nextUrl.searchParams.get("userId");
     if (!userId) {
+        console.log(userId);
+        
       return NextResponse.json(
         {
           success: false,
