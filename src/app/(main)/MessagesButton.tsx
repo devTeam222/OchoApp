@@ -56,7 +56,7 @@ export default function MessagesButton({
         <div className="relative">
           <MessageCircleMore />
           {!!unreadCount && (
-            <span className="absolute -right-1 -top-1 rounded-full bg-[#dc143c] px-1 text-xs font-medium tabular-nums text-white">
+            <span className="absolute -right-1 -top-1 rounded-full bg-[#dc143c] border-background border-[1px] px-1 text-xs font-medium tabular-nums text-white">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
