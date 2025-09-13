@@ -123,6 +123,8 @@ export async function GET(
       followersCount: user._count.followers,
       postsCount: user._count.posts,
     };
+    console.log(finalUser);
+    
 
     return NextResponse.json({
       success: true,
