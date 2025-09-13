@@ -94,7 +94,7 @@ export async function GET(req: NextRequest) {
 
         const verified: VerifiedUser = {
           // Use optional chaining for safe access to properties
-          verified: (userVerifiedData?.expiresAt && userVerifiedData.expiresAt > new Date()) || false,
+          verified: (userVerifiedData?.expiresAt ? userVerifiedData.expiresAt > new Date() : true) || false,
           type: userVerifiedData?.type,
           expiresAt: userVerifiedData?.expiresAt,
         };

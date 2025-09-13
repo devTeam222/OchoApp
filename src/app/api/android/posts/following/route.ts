@@ -1,3 +1,4 @@
+// api/android/posts/following/route.ts
 import { calculateRelevanceScore } from "@/lib/postScore";
 import prisma from "@/lib/prisma";
 import { getPostDataIncludes, UserData } from "@/lib/types";
@@ -110,7 +111,7 @@ export async function GET(req: NextRequest) {
 
         const verified: VerifiedUser = {
           // Use optional chaining for safe access to properties
-          verified: (userVerifiedData?.expiresAt && userVerifiedData.expiresAt > new Date()) || false,
+          verified: (userVerifiedData?.expiresAt ? userVerifiedData.expiresAt > new Date() : true) || false,
           type: userVerifiedData?.type,
           expiresAt: userVerifiedData?.expiresAt,
         };
