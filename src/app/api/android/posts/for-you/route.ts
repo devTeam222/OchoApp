@@ -89,12 +89,17 @@ export async function GET(req: NextRequest) {
     const sortedPosts = postsWithScores
       .sort((a, b) => b.relevanceScore - a.relevanceScore)
       .map((post) => {
-         // This prevents the "Cannot read properties of undefined" error.
         const userVerifiedData = post.user.verified?.[0];
 
+        const expiresAt = userVerifiedData.expiresAt;
+        const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
+
+        const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
+
+        const isVerified = !!userVerifiedData && !expired;
+
         const verified: VerifiedUser = {
-          // Use optional chaining for safe access to properties
-          verified: (userVerifiedData?.expiresAt ? userVerifiedData.expiresAt > new Date() : true) || false,
+          verified: isVerified,
           type: userVerifiedData?.type,
           expiresAt: userVerifiedData?.expiresAt,
         };

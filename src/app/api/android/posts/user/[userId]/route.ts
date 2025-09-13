@@ -9,7 +9,10 @@ import {
   VerifiedUser,
 } from "../../../utils/dTypes";
 
-export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { userId: string } },
+) {
   try {
     const authHeader = req.headers.get("Authorization");
     const session_token = authHeader?.split(" ")[1];
@@ -64,8 +67,15 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
     const finalPosts = posts.slice(0, pageSize).map((post) => {
       const userVerifiedData = post.user.verified?.[0];
 
+      const expiresAt = userVerifiedData.expiresAt;
+      const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
+
+      const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
+
+      const isVerified = !!userVerifiedData && !expired;
+
       const verified: VerifiedUser = {
-        verified: (userVerifiedData?.expiresAt ? userVerifiedData.expiresAt > new Date() : true) || false,
+        verified: isVerified,
         type: userVerifiedData?.type,
         expiresAt: userVerifiedData?.expiresAt,
       };

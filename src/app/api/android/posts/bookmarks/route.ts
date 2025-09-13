@@ -64,8 +64,15 @@ export async function GET(req: NextRequest) {
     const finalPosts = posts.slice(0, pageSize).map((post) => {
       const userVerifiedData = post.user.verified?.[0];
 
+      const expiresAt = userVerifiedData.expiresAt;
+      const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
+
+      const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
+
+      const isVerified = !!userVerifiedData && !expired;
+
       const verified: VerifiedUser = {
-        verified: (userVerifiedData?.expiresAt ? userVerifiedData.expiresAt > new Date() : true) || false,
+        verified: isVerified,
         type: userVerifiedData?.type,
         expiresAt: userVerifiedData?.expiresAt,
       };
@@ -95,7 +102,8 @@ export async function GET(req: NextRequest) {
       return finalPost;
     });
 
-    const nextCursor = bookmarks.length > pageSize ? bookmarks[pageSize].id : null;
+    const nextCursor =
+      bookmarks.length > pageSize ? bookmarks[pageSize].id : null;
 
     const postsData: PostsPage = {
       posts: finalPosts,
