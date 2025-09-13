@@ -6,7 +6,7 @@ import { UserData } from "@/lib/types";
 // Endpoint pour récupérer un profil utilisateur par ID
 export async function GET(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: { userId: string } },
 ) {
   try {
     const authHeader = req.headers.get("Authorization");
@@ -53,20 +53,18 @@ export async function GET(
         data: null,
       } as ApiResponse<null>);
     }
-    
+
     // Correction : l'ID de l'utilisateur est dans les params
     const userId = params.userId;
 
     if (!userId) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "User ID is required",
-        } as ApiResponse<null>,
-      );
+      return NextResponse.json({
+        success: false,
+        message: "User ID is required",
+      } as ApiResponse<null>);
     }
 
-    const user = await prisma.user.findUnique({
+    const user = (await prisma.user.findUnique({
       where: {
         id: userId,
       },
@@ -93,22 +91,28 @@ export async function GET(
         verified: true,
         _count: true,
       },
-    }) as UserData | undefined;
+    })) as UserData | undefined;
 
     if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "User not found",
-        } as ApiResponse<null>,
-      );
+      return NextResponse.json({
+        success: false,
+        message: "User not found",
+      } as ApiResponse<null>);
     }
 
+    const userVerifiedData = user.verified?.[0];
+
+    const expiresAt = userVerifiedData?.expiresAt;
+    const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
+
+    const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
+
+    const isVerified = !!userVerifiedData && !expired;
+
     const verified: VerifiedUser = {
-      verified: (!!user.verified?.[0].expiresAt &&
-      user.verified?.[0].expiresAt > new Date()) || false,
-      type: user.verified?.[0]?.type,
-      expiresAt: user.verified?.[0]?.expiresAt,
+      verified: isVerified,
+      type: userVerifiedData?.type,
+      expiresAt: userVerifiedData?.expiresAt,
     };
 
     const finalUser: User = {
@@ -123,8 +127,6 @@ export async function GET(
       followersCount: user._count.followers,
       postsCount: user._count.posts,
     };
-    console.log(finalUser);
-    
 
     return NextResponse.json({
       success: true,
@@ -133,11 +135,9 @@ export async function GET(
     } as ApiResponse<User>);
   } catch (error) {
     console.error(error);
-    return NextResponse.json(
-      {
-        success: false,
-        message: "An unexpected error occurred",
-      } as ApiResponse<null>,
-    );
+    return NextResponse.json({
+      success: false,
+      message: "An unexpected error occurred",
+    } as ApiResponse<null>);
   }
 }

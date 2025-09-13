@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
       .map((post) => {
         const userVerifiedData = post.user.verified?.[0];
 
-        const expiresAt = userVerifiedData.expiresAt;
+        const expiresAt = userVerifiedData?.expiresAt;
         const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
 
         const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
