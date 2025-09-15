@@ -67,14 +67,6 @@ export async function GET(req: NextRequest) {
       where: {
         AND: [
           {
-            // Vérifie qu'il n'y a pas de pièces jointes
-            NOT: {
-              attachments: {
-                some: {},
-              },
-            },
-          },
-          {
             user: {
               followers: {
                 some: {

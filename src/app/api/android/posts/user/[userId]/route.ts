@@ -48,13 +48,7 @@ export async function GET(
     // Récupérer les posts de l'utilisateur
     const posts = await prisma.post.findMany({
       where: {
-        userId: userId,
-        // Exclure les posts avec des pièces jointes comme dans votre modèle
-        NOT: {
-          attachments: {
-            some: {},
-          },
-        },
+        userId,
       },
       // Utiliser la fonction getPostDataIncludes pour la cohérence
       include: getPostDataIncludes(currentUserId),
