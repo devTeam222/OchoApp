@@ -138,6 +138,9 @@ export async function GET(req: NextRequest) {
         const likes = post._count.likes;
         const comments = post._count.comments;
         const isLiked = post.likes.some((like) => like.userId === user.id);
+        const isBookmarked = post.bookmarks.some(
+          (bookmark) => bookmark.userId === user.id,
+        );
         const finalPost: Post = {
           id,
           author,
@@ -148,6 +151,7 @@ export async function GET(req: NextRequest) {
           likes,
           comments,
           isLiked,
+          isBookmarked
         };
         return finalPost;
       });

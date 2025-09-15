@@ -75,6 +75,7 @@ export interface Post {
   likes: number;
   comments: number;
   isLiked: boolean;
+  isBookmarked: boolean;
 }
 
 export interface PostsPage {

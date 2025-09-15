@@ -73,6 +73,9 @@ export async function GET(
       const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
 
       const isVerified = !!userVerifiedData && !expired;
+      const isBookmarked = post.bookmarks.some(
+        (bookmark) => bookmark.userId === currentUserId,
+      );
 
       const verified: VerifiedUser = {
         verified: isVerified,
@@ -91,6 +94,7 @@ export async function GET(
         lastSeen: post.user.lastSeen.getTime(),
       };
 
+
       const finalPost = {
         id: post.id,
         author,
@@ -101,6 +105,7 @@ export async function GET(
         likes: post._count.likes,
         comments: post._count.comments,
         isLiked: post.likes.some((like) => like.userId === currentUserId),
+        isBookmarked
       };
       return finalPost;
     });
