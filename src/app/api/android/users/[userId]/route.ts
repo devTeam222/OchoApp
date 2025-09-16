@@ -61,6 +61,7 @@ export async function GET(
       return NextResponse.json({
         success: false,
         message: "User ID is required",
+        name: "validation",
       } as ApiResponse<null>);
     }
 
@@ -100,6 +101,7 @@ export async function GET(
       return NextResponse.json({
         success: false,
         message: "User not found",
+        name: "not_found",
       } as ApiResponse<null>);
     }
 
@@ -141,6 +143,7 @@ export async function GET(
     return NextResponse.json({
       success: false,
       message: "An unexpected error occurred",
+      name: "unknown",
     } as ApiResponse<null>);
   }
 }
