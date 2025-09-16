@@ -64,9 +64,12 @@ export async function GET(
       } as ApiResponse<null>);
     }
 
-    const user = (await prisma.user.findUnique({
+    const user = (await prisma.user.findFirst({
       where: {
-        id: userId,
+        OR: [
+          { id: userId },
+          { username: userId }, // Permet de chercher par nom d'utilisateur aussi
+        ],
       },
       select: {
         id: true,
