@@ -48,7 +48,7 @@ export async function GET(
     // Récupérer les posts de l'utilisateur
     const posts = await prisma.post.findMany({
       where: {
-        userId,
+        OR: [{ userId }, { user: { username: userId } }],
       },
       // Utiliser la fonction getPostDataIncludes pour la cohérence
       include: getPostDataIncludes(currentUserId),
