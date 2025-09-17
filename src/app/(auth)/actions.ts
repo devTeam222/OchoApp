@@ -1,6 +1,7 @@
 "use server"
 
 import { lucia, validateRequest } from "@/auth"
+import prisma from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -10,6 +11,11 @@ export async function logout(){
     if (!session) {
         throw new Error("Action non autorisée");
     }
+    await prisma.session.deleteMany({
+        where: {
+            id: session.id
+        }
+    })
 
     await lucia.invalidateSession(session.id);
 
