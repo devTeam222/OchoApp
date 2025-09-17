@@ -43,6 +43,7 @@ export async function POST(req: NextRequest) {
         success: false,
         message:
           "Session non valide. Veuillez vous reconnecter et réessayer",
+        name: "invalid_session",
       });
     }
     
