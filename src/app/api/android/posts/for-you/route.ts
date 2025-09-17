@@ -15,12 +15,13 @@ export async function GET(req: NextRequest) {
   try {
     const authHeader = req.headers.get("Authorization");
     const session_token = authHeader?.split(" ")[1];
-    
+
     const session = await prisma.session.findFirst({
       where: {
         id: session_token,
       },
       select: {
+        id: true,
         user: {
           select: {
             id: true,
@@ -49,6 +50,7 @@ export async function GET(req: NextRequest) {
       },
     });
     const user: UserData | undefined = session?.user;
+    const sessionId = session?.id;
 
     const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
     const pageSize = 5;
@@ -77,13 +79,11 @@ export async function GET(req: NextRequest) {
 
     const isDeviceLoggedIn = await prisma.device.findFirst({
       where: {
-        deviceId: deviceId,
-        sessionId: session_token,
-        logged: true,
+        AND: [{ deviceId }, { sessionId }, { logged: true }],
       },
-    })
+    });
     console.log(deviceId, deviceTypeHeader, isDeviceLoggedIn);
-    
+
     if (!isDeviceLoggedIn) {
       return NextResponse.json({
         success: false,
