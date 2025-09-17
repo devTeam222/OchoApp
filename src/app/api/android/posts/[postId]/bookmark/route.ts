@@ -33,6 +33,34 @@ export async function POST(
     }
 
     const userId = session.user.id;
+     // 1. Récupérer les informations de l'appareil à partir des en-têtes
+    const deviceId = req.headers.get("X-Device-ID");
+    const deviceTypeHeader = req.headers.get("X-Device-Type");
+
+    // 2. Vérifier la présence des en-têtes essentiels pour l'appareil
+    if (!deviceId || !deviceTypeHeader) {
+      return NextResponse.json({
+        success: false,
+        message: "En-têtes d'appareil manquants (X-Device-ID, X-Device-Type).",
+        name: "missing_device_headers",
+      });
+    }
+    const device = await prisma.device.findFirst({
+      where: {
+        deviceId
+      },
+    });
+    const isDeviceLoggedIn = device?.logged;
+    console.log(deviceId, deviceTypeHeader, isDeviceLoggedIn);
+
+    if (!isDeviceLoggedIn) {
+      return NextResponse.json({
+        success: false,
+        message: "Appareil non autorisé. Veuillez vous reconnecter.",
+        name: "authorization",
+        data: null,
+      } as ApiResponse<null>);
+    }
     let isBookmarked = false;
 
     // Utilise une transaction pour garantir que les opérations sont atomiques

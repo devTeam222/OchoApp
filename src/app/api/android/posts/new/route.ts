@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { getPostDataIncludes } from "@/lib/types";
 import { createPostSchema } from "@/lib/validation";
 import { NextRequest, NextResponse } from "next/server";
+import { ApiResponse } from "../../utils/dTypes";
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,6 +30,35 @@ export async function POST(req: NextRequest) {
         success: false,
         message: "Action non autorisée",
       });
+    }
+
+     // 1. Récupérer les informations de l'appareil à partir des en-têtes
+    const deviceId = req.headers.get("X-Device-ID");
+    const deviceTypeHeader = req.headers.get("X-Device-Type");
+
+    // 2. Vérifier la présence des en-têtes essentiels pour l'appareil
+    if (!deviceId || !deviceTypeHeader) {
+      return NextResponse.json({
+        success: false,
+        message: "En-têtes d'appareil manquants (X-Device-ID, X-Device-Type).",
+        name: "missing_device_headers",
+      });
+    }
+    const device = await prisma.device.findFirst({
+      where: {
+        deviceId
+      },
+    });
+    const isDeviceLoggedIn = device?.logged;
+    console.log(deviceId, deviceTypeHeader, isDeviceLoggedIn);
+
+    if (!isDeviceLoggedIn) {
+      return NextResponse.json({
+        success: false,
+        message: "Appareil non autorisé. Veuillez vous reconnecter.",
+        name: "authorization",
+        data: null,
+      } as ApiResponse<null>);
     }
 
     const input = await req.json();
@@ -75,6 +105,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: false,
       message: "Quelque chose s'est mal passé. Veuillez réessayer.",
-    });
+    } as ApiResponse<null>);
   }
 }

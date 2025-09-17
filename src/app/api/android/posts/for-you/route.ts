@@ -50,7 +50,6 @@ export async function GET(req: NextRequest) {
       },
     });
     const user: UserData | undefined = session?.user;
-    const sessionId = session?.id;
 
     const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
     const pageSize = 5;
@@ -76,21 +75,19 @@ export async function GET(req: NextRequest) {
         name: "missing_device_headers",
       });
     }
-    console.log(sessionId);
-    
-
-    const isDeviceLoggedIn = await prisma.device.findFirst({
+    const device = await prisma.device.findFirst({
       where: {
-        AND: [{ deviceId }, { logged: true }],
+        deviceId
       },
     });
+    const isDeviceLoggedIn = device?.logged;
     console.log(deviceId, deviceTypeHeader, isDeviceLoggedIn);
 
     if (!isDeviceLoggedIn) {
       return NextResponse.json({
         success: false,
         message: "Appareil non autorisé. Veuillez vous reconnecter.",
-        name: "unauthorized_device",
+        name: "authorization",
         data: null,
       } as ApiResponse<null>);
     }
