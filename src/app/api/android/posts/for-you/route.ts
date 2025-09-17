@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
 
     const isDeviceLoggedIn = await prisma.device.findFirst({
       where: {
-        AND: [{ deviceId }, { sessionId }, { logged: true }],
+        AND: [{ deviceId }, { logged: true }],
       },
     });
     console.log(deviceId, deviceTypeHeader, isDeviceLoggedIn);
