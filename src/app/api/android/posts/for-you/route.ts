@@ -15,6 +15,8 @@ export async function GET(req: NextRequest) {
   try {
     const authHeader = req.headers.get("Authorization");
     const session_token = authHeader?.split(" ")[1];
+    console.log(session_token);
+    
     const session = await prisma.session.findFirst({
       where: {
         id: session_token,
@@ -51,9 +53,6 @@ export async function GET(req: NextRequest) {
 
     const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
     const pageSize = 5;
-
-    console.log(session);
-    
 
     if (!user) {
       return NextResponse.json({
@@ -170,8 +169,6 @@ export async function GET(req: NextRequest) {
       posts: sortedPosts,
       nextCursor,
     };
-    console.log(data);
-    
 
     return NextResponse.json({
       success: true,
