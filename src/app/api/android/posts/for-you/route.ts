@@ -61,6 +61,35 @@ export async function GET(req: NextRequest) {
       } as ApiResponse<null>);
     }
 
+    // 1. Récupérer les informations de l'appareil à partir des en-têtes
+    const deviceId = req.headers.get("X-Device-ID");
+    const deviceTypeHeader = req.headers.get("X-Device-Type");
+
+    // 2. Vérifier la présence des en-têtes essentiels pour l'appareil
+    if (!deviceId || !deviceTypeHeader) {
+      return NextResponse.json({
+        success: false,
+        message: "En-têtes d'appareil manquants (X-Device-ID, X-Device-Type).",
+        name: "missing_device_headers",
+      });
+    }
+
+    const isDeviceLoggedIn = await prisma.device.findFirst({
+      where: {
+        deviceId: deviceId,
+        sessionId: session_token,
+        logged: true,
+      },
+    })
+    if (!isDeviceLoggedIn) {
+      return NextResponse.json({
+        success: false,
+        message: "Appareil non autorisé. Veuillez vous reconnecter.",
+        name: "unauthorized_device",
+        data: null,
+      } as ApiResponse<null>);
+    }
+
     // Récupération des posts
     const posts = await prisma.post.findMany({
       include: getPostDataIncludes(user.id),
@@ -127,7 +156,7 @@ export async function GET(req: NextRequest) {
           likes,
           comments,
           isLiked,
-          isBookmarked
+          isBookmarked,
         };
         return finalPost;
       });
