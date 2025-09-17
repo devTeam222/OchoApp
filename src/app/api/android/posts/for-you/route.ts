@@ -167,6 +167,8 @@ export async function GET(req: NextRequest) {
       posts: sortedPosts,
       nextCursor,
     };
+    console.log(data);
+    
 
     return NextResponse.json({
       success: true,
