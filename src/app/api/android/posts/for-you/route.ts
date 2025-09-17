@@ -76,6 +76,8 @@ export async function GET(req: NextRequest) {
         name: "missing_device_headers",
       });
     }
+    console.log(sessionId);
+    
 
     const isDeviceLoggedIn = await prisma.device.findFirst({
       where: {
