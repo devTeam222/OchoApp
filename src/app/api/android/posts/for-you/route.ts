@@ -52,6 +52,9 @@ export async function GET(req: NextRequest) {
     const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
     const pageSize = 5;
 
+    console.log(session);
+    
+
     if (!user) {
       return NextResponse.json({
         success: false,
