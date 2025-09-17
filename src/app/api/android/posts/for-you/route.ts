@@ -15,7 +15,6 @@ export async function GET(req: NextRequest) {
   try {
     const authHeader = req.headers.get("Authorization");
     const session_token = authHeader?.split(" ")[1];
-    console.log(session_token);
     
     const session = await prisma.session.findFirst({
       where: {
@@ -83,6 +82,8 @@ export async function GET(req: NextRequest) {
         logged: true,
       },
     })
+    console.log(deviceId, deviceTypeHeader, isDeviceLoggedIn);
+    
     if (!isDeviceLoggedIn) {
       return NextResponse.json({
         success: false,
