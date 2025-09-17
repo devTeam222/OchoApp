@@ -34,6 +34,8 @@ export interface UserSession {
   session?: Session;
 }
 
+export type DeviceType = 'ANDROID' | 'IOS' | 'WEB' | 'DESKTOP' | 'UNKNOWN';
+
 export interface SignupResponse {
   success: boolean; // Contient une erreur si l'inscription échoue
   message?: string;

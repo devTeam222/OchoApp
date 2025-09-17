@@ -4,7 +4,7 @@ import { verify } from "@node-rs/argon2";
 import { lucia } from "@/auth";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { ApiResponse, LoginResponse, User, UserSession } from "../utils/dTypes";
+import { ApiResponse, User, UserSession, DeviceType } from "../utils/dTypes";
 
 export async function POST(req: NextRequest) {
   try {
@@ -60,6 +60,7 @@ export async function POST(req: NextRequest) {
           "Nom d'utilisateur ou mot de passe incorrect. Verifiez vos informations",
       });
     }
+
     const userData = existingUser;
     const session = await lucia.createSession(existingUser.id, {});
     const sessionCookie = lucia.createSessionCookie(session.id);
@@ -69,21 +70,60 @@ export async function POST(req: NextRequest) {
       sessionCookie.attributes,
     );
 
-    const user: User = {
-        id: userData.id,
-        username: userData.username,
-        displayName: userData.displayName,
-        email: userData.email || undefined,
-        avatarUrl: userData.avatarUrl || undefined,
-        bio: userData.bio || undefined,
-        createdAt: userData.createdAt.getTime(),
-        lastSeen: userData.lastSeen.getTime(),
-        verified: {
-          verified: !!userData.verified?.[0],
-          type: userData.verified?.[0]?.type,
-          expiresAt: userData.verified?.[0]?.expiresAt,
+    // Récupérer les informations de l'appareil depuis les en-têtes
+    const deviceId = req.headers.get("X-Device-ID");
+    const deviceTypeHeader = req.headers.get("X-Device-Type");
+    const deviceModel = req.headers.get("X-Device-Model");
+
+    // Vérifier la présence des en-têtes essentiels
+    if (!deviceId || !deviceTypeHeader) {
+      return NextResponse.json({
+        success: false,
+        message: "En-têtes d'appareil manquants (X-Device-ID, X-Device-Type).",
+        name: "missing_device_headers",
+      });
+    }
+
+    // Vérifier si l'appareil existe déjà
+    let device = await prisma.device.findFirst({
+      where: { deviceId: deviceId },
+    });
+
+    if (!device) {
+      // Si l'appareil n'existe pas, le créer
+      device = await prisma.device.create({
+        data: {
+          sessionId: session.id,
+          deviceId: deviceId,
+          type: (deviceTypeHeader as DeviceType) || "UNKNOWN",
+          model: deviceModel || "Unknown Model",
         },
-      };
+      });
+      console.log("Nouvel appareil enregistré:", device);
+    } else {
+      // Si l'appareil existe, mettre à jour sa session pour la nouvelle connexion
+      device = await prisma.device.update({
+        where: { id: device.id },
+        data: { sessionId: session.id, logged: true },
+      });
+      console.log("Appareil existant mis à jour:", device);
+    }
+
+    const user: User = {
+      id: userData.id,
+      username: userData.username,
+      displayName: userData.displayName,
+      email: userData.email || undefined,
+      avatarUrl: userData.avatarUrl || undefined,
+      bio: userData.bio || undefined,
+      createdAt: userData.createdAt.getTime(),
+      lastSeen: userData.lastSeen.getTime(),
+      verified: {
+        verified: !!userData.verified?.[0],
+        type: userData.verified?.[0]?.type,
+        expiresAt: userData.verified?.[0]?.expiresAt,
+      },
+    };
 
     return NextResponse.json<ApiResponse<UserSession>>({
       success: true,
@@ -98,6 +138,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: false,
       message: "Quelque chose s'est mal passé. Veuillez réessayer.",
+      name: "server_error",
     });
   }
 }

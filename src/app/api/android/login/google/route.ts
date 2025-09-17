@@ -4,7 +4,6 @@ import prisma from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { google } from "@/app/(mobile)/android/auth";
-import { generateState } from "arctic";
 import { generateId } from "lucia";
 
 export async function GET(req: NextRequest) {

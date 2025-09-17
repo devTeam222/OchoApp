@@ -1,16 +1,30 @@
 import prisma from "@/lib/prisma";
-import { sessionSchema, LoginValues, SessionValues } from "@/lib/validation";
-import { verify } from "@node-rs/argon2";
+import { sessionSchema, SessionValues } from "@/lib/validation";
 import { lucia } from "@/auth";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse, UserSession } from "../utils/dTypes";
+import { DeviceType } from "../utils/dTypes";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json(); // Récupérer et parser le corps de la requête
+    const body = await req.json();
     const sessionCredentials: SessionValues = sessionSchema.parse(body);
     const { id, userId } = sessionCredentials;
+
+    // Récupérer les informations de l'appareil depuis les en-têtes
+    const deviceId = req.headers.get("X-Device-ID");
+    const deviceTypeHeader = req.headers.get("X-Device-Type");
+    const deviceModel = req.headers.get("X-Device-Model");
+
+    // Vérifier la présence des en-têtes essentiels
+    if (!deviceId || !deviceTypeHeader) {
+      return NextResponse.json({
+        success: false,
+        message: "En-têtes d'appareil manquants (X-Device-ID, X-Device-Type).",
+        name: "missing_device_headers",
+      });
+    }
 
     const existingUser = await prisma.user.findFirst({
       where: {
@@ -41,12 +55,11 @@ export async function POST(req: NextRequest) {
     if (!existingUser) {
       return NextResponse.json({
         success: false,
-        message:
-          "Session non valide. Veuillez vous reconnecter et réessayer",
+        message: "Session non valide. Veuillez vous reconnecter et réessayer",
         name: "invalid_session",
       });
     }
-    
+
     const userData = existingUser;
     const session = await lucia.createSession(existingUser.id, {});
     const sessionCookie = lucia.createSessionCookie(session.id);
@@ -56,21 +69,46 @@ export async function POST(req: NextRequest) {
       sessionCookie.attributes,
     );
 
-    const user = {
-        id: userData.id,
-        username: userData.username,
-        displayName: userData.displayName,
-        email: userData.email,
-        avatarUrl: userData.avatarUrl,
-        bio: userData.bio,
-        createdAt: userData.createdAt.getTime(),
-        lastSeen: userData.lastSeen.getTime(),
-        verified: {
-          verified: !!userData.verified?.[0],
-          type: userData.verified?.[0]?.type,
-          expiresAt: userData.verified?.[0]?.expiresAt,
+    // Vérifier si l'appareil existe déjà
+    let device = await prisma.device.findFirst({
+      where: { deviceId: deviceId },
+    });
+
+    if (!device) {
+      // Si l'appareil n'existe pas, le créer
+      device = await prisma.device.create({
+        data: {
+          sessionId: session.id,
+          deviceId: deviceId,
+          type: (deviceTypeHeader as DeviceType) || "UNKNOWN",
+          model: deviceModel || "Unknown Model",
         },
-      };
+      });
+      console.log("Nouvel appareil enregistré:", device);
+    } else {
+      // Si l'appareil existe, mettre à jour sa session pour la nouvelle connexion
+      device = await prisma.device.update({
+        where: { id: device.id },
+        data: { sessionId: session.id, logged: true },
+      });
+      console.log("Appareil existant mis à jour:", device);
+    }
+
+    const user = {
+      id: userData.id,
+      username: userData.username,
+      displayName: userData.displayName,
+      email: userData.email,
+      avatarUrl: userData.avatarUrl,
+      bio: userData.bio,
+      createdAt: userData.createdAt.getTime(),
+      lastSeen: userData.lastSeen.getTime(),
+      verified: {
+        verified: !!userData.verified?.[0],
+        type: userData.verified?.[0]?.type,
+        expiresAt: userData.verified?.[0]?.expiresAt,
+      },
+    };
 
     return NextResponse.json({
       success: true,
@@ -85,6 +123,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: false,
       message: "Quelque chose s'est mal passé. Veuillez réessayer.",
+      name: "server_error",
     });
   }
 }

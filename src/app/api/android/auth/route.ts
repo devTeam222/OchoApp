@@ -2,12 +2,27 @@ import { lucia } from "@/auth";
 import prisma from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { User, ApiResponse, UserSession } from "../utils/dTypes";
+import { User, ApiResponse, UserSession, DeviceType } from "../utils/dTypes";
 
 export async function GET(req: NextRequest) {
   const type = req.nextUrl.searchParams.get("type");
   const user_id = req.nextUrl.searchParams.get("userId") || "";
   const code = req.nextUrl.searchParams.get("code") || "";
+  
+  // Récupérer les informations de l'appareil à partir des en-têtes
+  const deviceId = req.headers.get("X-Device-ID");
+  const deviceTypeHeader = req.headers.get("X-Device-Type");
+  const deviceModel = req.headers.get("X-Device-Model");
+  const deviceType = deviceTypeHeader as DeviceType || 'UNKNOWN';
+
+  // Vérifier la présence des en-têtes essentiels pour l'enregistrement de l'appareil
+  if (!deviceId || !deviceTypeHeader) {
+      return NextResponse.json({
+          success: false,
+          message: "En-têtes d'appareil manquants (X-Device-ID, X-Device-Type).",
+          name: "missing_device_headers",
+      });
+  }
 
   const authCode = await prisma.authCode.findUnique({
     where: {
@@ -27,8 +42,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: false,
       message: "Code d'authentification expiré ou invalide.",
+      name: "invalid_auth_code",
     });
   }
+
   const isExpired = new Date() > new Date(authCode.expiresAt);
   await prisma.authCode.delete({
     where: {
@@ -43,9 +60,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: false,
       message: "Code d'authentification expiré ou invalide.",
+      name: "expired_auth_code",
     });
   }
-
 
   try {
     const wheres = {
@@ -84,6 +101,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({
         success: false,
         message: "Compte introuvable.",
+        name: "user_not_found",
       });
     }
     const userData = existingUser;
@@ -95,6 +113,33 @@ export async function GET(req: NextRequest) {
       sessionCookie.value,
       sessionCookie.attributes,
     );
+    
+    // Vérifier si l'appareil existe déjà
+    let device = await prisma.device.findFirst({
+        where: { deviceId: deviceId },
+    });
+
+    if (!device) {
+        // Si l'appareil n'existe pas, le créer
+        device = await prisma.device.create({
+            data: {
+                sessionId: session.id,
+                deviceId: deviceId,
+                // Utiliser le type d'appareil de l'en-tête et caster l'enum
+                type: deviceType, 
+                model: deviceModel || 'Unknown Model',
+            },
+        });
+        console.log("Nouvel appareil enregistré:", device);
+    } else {
+        // Si l'appareil existe, mettre à jour sa session pour la nouvelle connexion
+        device = await prisma.device.update({
+            where: { id: device.id },
+            data: { sessionId: session.id, logged: true },
+        });
+        console.log("Appareil existant mis à jour:", device);
+    }
+
     const user: User = {
       id: userData.id,
       username: userData.username,
@@ -124,6 +169,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: false,
       message: "Quelque chose s'est mal passé. Veuillez réessayer.",
+      name: "server_error",
     });
   }
 }

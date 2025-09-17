@@ -69,9 +69,31 @@ model Session {
   userId    String
   expiresAt DateTime
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  devices Device[]
 
   @@map("sessions")
 }
+enum DeviceType {
+  ANDROID
+  IOS
+  WEB
+  DESKTOP
+  UNKNOWN
+}
+model Device{
+  id        String   @id @default(cuid())
+  sessionId String
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  deviceId  String
+  type      DeviceType @default(UNKNOWN)
+  model     String?
+  logged    Boolean @default(true)
+  ip        String?
+  location  String?
+  createdAt DateTime @default(now())
+}
+
+
 
 model AuthCode {
   id        String   @id
