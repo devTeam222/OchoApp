@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
 
     // Vérifier si l'appareil existe déjà
     let device = await prisma.device.findFirst({
-      where: { deviceId: deviceId },
+      where: { deviceId },
     });
 
     if (!device) {
