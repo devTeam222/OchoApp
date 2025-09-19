@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse, User, VerifiedUser } from "../../utils/dTypes";
-import { UserData } from "@/lib/types";
+import { getUserDataSelect, UserData } from "@/lib/types";
 
 // Endpoint pour récupérer un profil utilisateur par ID
 export async function GET(
@@ -101,29 +101,7 @@ export async function GET(
           { username: userId }, // Permet de chercher par nom d'utilisateur aussi
         ],
       },
-      select: {
-        id: true,
-        username: true,
-        displayName: true,
-        avatarUrl: true,
-        bio: true,
-        lastSeen: true,
-        createdAt: true,
-        following: {
-          select: {
-            followerId: true,
-          },
-          take: 0,
-        },
-        followers: {
-          select: {
-            followerId: true,
-          },
-          take: 0,
-        },
-        verified: true,
-        _count: true,
-      },
+      select: getUserDataSelect(currentUser.id),
     })) as UserData | undefined;
 
     if (!user) {
@@ -148,6 +126,7 @@ export async function GET(
       type: userVerifiedData?.type,
       expiresAt: userVerifiedData?.expiresAt,
     };
+    const isFollowing = user.followers.some(follower=>follower.followerId === currentUser.id)
 
     const finalUser: User = {
       id: user.id,
@@ -160,6 +139,7 @@ export async function GET(
       lastSeen: user.lastSeen.getTime(),
       followersCount: user._count.followers,
       postsCount: user._count.posts,
+      isFollowing
     };
 
     return NextResponse.json({

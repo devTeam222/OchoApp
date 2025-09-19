@@ -10,6 +10,7 @@ export interface User {
   lastSeen?: number;
   followersCount?: number;
   postsCount?: number;
+  isFollowing?: boolean;
 }
 
 export interface VerifiedUser {

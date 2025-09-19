@@ -137,7 +137,7 @@ export async function GET(
       expiresAt: userVerifiedData?.expiresAt,
     };
 
-    const isFollowing = user.followers.some(
+    let isFollowing = user.followers.some(
       (follower) => follower.followerId === currentUser.id,
     );
 
@@ -181,6 +181,16 @@ export async function GET(
       where: { id: user.id },
         select: getUserDataSelect(currentUser.id),
     }) as UserData | null;
+    if (!updatedUser) {
+      return NextResponse.json({
+        success: false,
+        message: "User not found after update",
+        name: "user_not_found",
+      } as ApiResponse<null>);
+    }
+    isFollowing = updatedUser.followers.some(
+        (follower) => follower.followerId === currentUser.id,
+    );
     
 
     const finalUser: User = {
@@ -194,6 +204,7 @@ export async function GET(
       lastSeen: user.lastSeen.getTime(),
       followersCount: updatedUser?._count.followers || 0,
       postsCount: updatedUser?._count.posts || 0,
+      isFollowing,
     };
 
     return NextResponse.json({
