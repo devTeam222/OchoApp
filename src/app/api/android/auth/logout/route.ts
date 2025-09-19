@@ -21,7 +21,6 @@ export async function DELETE(req: NextRequest) {
         const device = await prisma.device.update({
             where: {
                 id: deviceId,
-                sessionId: sessionToken,
             },
             data: { logged: false },
         });
