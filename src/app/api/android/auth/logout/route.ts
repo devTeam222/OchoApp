@@ -15,12 +15,15 @@ export async function DELETE(req: NextRequest) {
             name: "missing_credentials",
         }, { status: 400 });
     }
+    console.log(`Logging out device ${deviceId} with session ${sessionToken}`);
+    
 
     try {
         // 2. Vérifier si l'appareil et la session correspondent en une seule requête atomique.
         const device = await prisma.device.update({
             where: {
                 id: deviceId,
+                sessionId: sessionToken,
             },
             data: { logged: false },
         });
