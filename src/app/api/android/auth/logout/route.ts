@@ -22,8 +22,7 @@ export async function DELETE(req: NextRequest) {
         // 2. Vérifier si l'appareil et la session correspondent en une seule requête atomique.
         const device = await prisma.device.update({
             where: {
-                id: deviceId,
-                sessionId: sessionToken,
+                sessionId_deviceId: { sessionId: sessionToken, deviceId: deviceId },
             },
             data: { logged: false },
         });

@@ -91,6 +91,7 @@ model Device{
   ip        String?
   location  String?
   createdAt DateTime @default(now())
+  @@unique([sessionId, deviceId])
 }
 
 
