@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
         SELECT
             LOWER(unnest(regexp_matches(p.content, '#[[:alnum:]_-]+', 'g'))) AS hashtag,
             COUNT(DISTINCT p.id) AS "postsCount",
-            COUNT(l.userId) AS "likesCount"
+            COUNT(l.postId) AS "likesCount"
         FROM posts p
         LEFT JOIN likes l ON p.id = l.postId
         GROUP BY hashtag
@@ -100,25 +100,25 @@ export async function GET(req: NextRequest) {
     `;
 
     // Mapper le résultat pour convertir les BigInt en nombres entiers
-    const hashtags = result.map(row => ({
+    const hashtags = result.map((row) => ({
       name: row.hashtag,
       postsCount: Number(row.postsCount),
-      likesCount: Number(row.likesCount)
+      likesCount: Number(row.likesCount),
     }));
 
     console.log(hashtags);
-    
-    
+
     return NextResponse.json({
       success: true,
       message: "Trending hashtags fetched successfully",
       data: hashtags,
-    } as ApiResponse<{
+    } as ApiResponse<
+      {
         name: string;
         postsCount: number;
         likesCount: number;
-    }[]>);
-
+      }[]
+    >);
   } catch (error) {
     console.error(error);
     return NextResponse.json({
