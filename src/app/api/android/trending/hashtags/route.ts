@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
         SELECT
             LOWER(unnest(regexp_matches(p.content, '#[[:alnum:]_-]+', 'g'))) AS hashtag,
             COUNT(DISTINCT p.id) AS "postsCount",
-            COUNT(l.id) AS "likesCount"
+            COUNT(l.userId) AS "likesCount"
         FROM posts p
         LEFT JOIN likes l ON p.id = l."postId"
         GROUP BY hashtag
