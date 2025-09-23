@@ -295,15 +295,15 @@ export default function NewChat({
                   </div>
                 </li>
                 {isFetchingAll && (
-                  <div className="mx-auto py-5">
+                  <li className="mx-auto py-5">
                     <Loader2 className="animate-spin" />
-                  </div>
+                  </li>
                 )}
                 {isErrorAll && (
-                  <div className="flex flex-col w-full flex-1 select-none items-center px-3 py-8 text-center italic text-muted-foreground">
+                  <li className="flex flex-col w-full flex-1 select-none items-center px-3 py-8 text-center italic text-muted-foreground">
                     <Frown size={100} />
                     <h2 className="text-xl">{dataError}</h2>
-                  </div>
+                  </li>
                 )}
                 <UsersList
                   query={friendsQuery}
@@ -401,9 +401,9 @@ export default function NewChat({
               </>
             )}
             {isFetchingAll && (
-              <div className="mx-auto py-5">
+              <li className="mx-auto py-5">
                 <Loader2 className="animate-spin" />
-              </div>
+              </li>
             )}
             <li className="flex-1 overflow-y-auto">
               <ul className="flex flex-col gap-1">
