@@ -105,6 +105,9 @@ export async function GET(req: NextRequest) {
       postsCount: Number(row.postsCount),
       likesCount: Number(row.likesCount)
     }));
+
+    console.log(hashtags);
+    
     
     return NextResponse.json({
       success: true,

@@ -132,12 +132,13 @@ export async function GET(req: NextRequest) {
             isFollowing,
         };
     });
+    console.log(suggestedUsers);
 
     return NextResponse.json({
       success: true,
       message: "Suggested users fetched successfully",
       data: suggestedUsers,
-    } as ApiResponse<any>);
+    } as ApiResponse<User[]>);
 
   } catch (error) {
     console.error(error);
