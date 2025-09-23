@@ -93,7 +93,7 @@ export async function GET(req: NextRequest) {
             COUNT(DISTINCT p.id) AS "postsCount",
             COUNT(l.userId) AS "likesCount"
         FROM posts p
-        LEFT JOIN likes l ON p.id = l."postId"
+        LEFT JOIN likes l ON p.id = l.postId
         GROUP BY hashtag
         ORDER BY "postsCount" DESC, "likesCount" DESC
         LIMIT 5

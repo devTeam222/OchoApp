@@ -132,7 +132,6 @@ export async function GET(req: NextRequest) {
             isFollowing,
         };
     });
-    console.log(suggestedUsers);
 
     return NextResponse.json({
       success: true,
