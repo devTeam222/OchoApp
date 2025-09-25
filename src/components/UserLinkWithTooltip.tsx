@@ -12,11 +12,13 @@ import { useSession } from "@/app/(main)/SessionProvider";
 interface UserLinkWithTooltipProps extends PropsWithChildren {
   username: string;
   onFind?: (user: UserData)=> void;
+  postId?: string;
 }
 
 export default function UserLinkWithTooltip({
   children,
   username,
+  postId,
   onFind,
 }: UserLinkWithTooltipProps) {
   const [useDialog, setUseDialog] = useState(false);
@@ -38,7 +40,9 @@ export default function UserLinkWithTooltip({
   const { data } = useQuery({
     queryKey: ["user-data", username],
     queryFn: () =>
-      kyInstance.get(`/api/users/username/${username}`).json<UserData>(),
+      kyInstance.get(`/api/users/username/${username}`, {
+        searchParams: postId ? { postId } : undefined,
+      }).json<UserData>(),
     retry(failureCount, error) {
       if (error instanceof HTTPError && error.response.status === 404) {
         return false;

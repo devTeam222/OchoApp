@@ -37,6 +37,7 @@ function LinkifyUsername({ children, postId }: LinkifyProps) {
           <UserLinkWithTooltip
             key={key}
             username={match.slice(1)}
+            postId={postId}
             onFind={async (user) => {}}
           >
             {match}

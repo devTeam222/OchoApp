@@ -7,6 +7,7 @@ import { getUserDataSelect } from "@/lib/types";
 export async function GET(req: Request,
     { params: { username } }: { params: { username: string } }
 ) {
+    const postId = new URL(req.url).searchParams.get("postId");
     try {
 
         const { user: loggedInUser } = await validateRequest();
@@ -27,6 +28,32 @@ export async function GET(req: Request,
 
         if (!user) {
             return Response.json({ error: "Utilisateur non trouvé" }, { status: 404 })
+        }
+        if (postId) {
+            const post = await prisma.post.findUnique({
+                where: { id: postId },
+                select: { userId: true }
+            });
+            if (post && post.userId !== user.id) {
+                const isIdentified = await prisma.notification.findFirst({
+                    where: {
+                        issuerId: post.userId,
+                        recipientId: user.id,
+                        type: "IDENTIFY",
+                        postId
+                    }
+                })
+                if (!isIdentified) {
+                    await prisma.notification.create({
+                        data: {
+                            issuerId: post.userId,
+                            recipientId: user.id,
+                            type: "IDENTIFY",
+                            postId
+                        }
+                    })
+                }
+            }
         }
 
         return Response.json(user)
