@@ -105,6 +105,7 @@ export interface NotificationData {
     issuer: User;
     recipientId: string;
     post?: Post | null;
+    postId?: string | null;
     comment?: Comment | null;
     createdAt: number;
 }
