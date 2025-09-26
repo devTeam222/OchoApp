@@ -1,3 +1,5 @@
+import { NotificationType } from "@prisma/client";
+
 export interface User {
   id: string;
   username: string;
@@ -79,6 +81,32 @@ export interface Post {
   comments: number;
   isLiked: boolean;
   isBookmarked: boolean;
+}
+
+export interface Comment {
+  id: string;
+  author: User | null;
+  content: string;
+  createdAt: number;
+  likes: number;
+  isLiked: boolean;
+}
+
+export interface NotificationsPage {
+    notifications: NotificationData[];
+    cursor: string | null;
+    hasMore: boolean;
+}
+
+export interface NotificationData {
+    id: string;
+    type: NotificationType;
+    read: boolean;
+    issuer: User;
+    recipientId: string;
+    post?: Post | null;
+    comment?: Comment | null;
+    createdAt: number;
 }
 
 export interface PostsPage {
