@@ -63,10 +63,9 @@ export async function GET(req: NextRequest) {
     const userId = session.userId
 // Récupérer le timestamp de la dernière récupération depuis l'appareil
     const lastFetchedDate = req.nextUrl.searchParams.get("lastFetchedDate");
-    console.log(lastFetchedDate);
-    
 
     let hasNewNotifications = false;
+    let notificationCount = 0
 
     if (lastFetchedDate) {
       const lastFetchedTimestamp = parseInt(lastFetchedDate, 10);
@@ -88,15 +87,18 @@ export async function GET(req: NextRequest) {
         },
       });
       hasNewNotifications = unreadNotifications > 0;
+      notificationCount = unreadNotifications
     }
 
     return NextResponse.json({
       success: true,
       data: {
-        hasNewNotifications: hasNewNotifications,
+        hasNewNotifications,
+        notificationCount
       },
     } as ApiResponse<{
-        hasNewNotifications: boolean
+        hasNewNotifications: boolean;
+        notificationCount: number;
     }>);
     
   } catch (error) {
