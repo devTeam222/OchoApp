@@ -86,6 +86,7 @@ export async function GET(req: NextRequest) {
     const newNotifications = await prisma.notification.findMany({
       where: {
         recipientId: userId,
+        read: false,
         createdAt: lastFetchedTimestamp
           ? {
               gte: new Date(lastFetchedTimestamp),
