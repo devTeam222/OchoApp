@@ -70,7 +70,8 @@ export async function GET(req: NextRequest) {
     const lastFetchedTimestamp = parseInt(lastFetchedDate || "", 10);
     const unreadCount = await prisma.notification.count({
         where: {
-            recipientId: userId
+            recipientId: userId,
+            read: false
         }
     })
       const newNotifications = await prisma.notification.findMany({
