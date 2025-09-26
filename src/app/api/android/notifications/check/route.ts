@@ -81,7 +81,6 @@ export async function GET(req: NextRequest) {
         read: false,
       },
     });
-    console.log(lastFetchedTimestamp);
 
     const newNotifications = await prisma.notification.findMany({
       where: {
