@@ -74,6 +74,8 @@ export async function GET(req: NextRequest) {
             read: false
         }
     })
+    console.log(lastFetchedTimestamp);
+    
       const newNotifications = await prisma.notification.findMany({
         where: {
           recipientId: userId,
@@ -82,6 +84,8 @@ export async function GET(req: NextRequest) {
           } : undefined),
         },
       });
+      console.log(newNotifications);
+      
       hasNewNotifications = newNotifications.length > 0;
       notificationCount = unreadCount
 
