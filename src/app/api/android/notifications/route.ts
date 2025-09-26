@@ -101,7 +101,7 @@ export async function GET(req: NextRequest) {
 
     
     const nextCursor =
-      notifications.length > pageSize ? notifications[notifications.length - 1].id : null;
+      notifications.length > pageSize ? notifications[pageSize].id : null;
 
     const finalNotifications: NotificationData[] = notifications
       .slice(0, pageSize)
