@@ -1,7 +1,7 @@
 // api/android/notifications/check
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { ApiResponse } from "../../utils/dTypes";
+import { ApiResponse, NotificationData } from "../../utils/dTypes";
 
 export async function GET(req: NextRequest) {
   try {
@@ -67,9 +67,8 @@ export async function GET(req: NextRequest) {
     let hasNewNotifications = false;
     let notificationCount = 0
 
-    if (lastFetchedDate) {
-      const lastFetchedTimestamp = parseInt(lastFetchedDate, 10);
-      const newNotifications = await prisma.notification.count({
+    const lastFetchedTimestamp = parseInt(lastFetchedDate || "", 10);
+      const newNotifications = await prisma.notification.findMany({
         where: {
           recipientId: userId,
           createdAt: {
@@ -77,18 +76,8 @@ export async function GET(req: NextRequest) {
           },
         },
       });
-      hasNewNotifications = newNotifications > 0;
-    } else {
-      // Si lastFetchedDate n'est pas fourni, vérifier toutes les notifications non lues
-      const unreadNotifications = await prisma.notification.count({
-        where: {
-          recipientId: userId,
-          read: false,
-        },
-      });
-      hasNewNotifications = unreadNotifications > 0;
-      notificationCount = unreadNotifications
-    }
+      hasNewNotifications = newNotifications.length > 0;
+      notificationCount = newNotifications.length
 
     return NextResponse.json({
       success: true,
@@ -99,6 +88,7 @@ export async function GET(req: NextRequest) {
     } as ApiResponse<{
         hasNewNotifications: boolean;
         notificationCount: number;
+        newNotification: NotificationData;
     }>);
     
   } catch (error) {
