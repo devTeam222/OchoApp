@@ -79,15 +79,19 @@ export async function GET(req: NextRequest) {
             },
             include: {
                 issuer: {
-                    include: {
-                        verified: true,
-                    },
+                select: {
+                    verified: true,
+                    username: true,
+                    displayName: true,
+                    avatarUrl: true,
                 },
-                post: true,
+                },
                 comment: {
-                    select: {
-                        content: true,
-                    }
+                select: {
+                    id: true,
+                    content: true,
+                    createdAt: true,
+                },
                 },
             },
             orderBy: { createdAt: "desc" },
@@ -95,37 +99,49 @@ export async function GET(req: NextRequest) {
             cursor: cursor ? { id: cursor } : undefined,
         });
 
-        const finalNotifications = notifications.slice(0, pageSize).map((notification) => {
-            const issuer = notification.issuer;
-            const userVerifiedData = issuer.verified?.[0];
-            const expiresAt = userVerifiedData?.expiresAt;
-            const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
-            const expired = canExpire && expiresAt ? new Date().getTime() > new Date(expiresAt).getTime() : false;
-            const isVerified = !!userVerifiedData && !expired;
-
-            const verified: VerifiedUser = {
-                verified: isVerified,
-                type: userVerifiedData?.type || null,
-                // On renvoie un timestamp en millisecondes, pas une chaîne de caractères
-                expiresAt: expiresAt ? new Date(expiresAt).getTime() : null,
-            };
-
-            const issuerUser: User = {
-                id: issuer.id,
-                username: issuer.username,
-                displayName: issuer.displayName,
-                avatarUrl: issuer.avatarUrl || undefined,
-                bio: issuer.bio || undefined,
-                verified,
-                createdAt: issuer.createdAt.getTime(),
-                lastSeen: issuer.lastSeen.getTime(),
-            };
-            return {
-                ...notification,
-                issuer: issuerUser,
-                createdAt: notification.createdAt.getTime(),
-                read: notification.read,
-            } as NotificationData;
+        const finalNotifications: NotificationData[]= notifications.slice(0, pageSize).map((notif) => {
+            const userVerifiedData = notif.issuer.verified?.[0];
+                  const expiresAt = userVerifiedData?.expiresAt;
+                  const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
+                  const expired =
+                    canExpire && expiresAt
+                      ? new Date().getTime() > new Date(expiresAt).getTime()
+                      : false;
+                  const isVerified = !!userVerifiedData && !expired;
+            
+                  const verified: VerifiedUser = {
+                    verified: isVerified,
+                    type: userVerifiedData?.type || null,
+                    // On renvoie un timestamp en millisecondes, pas une chaîne de caractères
+                    expiresAt: expiresAt ? new Date(expiresAt).getTime() : null,
+                  };
+            
+                  const issuer: User = {
+                    id: notif.issuerId,
+                    username: notif.issuer.username,
+                    displayName: notif.issuer.displayName,
+                    avatarUrl: notif.issuer.avatarUrl || undefined,
+                    verified,
+                  };
+                  const comment = notif.comment
+                    ? {
+                        id: notif.comment.id,
+                        content: notif.comment.content,
+                        createdAt: notif.comment.createdAt.getTime(),
+                        author: null,
+                        likes: 0,
+                        isLiked: false,
+                      }
+                    : null;
+                  return {
+                    id: notif.id,
+                    type: notif.type,
+                    read: notif.read,
+                    issuer,
+                    recipientId: notif.recipientId,
+                    comment,
+                    createdAt: notif.createdAt.getTime(),
+                  };
         });
 
         const nextCursor = notifications.length > pageSize ? notifications[pageSize].id : null;
