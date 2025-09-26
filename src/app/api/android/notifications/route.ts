@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
     }
 
     const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
-    const pageSize = 5;
+    const pageSize = 10;
 
     const notifications = await prisma.notification.findMany({
       where: {
