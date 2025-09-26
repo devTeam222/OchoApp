@@ -148,7 +148,7 @@ export async function GET(req: NextRequest) {
       });
 
     const nextCursor =
-      notifications.length > pageSize ? notifications[pageSize].id : null;
+      notifications.length > pageSize ? notifications[0].id : null;
 
     const notificationsPage: NotificationsPage = {
       notifications: finalNotifications,
