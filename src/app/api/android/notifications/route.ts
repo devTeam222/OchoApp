@@ -99,6 +99,10 @@ export async function GET(req: NextRequest) {
       cursor: cursor ? { id: cursor } : undefined,
     });
 
+    
+    const nextCursor =
+      notifications.length > pageSize ? notifications[notifications.length - 1].id : null;
+
     const finalNotifications: NotificationData[] = notifications
       .slice(0, pageSize)
       .map((notif) => {
@@ -146,9 +150,6 @@ export async function GET(req: NextRequest) {
           postId: notif.postId || null,
         };
       });
-
-    const nextCursor =
-      notifications.length > pageSize ? notifications[notifications.length - 1].id : null;
 
     const notificationsPage: NotificationsPage = {
       notifications: finalNotifications,
