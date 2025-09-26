@@ -112,19 +112,20 @@ export async function GET(
       } as ApiResponse<null>);
     }
 
+    
     const userVerifiedData = user.verified?.[0];
+    const expiresAt = userVerifiedData?.expiresAt?.getTime() || null;
+    const canExpire = !!(expiresAt || null);
 
-    const expiresAt = userVerifiedData?.expiresAt;
-    const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
-
-    const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
+    const expired =
+      canExpire && expiresAt ? new Date().getTime() < expiresAt : false;
 
     const isVerified = !!userVerifiedData && !expired;
 
     const verified: VerifiedUser = {
       verified: isVerified,
       type: userVerifiedData?.type,
-      expiresAt: userVerifiedData?.expiresAt,
+      expiresAt,
     };
     const isFollowing = user.followers.some(follower=>follower.followerId === currentUser.id)
 
@@ -260,18 +261,18 @@ export async function PATCH(
     }) as UserData;
 
     const userVerifiedData = updatedUser.verified?.[0];
+    const expiresAt = userVerifiedData?.expiresAt?.getTime() || null;
+    const canExpire = !!(expiresAt || null);
 
-    const expiresAt = userVerifiedData?.expiresAt;
-    const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
-
-    const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
+    const expired =
+      canExpire && expiresAt ? new Date().getTime() < expiresAt : false;
 
     const isVerified = !!userVerifiedData && !expired;
 
     const verified: VerifiedUser = {
       verified: isVerified,
       type: userVerifiedData?.type,
-      expiresAt: userVerifiedData?.expiresAt,
+      expiresAt,
     };
     const isFollowing = updatedUser.followers.some(follower=>follower.followerId === currentUser.id)
 

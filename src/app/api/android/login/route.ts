@@ -4,7 +4,13 @@ import { verify } from "@node-rs/argon2";
 import { lucia } from "@/auth";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { ApiResponse, User, UserSession, DeviceType } from "../utils/dTypes";
+import {
+  ApiResponse,
+  User,
+  UserSession,
+  DeviceType,
+  VerifiedUser,
+} from "../utils/dTypes";
 
 export async function POST(req: NextRequest) {
   try {
@@ -109,6 +115,21 @@ export async function POST(req: NextRequest) {
       console.log("Appareil existant mis à jour:", device);
     }
 
+    const userVerifiedData = userData.verified?.[0];
+    const expiresAt = userVerifiedData?.expiresAt?.getTime() || null;
+    const canExpire = !!(expiresAt || null);
+
+    const expired =
+      canExpire && expiresAt ? new Date().getTime() < expiresAt : false;
+
+    const isVerified = !!userVerifiedData && !expired;
+
+    const verified: VerifiedUser = {
+      verified: isVerified,
+      type: userVerifiedData?.type,
+      expiresAt,
+    };
+
     const user: User = {
       id: userData.id,
       username: userData.username,
@@ -118,11 +139,7 @@ export async function POST(req: NextRequest) {
       bio: userData.bio || undefined,
       createdAt: userData.createdAt.getTime(),
       lastSeen: userData.lastSeen.getTime(),
-      verified: {
-        verified: !!userData.verified?.[0],
-        type: userData.verified?.[0]?.type,
-        expiresAt: userData.verified?.[0]?.expiresAt,
-      },
+      verified,
     };
 
     return NextResponse.json<ApiResponse<UserSession>>({

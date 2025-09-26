@@ -18,7 +18,7 @@ export interface User {
 export interface VerifiedUser {
   verified: boolean;
   type: string | null;
-  expiresAt: Date | null;
+  expiresAt: number | null;
 }
 
 export interface SignupRequest {

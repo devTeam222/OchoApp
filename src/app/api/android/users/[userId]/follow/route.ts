@@ -123,18 +123,18 @@ export async function GET(
     }
 
     const userVerifiedData = user.verified?.[0];
+    const expiresAt = userVerifiedData?.expiresAt?.getTime() || null;
+    const canExpire = !!(expiresAt || null);
 
-    const expiresAt = userVerifiedData?.expiresAt;
-    const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
-
-    const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
+    const expired =
+      canExpire && expiresAt ? new Date().getTime() < expiresAt : false;
 
     const isVerified = !!userVerifiedData && !expired;
 
     const verified: VerifiedUser = {
       verified: isVerified,
       type: userVerifiedData?.type,
-      expiresAt: userVerifiedData?.expiresAt,
+      expiresAt,
     };
 
     let isFollowing = user.followers.some(
@@ -177,10 +177,10 @@ export async function GET(
       ]);
     }
     // Recalculer le nombre de followers et posts
-    const updatedUser = await prisma.user.findUnique({
+    const updatedUser = (await prisma.user.findUnique({
       where: { id: user.id },
-        select: getUserDataSelect(currentUser.id),
-    }) as UserData | null;
+      select: getUserDataSelect(currentUser.id),
+    })) as UserData | null;
     if (!updatedUser) {
       return NextResponse.json({
         success: false,
@@ -189,9 +189,8 @@ export async function GET(
       } as ApiResponse<null>);
     }
     isFollowing = updatedUser.followers.some(
-        (follower) => follower.followerId === currentUser.id,
+      (follower) => follower.followerId === currentUser.id,
     );
-    
 
     const finalUser: User = {
       id: user.id,

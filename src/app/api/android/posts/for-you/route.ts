@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
     }
     const device = await prisma.device.findFirst({
       where: {
-        deviceId
+        deviceId,
       },
     });
     const isDeviceLoggedIn = device?.logged;
@@ -114,17 +114,18 @@ export async function GET(req: NextRequest) {
       .map((post) => {
         const userVerifiedData = post.user.verified?.[0];
 
-        const expiresAt = userVerifiedData?.expiresAt;
-        const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
+        const expiresAt = userVerifiedData?.expiresAt?.getTime() || null;
+        const canExpire = !!(expiresAt || null);
 
-        const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
+        const expired =
+          canExpire && expiresAt ? new Date().getTime() < expiresAt : false;
 
         const isVerified = !!userVerifiedData && !expired;
 
         const verified: VerifiedUser = {
           verified: isVerified,
           type: userVerifiedData?.type,
-          expiresAt: userVerifiedData?.expiresAt,
+          expiresAt,
         };
         const attachments: Attachment[] = post.attachments;
         const author: User = {

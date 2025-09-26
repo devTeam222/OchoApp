@@ -92,10 +92,10 @@ export async function GET(req: NextRequest) {
     const finalPosts = posts.slice(0, pageSize).map((post) => {
       const userVerifiedData = post.user.verified?.[0];
 
-      const expiresAt = userVerifiedData?.expiresAt;
-      const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
+      const expiresAt= userVerifiedData?.expiresAt?.getTime() || null;
+      const canExpire = !!(expiresAt || null);
 
-      const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
+      const expired = canExpire && expiresAt ? new Date().getTime() < expiresAt : false;
 
       const isVerified = !!userVerifiedData && !expired;
       const isBookmarked = post.bookmarks.some(
@@ -105,7 +105,7 @@ export async function GET(req: NextRequest) {
       const verified: VerifiedUser = {
         verified: isVerified,
         type: userVerifiedData?.type,
-        expiresAt: userVerifiedData?.expiresAt,
+        expiresAt,
       };
 
       const author: User = {

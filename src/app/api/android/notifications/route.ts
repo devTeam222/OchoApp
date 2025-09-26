@@ -101,13 +101,14 @@ export async function GET(req: NextRequest) {
             const userVerifiedData = issuer.verified?.[0];
             const expiresAt = userVerifiedData?.expiresAt;
             const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
-            const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
+            const expired = canExpire && expiresAt ? new Date().getTime() > new Date(expiresAt).getTime() : false;
             const isVerified = !!userVerifiedData && !expired;
 
             const verified: VerifiedUser = {
                 verified: isVerified,
                 type: userVerifiedData?.type || null,
-                expiresAt: userVerifiedData?.expiresAt || null,
+                // On renvoie un timestamp en millisecondes, pas une chaîne de caractères
+                expiresAt: expiresAt ? new Date(expiresAt).getTime() : null,
             };
 
             const issuerUser: User = {

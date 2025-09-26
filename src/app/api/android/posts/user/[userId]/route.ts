@@ -42,7 +42,7 @@ export async function GET(
       } as ApiResponse<null>);
     }
 
-     // 1. Récupérer les informations de l'appareil à partir des en-têtes
+    // 1. Récupérer les informations de l'appareil à partir des en-têtes
     const deviceId = req.headers.get("X-Device-ID");
     const deviceTypeHeader = req.headers.get("X-Device-Type");
 
@@ -56,7 +56,7 @@ export async function GET(
     }
     const device = await prisma.device.findFirst({
       where: {
-        deviceId
+        deviceId,
       },
     });
     const isDeviceLoggedIn = device?.logged;
@@ -89,21 +89,18 @@ export async function GET(
     // Convertir les posts pour correspondre au type 'Post'
     const finalPosts = posts.slice(0, pageSize).map((post) => {
       const userVerifiedData = post.user.verified?.[0];
+      const expiresAt = userVerifiedData?.expiresAt?.getTime() || null;
+      const canExpire = !!(expiresAt || null);
 
-      const expiresAt = userVerifiedData?.expiresAt;
-      const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
-
-      const expired = canExpire && expiresAt ? new Date() < expiresAt : false;
+      const expired =
+        canExpire && expiresAt ? new Date().getTime() < expiresAt : false;
 
       const isVerified = !!userVerifiedData && !expired;
-      const isBookmarked = post.bookmarks.some(
-        (bookmark) => bookmark.userId === currentUserId,
-      );
 
       const verified: VerifiedUser = {
         verified: isVerified,
         type: userVerifiedData?.type,
-        expiresAt: userVerifiedData?.expiresAt,
+        expiresAt,
       };
 
       const author: User = {
@@ -116,7 +113,9 @@ export async function GET(
         createdAt: post.user.createdAt.getTime(),
         lastSeen: post.user.lastSeen.getTime(),
       };
-
+      const isBookmarked = post.bookmarks.some(
+        (bookmark) => bookmark.userId === currentUserId,
+      );
 
       const finalPost = {
         id: post.id,
@@ -128,7 +127,7 @@ export async function GET(
         likes: post._count.likes,
         comments: post._count.comments,
         isLiked: post.likes.some((like) => like.userId === currentUserId),
-        isBookmarked
+        isBookmarked,
       };
       return finalPost;
     });
