@@ -8,7 +8,6 @@ import {
     User,
     VerifiedUser,
 } from "../utils/dTypes";
-import { Prisma } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
     try {

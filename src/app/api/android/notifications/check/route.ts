@@ -63,6 +63,8 @@ export async function GET(req: NextRequest) {
     const userId = session.userId
 // Récupérer le timestamp de la dernière récupération depuis l'appareil
     const lastFetchedDate = req.nextUrl.searchParams.get("lastFetchedDate");
+    console.log(lastFetchedDate);
+    
 
     let hasNewNotifications = false;
 
