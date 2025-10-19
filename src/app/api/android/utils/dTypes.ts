@@ -1,3 +1,4 @@
+// api/android/utils/dTypes.ts
 import { NotificationType } from "@prisma/client";
 
 export interface User {

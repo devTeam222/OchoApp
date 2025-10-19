@@ -48,6 +48,7 @@ model User {
   verified       VerifiedUsers[]
   relevanceScore PostUserScore[]
   oldUserData    OldUserData[]
+  searches SearchHistory[]
 
   @@map("users")
 }
@@ -365,4 +366,14 @@ enum NotificationType {
   COMMENT_REPLY
   FOLLOW
   IDENTIFY
+}
+
+model SearchHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  query     String
+  createdAt DateTime @default(now())
+
+  @@map("search_history")
 }
