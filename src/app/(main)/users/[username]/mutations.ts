@@ -55,7 +55,7 @@ async function uploadGroupAvatar({
 }): Promise<LocalUpload[] | null> {
   return new Promise<LocalUpload[] | null>(async (resolve) => {
     const formData: FormData = new FormData();
-    formData.append("file", file);
+    formData.append("avatar", file);
     formData.append("id", channelId);
 
     const response = await kyInstance

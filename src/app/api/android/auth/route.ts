@@ -82,6 +82,8 @@ export async function GET(req: NextRequest) {
 
     const where = wheres[type as keyof typeof wheres].where;
 
+    // Check if google or github user exists
+
     const existingUser = await prisma.user.findUnique({
       where,
       select: {

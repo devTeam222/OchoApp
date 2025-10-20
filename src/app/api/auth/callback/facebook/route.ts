@@ -89,7 +89,7 @@ export async function GET(req: NextRequest) {
         async function uploadAvatar(blob: Blob): Promise<string | null> {
             const file = new File([blob], `avatar-${userId}.webp`, { type: "image/webp" });
             const formData = new FormData();
-            formData.append("file", file);
+            formData.append("avatar", file);
 
             const response = await kyInstance.post('/api/upload/avatar', {
                 body: formData,

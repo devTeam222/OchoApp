@@ -4,7 +4,8 @@ import prisma from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { google } from "@/app/(mobile)/android/auth";
-import { generateId } from "lucia";
+import { generateId, generateIdFromEntropySize } from "lucia";
+import { slugify } from "@/lib/utils";
 
 export async function GET(req: NextRequest) {
   const code = req.nextUrl.searchParams.get("code");
@@ -35,7 +36,10 @@ export async function GET(req: NextRequest) {
           Authorization: `Bearer ${tokens.accessToken}`,
         },
       })
-      .json<{ id: string; name: string; email: string }>();
+      .json<{ id: string; name: string; email: string; picture: string | null }>();
+
+    console.log(googleUser);
+    
 
     const existingUser = await prisma.user.findUnique({
       where: { googleId: googleUser.id },
@@ -57,14 +61,14 @@ export async function GET(req: NextRequest) {
         passwordHash: true,
       },
     });
-    const authCode = generateId(20)
+    const authCode = generateId(20);
     await prisma.authCode.create({
       data: {
         id: authCode,
         userId: googleUser.id,
-        expiresAt: new Date(Date.now() + 600_000)
-      }
-    })
+        expiresAt: new Date(Date.now() + 600_000),
+      },
+    });
 
     if (existingUser) {
       const session = await lucia.createSession(existingUser.id, {});
@@ -83,6 +87,60 @@ export async function GET(req: NextRequest) {
         },
       });
     }
+
+    const userId = generateIdFromEntropySize(10);
+
+    async function validatedUsername() {
+      const baseUsername = slugify(googleUser.name);
+      let validatedUsername = baseUsername;
+
+      // Chercher tous les noms d'utilisateur qui commencent par le nom de base
+      const similarUsernames = await prisma.user.findMany({
+        where: {
+          username: {
+            startsWith: baseUsername,
+          },
+        },
+        select: { username: true },
+      });
+
+      if (similarUsernames.length === 0) {
+        // Si aucun nom d'utilisateur similaire, le nom est disponible
+        return validatedUsername;
+      }
+
+      // Extraire uniquement les suffixes numériques
+      const usernameSet = new Set(similarUsernames.map((u) => u.username));
+      let number = 1;
+
+      // Trouver le premier suffixe disponible
+      while (usernameSet.has(validatedUsername)) {
+        validatedUsername = `${baseUsername}${number}`;
+        number++;
+      }
+
+      return validatedUsername;
+    }
+
+    const username = await validatedUsername();
+    const email = googleUser.email;
+    const avatarUrl = await prisma.user.create({
+      data: {
+        id: userId,
+        username,
+        email,
+        displayName: googleUser.name,
+        googleId: googleUser.id,
+      },
+    });
+
+    const session = await lucia.createSession(userId, {});
+    const sessionCookie = lucia.createSessionCookie(session.id);
+    cookies().set(
+      sessionCookie.name,
+      sessionCookie.value,
+      sessionCookie.attributes,
+    );
 
     return new Response(null, {
       status: 302,

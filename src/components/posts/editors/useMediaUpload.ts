@@ -43,7 +43,7 @@ export default function useMediaUpload() {
       }
       const xhr = new XMLHttpRequest();
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("avatar", file);
 
       xhr.open("POST", "/api/upload/attachment", true);
 
