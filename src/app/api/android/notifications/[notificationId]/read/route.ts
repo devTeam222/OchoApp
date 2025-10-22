@@ -3,12 +3,13 @@ import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import {
   ApiResponse,
-} from "../../utils/dTypes";
+} from "../../../utils/dTypes";
 
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest, { params }: { params: { notificationId: string } }) {
   try {
     const authHeader = req.headers.get("Authorization");
     const sessionToken = authHeader?.split(" ")[1];
+    
 
     if (!sessionToken) {
       return NextResponse.json({
@@ -66,11 +67,24 @@ export async function GET(req: NextRequest) {
       } as ApiResponse<null>);
     }
 
+    const notificationId = params.notificationId;
 
-    await prisma.notification.updateMany({
+    const notification = await prisma.notification.findUnique({
       where: {
+        id: notificationId,
         recipientId: currentUserId,
-        read: false,
+      },
+    });
+    if (!notification) {
+      return NextResponse.json({
+        success: false,
+        message: "Notification non trouvée ou accès refusé.",
+        name: "not_found",
+      } as ApiResponse<null>);
+    }
+      await prisma.notification.update({
+      where: {
+        id: notificationId,
       },
       data: {
         read: true,
@@ -78,7 +92,7 @@ export async function GET(req: NextRequest) {
     });
     return NextResponse.json({
       success: true,
-      message: "Toutes les notifications ont été marquées comme lues.",
+      message: "Notification marquée comme lue.",
       data: null,
     } as ApiResponse<null>);
   } catch (error) {
