@@ -86,11 +86,6 @@ export async function GET(req: NextRequest) {
       where: {
         recipientId: userId,
         read: false,
-        createdAt: lastFetchedTimestamp
-          ? {
-              gte: new Date(lastFetchedTimestamp),
-            }
-          : undefined,
       },
       include: {
         issuer: {
@@ -109,6 +104,10 @@ export async function GET(req: NextRequest) {
           },
         },
       },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 5,
     });
     const notifications: NotificationData[] = newNotifications.map((notif) => {
       const userVerifiedData = notif.issuer.verified?.[0];
