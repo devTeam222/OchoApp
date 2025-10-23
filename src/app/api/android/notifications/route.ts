@@ -7,6 +7,7 @@ import {
   NotificationsPage,
   User,
   VerifiedUser,
+  Comment,
 } from "../utils/dTypes";
 
 export async function GET(req: NextRequest) {
@@ -91,6 +92,8 @@ export async function GET(req: NextRequest) {
             id: true,
             content: true,
             createdAt: true,
+            postId: true,
+            user: true,
           },
         },
       },
@@ -129,12 +132,15 @@ export async function GET(req: NextRequest) {
           avatarUrl: notif.issuer.avatarUrl || undefined,
           verified,
         };
-        const comment = notif.comment
+        const comment : Comment | null = notif.comment
           ? {
               id: notif.comment.id,
               content: notif.comment.content,
               createdAt: notif.comment.createdAt.getTime(),
               author: null,
+              postId: notif.comment.postId,
+              postAuthorId: notif.comment.user.id,
+              replies: 0,
               likes: 0,
               isLiked: false,
             }

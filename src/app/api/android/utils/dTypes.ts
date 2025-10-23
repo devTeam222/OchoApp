@@ -91,6 +91,25 @@ export interface Comment {
   createdAt: number;
   likes: number;
   isLiked: boolean;
+  postId: string;
+  postAuthorId: string;
+  replies: number;
+}
+
+export interface Reply {
+  id: string;
+  author: User | null;
+  content: string;
+  createdAt: number;
+  likes: number;
+  isLiked: boolean;
+  commentId: string;
+  commentAuthorId: string;
+  commentAuthor: User | null;
+  firstLevelCommentId: string;
+  firstLevelCommentAuthorId: string;
+  postId: string;
+  postAuthorId: string;
 }
 
 export interface NotificationsPage {
@@ -113,5 +132,14 @@ export interface NotificationData {
 
 export interface PostsPage {
   posts: Post[];
+  nextCursor: string | null;
+}
+
+export interface CommentsPage {
+  comments: Comment[];
+  nextCursor: string | null;
+}
+export interface RepliesPage {
+  replies: Reply[];
   nextCursor: string | null;
 }
