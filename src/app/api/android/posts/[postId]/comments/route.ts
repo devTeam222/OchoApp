@@ -104,7 +104,7 @@ export async function GET(
       },
     });
 
-    const comments = commentsFromdb.map((comment) => {
+    const comments = await Promise.all(commentsFromdb.map(async (comment) => {
       const userVerifiedData = comment.user.verified?.[0];
 
       const expiresAt = userVerifiedData?.expiresAt?.getTime() || null;
@@ -140,7 +140,11 @@ export async function GET(
       const isRepliedByAuthor = !!comment.replies.length;
       const postId = comment.postId;
       const postAuthorId = comment.post.userId;
-      const replies = comment._count.replies;
+      const replies = await prisma.comment.count({
+        where: {
+          firstLevelCommentId: comment.id,
+        },
+      });
       return {
         id,
         author,
@@ -154,7 +158,7 @@ export async function GET(
         postAuthorId,
         replies,
       } as Comment;
-    });
+    }));
 
     const nextCursor =
       commentsFromdb.length > pageSize ? commentsFromdb[pageSize].id : null;
