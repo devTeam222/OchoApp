@@ -113,6 +113,7 @@ export interface Reply {
   firstLevelCommentAuthorId: string;
   postId: string;
   postAuthorId: string;
+  replies: number;
 }
 
 export interface NotificationsPage {

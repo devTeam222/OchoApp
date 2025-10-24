@@ -151,6 +151,7 @@ export async function GET(
         isLikedByAuthor,
         postId,
         postAuthorId,
+        replies,
         commentId,
         commentAuthorId,
         commentAuthor,
