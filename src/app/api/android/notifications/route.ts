@@ -143,6 +143,8 @@ export async function GET(req: NextRequest) {
               replies: 0,
               likes: 0,
               isLiked: false,
+              isLikedByAuthor: false,
+              isRepliedByAuthor: false,
             }
           : null;
         return {

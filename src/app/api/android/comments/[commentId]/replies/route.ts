@@ -110,6 +110,7 @@ export async function GET(
       const createdAt = comment.createdAt.getTime();
       const likes = comment._count.likes;
       const isLiked = comment.likes.some((like) => like.userId === userId);
+      const isLikedByAuthor = comment.likes.some((like) => like.userId === comment.post.userId);
       const postId = comment.postId;
       const postAuthorId = comment.post.userId;
       const replies = comment._count.replies;
@@ -147,9 +148,9 @@ export async function GET(
         createdAt,
         likes,
         isLiked,
+        isLikedByAuthor,
         postId,
         postAuthorId,
-        replies,
         commentId,
         commentAuthorId,
         commentAuthor,

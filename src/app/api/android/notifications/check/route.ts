@@ -146,7 +146,9 @@ export async function GET(req: NextRequest) {
             author: null,
             likes: 0,
             isLiked: false,
-          }
+            isLikedByAuthor: false,
+            isRepliedByAuthor: false,
+        }
         : null;
       return {
         id: notif.id,

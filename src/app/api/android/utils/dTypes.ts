@@ -105,6 +105,7 @@ export interface Reply {
   createdAt: number;
   likes: number;
   isLiked: boolean;
+  isLikedByAuthor: boolean;
   commentId: string;
   commentAuthorId: string;
   commentAuthor: User | null;
