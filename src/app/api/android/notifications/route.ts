@@ -102,7 +102,6 @@ export async function GET(req: NextRequest) {
       cursor: cursor ? { id: cursor } : undefined,
     });
 
-    
     const nextCursor =
       notifications.length > pageSize ? notifications[pageSize].id : null;
 
@@ -132,7 +131,7 @@ export async function GET(req: NextRequest) {
           avatarUrl: notif.issuer.avatarUrl || undefined,
           verified,
         };
-        const comment : Comment | null = notif.comment
+        const comment: Comment | null = notif.comment
           ? {
               id: notif.comment.id,
               content: notif.comment.content,
