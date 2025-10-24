@@ -91,6 +91,8 @@ export interface Comment {
   createdAt: number;
   likes: number;
   isLiked: boolean;
+  isLikedByAuthor: boolean;
+  isRepliedByAuthor: boolean;
   postId: string;
   postAuthorId: string;
   replies: number;
