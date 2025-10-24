@@ -69,7 +69,7 @@ export async function GET(
     // Fin de la vérification de l'appareil
     const userId = session.user.id;
 
-    const pageSize = 10;
+    const pageSize = 5;
     const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
 
     const post = await prisma.post.findUnique({
