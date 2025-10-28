@@ -106,8 +106,8 @@ export async function POST(
         } as ApiResponse<null>);
       }
       // FIN NOUVEAUTÉ
-  
-      // Utiliser la variable 'body' pour la validation au lieu de relire 'req.json()'
+      console.log(body);
+      
       const { content: validatedContent } = createCommentSchema.parse(body);
   
       const newReply = await prisma.comment.create({
