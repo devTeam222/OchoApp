@@ -14,6 +14,17 @@ export async function POST(
   req: NextRequest,
   { params: { postId } }: { params: { postId: string } },
 ) {
+   // Lire le corps de la requête UNE SEULE FOIS au début
+    let body;
+    try {
+      body = await req.json() as Comment;
+    } catch (e) {
+      console.error("Erreur lors de la lecture du corps de la requête (JSON invalide):", e);
+      return NextResponse.json({
+        success: false,
+        message: "Requête invalide: le corps doit être un JSON valide.",
+      } as ApiResponse<null>);
+    }
   try {
     const headersList = headers();
     const authorization = headersList.get("authorization");
@@ -81,9 +92,9 @@ export async function POST(
       } as ApiResponse<null>);
     }
 
-    const input = await req.json();
+    const { content: newCContent } = body;
 
-    const { content } = createCommentSchema.parse(input);
+    const { content } = createCommentSchema.parse({ content: newCContent});
 
     const newComment = await prisma.comment.create({
       data: {
