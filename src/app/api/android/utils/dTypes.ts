@@ -63,6 +63,7 @@ export interface ApiResponse<T> {
   success: boolean;
   message?: string;
   name?: string;
+  error?: string;
   data?: T;
 }
 

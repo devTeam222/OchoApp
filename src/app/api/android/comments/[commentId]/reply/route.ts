@@ -157,7 +157,7 @@ export async function POST(
       const postAuthorId = newReply.post.userId;
       const replies = await prisma.comment.count({
         where: {
-          firstLevelCommentId: newReply.id,
+          firstLevelCommentId: newReply.firstLevelCommentId,
         },
       });
 
@@ -192,6 +192,7 @@ export async function POST(
       return NextResponse.json({
         success: false,
         message: "Something went wrong. Please try again.",
+        error: error
       } as ApiResponse<null>);
     }
 }
