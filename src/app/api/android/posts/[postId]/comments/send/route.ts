@@ -90,6 +90,7 @@ export async function POST(
         content,
         postId,
         userId,
+        type: "COMMENT"
       },
       include: {
         ...getCommentDataIncludes(userId),

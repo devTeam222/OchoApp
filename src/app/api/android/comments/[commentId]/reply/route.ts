@@ -116,6 +116,7 @@ export async function POST(
           userId,
           firstLevelCommentId,
           commentId, // commentId est maintenant validé et connu pour exister
+          type: "REPLY",
         },
         include: {
           ...getCommentDataIncludes(userId),
