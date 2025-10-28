@@ -1,4 +1,4 @@
-import { CommentData, FirstCommentData, PostData } from "@/lib/types";
+import { CommentData, FirstCommentData } from "@/lib/types";
 import { useState } from "react";
 import { t } from "@/context/LanguageContext";
 import { useProgress } from "@/context/ProgressContext";

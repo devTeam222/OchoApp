@@ -7,10 +7,11 @@ import {
   VerifiedUser,
   Comment,
   CommentsPage,
-} from "../../../utils/dTypes";
+} from "../../../../utils/dTypes";
 import { getCommentDataIncludes } from "@/lib/types";
+import { createCommentSchema } from "@/lib/validation";
 
-export async function GET(
+export async function POST(
   req: NextRequest,
   { params: { postId } }: { params: { postId: string } },
 ) {
@@ -69,9 +70,6 @@ export async function GET(
     // Fin de la vérification de l'appareil
     const userId = session.user.id;
 
-    const pageSize = 5;
-    const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
-
     const post = await prisma.post.findUnique({
       where: { id: postId },
       select: { userId: true },
@@ -84,11 +82,16 @@ export async function GET(
       } as ApiResponse<null>);
     }
 
-    const commentsFromdb = await prisma.comment.findMany({
-      where: { postId, firstLevelCommentId: null },
-      orderBy: { createdAt: "desc" },
-      take: pageSize + 1,
-      cursor: cursor ? { id: cursor } : undefined,
+    const input = await req.json();
+
+    const { content } = createCommentSchema.parse(input);
+
+    const newComment = await prisma.comment.create({
+      data: {
+        content,
+        postId,
+        userId,
+      },
       include: {
         ...getCommentDataIncludes(userId),
         replies: {
@@ -104,74 +107,65 @@ export async function GET(
       },
     });
 
-    const comments = await Promise.all(commentsFromdb.map(async (comment) => {
-      const userVerifiedData = comment.user.verified?.[0];
+    const userVerifiedData = newComment.user.verified?.[0];
 
-      const expiresAt = userVerifiedData?.expiresAt?.getTime() || null;
-      const canExpire = !!(expiresAt || null);
+    const expiresAt = userVerifiedData?.expiresAt?.getTime() || null;
+    const canExpire = !!(expiresAt || null);
 
-      const expired =
-        canExpire && expiresAt ? new Date().getTime() < expiresAt : false;
+    const expired =
+      canExpire && expiresAt ? new Date().getTime() < expiresAt : false;
 
-      const isVerified = !!userVerifiedData && !expired;
+    const isVerified = !!userVerifiedData && !expired;
 
-      const verified: VerifiedUser = {
-        verified: isVerified,
-        type: userVerifiedData?.type,
-        expiresAt,
-      };
-
-      const commentUser = {
-        id: comment.user.id,
-        username: comment.user.username,
-        displayName: comment.user.displayName,
-        avatarUrl: comment.user.avatarUrl,
-        verified,
-      };
-      const id = comment.id;
-      const author = commentUser;
-      const content = comment.content;
-      const createdAt = comment.createdAt.getTime();
-      const likes = comment._count.likes;
-      const isLiked = comment.likes.some((like) => like.userId === userId);
-      const isLikedByAuthor = comment.likes.some(
-        (like) => like.userId === comment.post.userId,
-      );
-      const isRepliedByAuthor = !!comment.replies.length;
-      const postId = comment.postId;
-      const postAuthorId = comment.post.userId;
-      const replies = await prisma.comment.count({
-        where: {
-          firstLevelCommentId: comment.id,
-        },
-      });
-      return {
-        id,
-        author,
-        content,
-        createdAt,
-        likes,
-        isLiked,
-        isLikedByAuthor,
-        isRepliedByAuthor,
-        postId,
-        postAuthorId,
-        replies,
-      } as Comment;
-    }));
-
-    const nextCursor =
-      commentsFromdb.length > pageSize ? commentsFromdb[pageSize].id : null;
-
-    const responseData: CommentsPage = {
-      comments: comments.slice(0, pageSize),
-      nextCursor,
+    const verified: VerifiedUser = {
+      verified: isVerified,
+      type: userVerifiedData?.type,
+      expiresAt,
     };
+
+    const commentUser = {
+      id: newComment.user.id,
+      username: newComment.user.username,
+      displayName: newComment.user.displayName,
+      avatarUrl: newComment.user.avatarUrl as string | undefined,
+      verified,
+    };
+    const id = newComment.id;
+    const author = commentUser;
+    const newContent = newComment.content;
+    const createdAt = newComment.createdAt.getTime();
+    const likes = newComment._count.likes;
+    const isLiked = newComment.likes.some((like) => like.userId === userId);
+    const isLikedByAuthor = newComment.likes.some(
+      (like) => like.userId === newComment.post.userId,
+    );
+    const isRepliedByAuthor = !!newComment.replies.length;
+    const postAuthorId = newComment.post.userId;
+    const replies = await prisma.comment.count({
+      where: {
+        firstLevelCommentId: newComment.id,
+      },
+    });
+
+    const comment: Comment = {
+      id,
+      author,
+      content: newContent,
+      createdAt,
+      likes,
+      isLiked,
+      isLikedByAuthor,
+      isRepliedByAuthor,
+      postId,
+      postAuthorId,
+      replies,
+    };
+
     return NextResponse.json({
       success: true,
-      message: "Comments retrieved successfully.",
-      data: responseData,
-    } as ApiResponse<CommentsPage>);
+      message: "Comments sent successfully.",
+      data: comment,
+    } as ApiResponse<Comment>);
   } catch (error) {
     console.error(error);
     return NextResponse.json({

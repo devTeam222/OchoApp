@@ -5,9 +5,9 @@ export interface User {
   id: string;
   username: string;
   displayName: string;
-  email?: string;
-  avatarUrl?: string;
-  bio?: string;
+  email?: string | null;
+  avatarUrl?: string | null;
+  bio?: string | null;
   verified: VerifiedUser;
   createdAt?: number;
   lastSeen?: number;
@@ -106,11 +106,11 @@ export interface Reply {
   likes: number;
   isLiked: boolean;
   isLikedByAuthor: boolean;
-  commentId: string;
-  commentAuthorId: string;
+  commentId: string | null;
+  commentAuthorId: string | null;
   commentAuthor: User | null;
-  firstLevelCommentId: string;
-  firstLevelCommentAuthorId: string;
+  firstLevelCommentId: string | null;
+  firstLevelCommentAuthorId: string | null;
   postId: string;
   postAuthorId: string;
   replies: number;
