@@ -195,7 +195,6 @@ export async function POST(
       return NextResponse.json({
         success: false,
         message: "Something went wrong. Please try again.",
-        error: error as string,
       } as ApiResponse<null>);
     }
 }
@@ -219,10 +218,10 @@ function toUser(user: any): User {
       };
   
       return {
-        id: user.user.id,
-        username: user.user.username,
-        displayName: user.user.displayName,
-        avatarUrl: user.user.avatarUrl,
+        id: user.id,
+        username: user.username,
+        displayName: user.displayName,
+        avatarUrl: user.avatarUrl,
         verified,
       } as User;
 }
