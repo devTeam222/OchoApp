@@ -1,14 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ApiResponse, Reply, User, VerifiedUser } from "../../../utils/dTypes";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
 import { createCommentSchema } from "@/lib/validation";
 import { getCommentDataIncludes } from "@/lib/types";
+import { ApiResponse, Reply, User, VerifiedUser } from "../../../utils/dTypes";
 
 export async function POST(
   req: NextRequest,
   { params: { commentId } }: { params: { commentId: string } },
 ) {
+  // Lire le corps de la requête UNE SEULE FOIS au début
+  let body;
+  try {
+    body = await req.json();
+  } catch (e) {
+    console.error("Erreur lors de la lecture du corps de la requête (JSON invalide):", e);
+    return NextResponse.json({
+      success: false,
+      message: "Requête invalide: le corps doit être un JSON valide.",
+    } as ApiResponse<null>);
+  }
+
   try {
       const headersList = headers();
       const authorization = headersList.get("authorization");
@@ -62,8 +74,11 @@ export async function POST(
         } as ApiResponse<null>);
       }
       // Fin de la vérification de l'appareil
+
       const userId = session.user.id;
-      const {postId, firstLevelCommentId, content} = await req.json();
+
+      // Utiliser le corps lu une seule fois (body)
+      const { postId, firstLevelCommentId, content } = body;
   
       const post = await prisma.post.findUnique({
         where: { id: postId },
@@ -77,13 +92,14 @@ export async function POST(
         } as ApiResponse<null>);
       }
   
-      const input = await req.json();
-  
-      const { content: validatedContent } = createCommentSchema.parse(input);
+      // Utiliser la variable 'body' pour la validation au lieu de relire 'req.json()'
+      // Cette ligne est maintenant correcte car elle utilise 'body'
+      const { content: validatedContent } = createCommentSchema.parse(body);
   
       const newReply = await prisma.comment.create({
         data: {
-          content,
+          // On utilise 'content' qui vient de la déstructuration de 'body'
+          content, 
           postId,
           userId,
           firstLevelCommentId,
