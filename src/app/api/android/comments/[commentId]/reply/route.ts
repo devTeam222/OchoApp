@@ -63,7 +63,6 @@ export async function POST(
         },
       });
       const isDeviceLoggedIn = device?.logged;
-      console.log(deviceId, deviceTypeHeader, isDeviceLoggedIn);
   
       if (!isDeviceLoggedIn) {
         return NextResponse.json({
@@ -79,8 +78,6 @@ export async function POST(
 
       // Utiliser le corps lu une seule fois (body)
       const { postId, firstLevelCommentId, content, commentId } = body;
-
-      console.log("Received reply data:", { postId, firstLevelCommentId, content, commentId });
   
       const post = await prisma.post.findUnique({
         where: { id: postId },
@@ -183,6 +180,9 @@ export async function POST(
         commentAuthor,
 
       };
+
+      console.log(reply);
+      
   
       return NextResponse.json({
         success: true,
