@@ -12,7 +12,7 @@ export async function POST(
   // Lire le corps de la requête UNE SEULE FOIS au début
   let body;
   try {
-    body = await req.json();
+    body = await req.json() as Reply;
   } catch (e) {
     console.error("Erreur lors de la lecture du corps de la requête (JSON invalide):", e);
     return NextResponse.json({
@@ -20,7 +20,6 @@ export async function POST(
       message: "Requête invalide: le corps doit être un JSON valide.",
     } as ApiResponse<null>);
   }
-      console.log(body);
 
   try {
       const headersList = headers();
@@ -79,7 +78,7 @@ export async function POST(
       const userId = session.user.id;
 
       // Utiliser le corps lu une seule fois (body)
-      const { postId, firstLevelCommentId, content } = body;
+      const { postId, firstLevelCommentId, content, commentId } = body;
   
       const post = await prisma.post.findUnique({
         where: { id: postId },
@@ -95,7 +94,7 @@ export async function POST(
 
       // NOUVEAUTÉ : Vérification de l'existence du commentaire parent (commentId)
       const parentComment = await prisma.comment.findUnique({
-        where: { id: commentId },
+        where: { id: commentId || undefined },
         select: { id: true }
       });
 
@@ -108,7 +107,7 @@ export async function POST(
       }
       // FIN NOUVEAUTÉ
       
-      const { content: validatedContent } = createCommentSchema.parse(body);
+      const { content: validatedContent } = createCommentSchema.parse({content});
   
       const newReply = await prisma.comment.create({
         data: {
