@@ -79,6 +79,8 @@ export async function POST(
 
       // Utiliser le corps lu une seule fois (body)
       const { postId, firstLevelCommentId, content, commentId } = body;
+
+      console.log("Received reply data:", { postId, firstLevelCommentId, content, commentId });
   
       const post = await prisma.post.findUnique({
         where: { id: postId },
