@@ -91,19 +91,33 @@ export async function POST(
           message: "Post not found.",
         } as ApiResponse<null>);
       }
+
+      // NOUVEAUTÉ : Vérification de l'existence du commentaire parent (commentId)
+      const parentComment = await prisma.comment.findUnique({
+        where: { id: commentId },
+        select: { id: true }
+      });
+
+      if (!parentComment) {
+        return NextResponse.json({
+            success: false,
+            message: "Commentaire parent spécifié ('commentId') n'existe pas.",
+            name: "foreign_key_violation", // Nom plus explicite pour l'erreur
+        } as ApiResponse<null>);
+      }
+      // FIN NOUVEAUTÉ
   
       // Utiliser la variable 'body' pour la validation au lieu de relire 'req.json()'
-      // Cette ligne est maintenant correcte car elle utilise 'body'
       const { content: validatedContent } = createCommentSchema.parse(body);
   
       const newReply = await prisma.comment.create({
         data: {
           // On utilise 'content' qui vient de la déstructuration de 'body'
-          content, 
+          content: validatedContent, 
           postId,
           userId,
           firstLevelCommentId,
-          commentId,
+          commentId, // commentId est maintenant validé et connu pour exister
         },
         include: {
           ...getCommentDataIncludes(userId),
