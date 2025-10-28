@@ -195,7 +195,7 @@ export async function POST(
       return NextResponse.json({
         success: false,
         message: "Something went wrong. Please try again.",
-        error: error
+        error: error as string,
       } as ApiResponse<null>);
     }
 }
