@@ -20,6 +20,7 @@ export async function POST(
       message: "Requête invalide: le corps doit être un JSON valide.",
     } as ApiResponse<null>);
   }
+      console.log(body);
 
   try {
       const headersList = headers();
@@ -106,7 +107,6 @@ export async function POST(
         } as ApiResponse<null>);
       }
       // FIN NOUVEAUTÉ
-      console.log(body);
       
       const { content: validatedContent } = createCommentSchema.parse(body);
   
