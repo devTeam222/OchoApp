@@ -187,7 +187,7 @@ export async function GET(req: NextRequest) {
         return finalPost;
       });
 
-    const nextCursor = posts.length > pageSize ? posts[pageSize].id : null;
+    const nextCursor = posts.length > pageSize + latestPosts.length ? posts[pageSize + latestPosts.length].id : null;
 
     const data: PostsPage = {
       posts: sortedPosts,
