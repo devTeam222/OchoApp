@@ -92,13 +92,36 @@ export async function GET(req: NextRequest) {
       } as ApiResponse<null>);
     }
 
-    // Récupération des posts
-    const posts = await prisma.post.findMany({
+    // Récupérer les trois derniers posts triés par date
+    const latestPosts = await prisma.post.findMany({
       include: getPostDataIncludes(user.id),
-      orderBy: { createdAt: "desc" },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: !cursor ? 3 : 0,
+    });
+
+    // Récupérer les posts suivants triés par pertinence
+    const relevantPosts = await prisma.post.findMany({
+      include: getPostDataIncludes(user.id),
+      orderBy: [
+        {
+          relevanceScore: "desc",
+        },
+        {
+          createdAt: "desc",
+        },
+      ],
       take: pageSize + 1,
       cursor: cursor ? { id: cursor } : undefined,
+      where: {
+        id: {
+          notIn: latestPosts.map(post => post.id), // Exclure les posts déjà récupérés
+        },
+      },
     });
+
+    const posts = [...latestPosts, ...relevantPosts];
 
     const postsWithScores = posts.slice(0, pageSize).map((post) => ({
       ...post,
