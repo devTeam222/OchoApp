@@ -42,7 +42,7 @@ export async function DELETE(req: NextRequest) {
         // Si l'appareil ou la session n'est pas trouvé, une erreur sera levée.
         console.error("Logout error:", error);
         return NextResponse.json({
-            success: false,
+            success: true,
             message: "Session or device not found, or already logged out",
             name: "session_not_found",
         });

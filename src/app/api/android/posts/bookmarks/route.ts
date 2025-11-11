@@ -8,63 +8,19 @@ import {
   User,
   VerifiedUser,
 } from "../../utils/dTypes";
+import { getCurrentUser } from "../../auth/utils";
 
 export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("Authorization");
-    const session_token = authHeader?.split(" ")[1];
-
-    const session = await prisma.session.findFirst({
-      where: {
-        id: session_token,
-      },
-      select: {
-        user: {
-          select: {
-            id: true,
-          },
-        },
-      },
-    });
-
-    const currentUserId = session?.user?.id;
-
-    if (!currentUserId) {
+    const { user, message } = await getCurrentUser();
+    if (!user) {
       return NextResponse.json({
         success: false,
-        message: "Action non autorisée",
-        name: "authorization",
-        data: null,
+        message: message || "Utilisateur non authentifié.",
+        name: "unauthorized",
       } as ApiResponse<null>);
     }
-     // 1. Récupérer les informations de l'appareil à partir des en-têtes
-    const deviceId = req.headers.get("X-Device-ID");
-    const deviceTypeHeader = req.headers.get("X-Device-Type");
-
-    // 2. Vérifier la présence des en-têtes essentiels pour l'appareil
-    if (!deviceId || !deviceTypeHeader) {
-      return NextResponse.json({
-        success: false,
-        message: "En-têtes d'appareil manquants (X-Device-ID, X-Device-Type).",
-        name: "missing_device_headers",
-      });
-    }
-    const device = await prisma.device.findFirst({
-      where: {
-        deviceId
-      },
-    });
-    const isDeviceLoggedIn = device?.logged;
-    console.log(deviceId, deviceTypeHeader, isDeviceLoggedIn);
-
-    if (!isDeviceLoggedIn) {
-      return NextResponse.json({
-        success: false,
-        message: "Appareil non autorisé. Veuillez vous reconnecter.",
-        name: "authorization",
-        data: null,
-      } as ApiResponse<null>);
-    }
+    const currentUserId = user.id;
 
     const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
     const pageSize = 5;
@@ -92,10 +48,11 @@ export async function GET(req: NextRequest) {
     const finalPosts = posts.slice(0, pageSize).map((post) => {
       const userVerifiedData = post.user.verified?.[0];
 
-      const expiresAt= userVerifiedData?.expiresAt?.getTime() || null;
+      const expiresAt = userVerifiedData?.expiresAt?.getTime() || null;
       const canExpire = !!(expiresAt || null);
 
-      const expired = canExpire && expiresAt ? new Date().getTime() < expiresAt : false;
+      const expired =
+        canExpire && expiresAt ? new Date().getTime() < expiresAt : false;
 
       const isVerified = !!userVerifiedData && !expired;
       const isBookmarked = post.bookmarks.some(
@@ -129,7 +86,7 @@ export async function GET(req: NextRequest) {
         likes: post._count.likes,
         comments: post._count.comments,
         isLiked: post.likes.some((like) => like.userId === currentUserId),
-        isBookmarked
+        isBookmarked,
       };
       return finalPost;
     });

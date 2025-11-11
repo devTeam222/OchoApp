@@ -8,65 +8,21 @@ import {
   VerifiedUser,
   Comment,
 } from "../../utils/dTypes";
+import { getCurrentUser } from "../../auth/utils";
 
 export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("Authorization");
-    const sessionToken = authHeader?.split(" ")[1];
 
-    if (!sessionToken) {
+    const { user, message } = await getCurrentUser();
+    if (!user) {
       return NextResponse.json({
         success: false,
-        message: "Action non autorisée",
-      });
-    }
-
-    const session = await prisma.session.findUnique({
-      where: {
-        id: sessionToken,
-      },
-      include: {
-        user: true,
-      },
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({
-        success: false,
-        message: "Action non autorisée",
-        name: "authorization",
-      });
-    }
-
-    // 1. Récupérer les informations de l'appareil à partir des en-têtes
-    const deviceId = req.headers.get("X-Device-ID");
-    const deviceTypeHeader = req.headers.get("X-Device-Type");
-
-    // 2. Vérifier la présence des en-têtes essentiels pour l'appareil
-    if (!deviceId || !deviceTypeHeader) {
-      return NextResponse.json({
-        success: false,
-        message: "En-têtes d'appareil manquants (X-Device-ID, X-Device-Type).",
-        name: "missing_device_headers",
-      });
-    }
-    const device = await prisma.device.findFirst({
-      where: {
-        deviceId,
-      },
-    });
-    const isDeviceLoggedIn = device?.logged;
-    console.log(deviceId, deviceTypeHeader, isDeviceLoggedIn);
-
-    if (!isDeviceLoggedIn) {
-      return NextResponse.json({
-        success: false,
-        message: "Appareil non autorisé. Veuillez vous reconnecter.",
-        name: "authorization",
-        data: null,
+        message: message || "Utilisateur non authentifié.",
+        name: "unauthorized",
       } as ApiResponse<null>);
     }
-    const userId = session.userId;
+    
+    const userId = user.id;
     // Récupérer le timestamp de la dernière récupération depuis l'appareil
     const lastFetchedDate =
       req.nextUrl.searchParams.get("lastFetchedDate") || 0;

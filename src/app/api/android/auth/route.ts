@@ -1,6 +1,6 @@
 import { lucia } from "@/auth";
 import prisma from "@/lib/prisma";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import {
   User,
@@ -190,3 +190,4 @@ export async function GET(req: NextRequest) {
     });
   }
 }
+

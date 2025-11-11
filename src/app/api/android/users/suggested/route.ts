@@ -2,96 +2,32 @@ import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse, User, VerifiedUser } from "../../utils/dTypes";
 import { getUserDataSelect, UserData } from "@/lib/types";
+import { getCurrentUser } from "../../auth/utils";
 
 // Endpoint pour récupérer les suggestions d'utilisateurs
 export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("Authorization");
-    const session_token = authHeader?.split(" ")[1];
-    const session = await prisma.session.findFirst({
-      where: {
-        id: session_token,
-      },
-      select: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            displayName: true,
-            avatarUrl: true,
-            bio: true,
-            lastSeen: true,
-            createdAt: true,
-            following: {
-              select: {
-                followerId: true,
-              },
-              take: 0,
-            },
-            followers: {
-              select: {
-                followerId: true,
-              },
-              take: 0,
-            },
-            verified: true,
-            _count: true,
-          },
-        },
-      },
-    });
-    const currentUser: UserData | undefined = session?.user;
-
-    if (!currentUser) {
-      return NextResponse.json({
-        success: false,
-        message: "Action non autorisée",
-        name: "authorization",
-        data: null,
-      } as ApiResponse<null>);
-    }
-
-    // 1. Récupérer les informations de l'appareil à partir des en-têtes
-    const deviceId = req.headers.get("X-Device-ID");
-    const deviceTypeHeader = req.headers.get("X-Device-Type");
-
-    // 2. Vérifier la présence des en-têtes essentiels pour l'appareil
-    if (!deviceId || !deviceTypeHeader) {
-      return NextResponse.json({
-        success: false,
-        message: "En-têtes d'appareil manquants (X-Device-ID, X-Device-Type).",
-        name: "missing_device_headers",
-      });
-    }
-    const device = await prisma.device.findFirst({
-      where: {
-        deviceId,
-      },
-    });
-    const isDeviceLoggedIn = device?.logged;
-
-    if (!isDeviceLoggedIn) {
-      return NextResponse.json({
-        success: false,
-        message: "Appareil non autorisé. Veuillez vous reconnecter.",
-        name: "authorization",
-        data: null,
-      } as ApiResponse<null>);
-    }
-
+     const { user: loggedUser, message } = await getCurrentUser();
+        if (!loggedUser) {
+          return NextResponse.json({
+            success: false,
+            message: message || "Utilisateur non authentifié.",
+            name: "unauthorized",
+          } as ApiResponse<null>);
+        }
     // Exécuter la requête Prisma pour trouver les utilisateurs à suggérer
     const usersToFollow = await prisma.user.findMany({
       where: {
         NOT: {
-          id: currentUser.id,
+          id: loggedUser.id,
         },
         followers: {
           none: {
-            followerId: currentUser.id,
+            followerId: loggedUser.id,
           },
         },
       },
-      select: getUserDataSelect(currentUser.id),
+      select: getUserDataSelect(loggedUser.id),
       orderBy: {
         followers: {
           _count: "desc",
@@ -118,7 +54,7 @@ export async function GET(req: NextRequest) {
       };
 
       let isFollowing = user.followers.some(
-        (follower) => follower.followerId === currentUser.id,
+        (follower) => follower.followerId === loggedUser.id,
       );
 
       return {

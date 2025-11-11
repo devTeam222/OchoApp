@@ -1,6 +1,5 @@
 import { cache } from "react";
-import prisma from "./prisma";
-import { getPostDataIncludes, PostData, UserData } from "./types";
+import { PostData, UserData } from "./types";
 
 export const calculateRelevanceScore = cache(
   (

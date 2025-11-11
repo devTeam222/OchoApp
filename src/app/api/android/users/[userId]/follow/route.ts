@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse, User, VerifiedUser } from "../../../utils/dTypes";
 import { getUserDataSelect, UserData } from "@/lib/types";
 import { get } from "http";
+import { getCurrentUser } from "../../../auth/utils";
 
 // Endpoint pour récupérer un profil utilisateur par ID
 export async function GET(
@@ -10,80 +11,14 @@ export async function GET(
   { params }: { params: { userId: string } },
 ) {
   try {
-    const authHeader = req.headers.get("Authorization");
-    const session_token = authHeader?.split(" ")[1];
-    const session = await prisma.session.findFirst({
-      where: {
-        id: session_token,
-      },
-      select: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            displayName: true,
-            avatarUrl: true,
-            bio: true,
-            lastSeen: true,
-            createdAt: true,
-            following: {
-              select: {
-                followerId: true,
-              },
-              take: 0,
-            },
-            followers: {
-              select: {
-                followerId: true,
-              },
-              take: 0,
-            },
-            verified: true,
-            _count: true,
-          },
-        },
-      },
-    });
-    const currentUser: UserData | undefined = session?.user;
-
-    if (!currentUser) {
-      return NextResponse.json({
-        success: false,
-        message: "Action non autorisée",
-        name: "authorization",
-        data: null,
-      } as ApiResponse<null>);
-    }
-
-    // 1. Récupérer les informations de l'appareil à partir des en-têtes
-    const deviceId = req.headers.get("X-Device-ID");
-    const deviceTypeHeader = req.headers.get("X-Device-Type");
-
-    // 2. Vérifier la présence des en-têtes essentiels pour l'appareil
-    if (!deviceId || !deviceTypeHeader) {
-      return NextResponse.json({
-        success: false,
-        message: "En-têtes d'appareil manquants (X-Device-ID, X-Device-Type).",
-        name: "missing_device_headers",
-      });
-    }
-    const device = await prisma.device.findFirst({
-      where: {
-        deviceId,
-      },
-    });
-    const isDeviceLoggedIn = device?.logged;
-    console.log(deviceId, deviceTypeHeader, isDeviceLoggedIn);
-
-    if (!isDeviceLoggedIn) {
-      return NextResponse.json({
-        success: false,
-        message: "Appareil non autorisé. Veuillez vous reconnecter.",
-        name: "authorization",
-        data: null,
-      } as ApiResponse<null>);
-    }
-
+     const { user: loggedUser, message } = await getCurrentUser();
+        if (!loggedUser) {
+          return NextResponse.json({
+            success: false,
+            message: message || "Utilisateur non authentifié.",
+            name: "unauthorized",
+          } as ApiResponse<null>);
+        }
     // Correction : l'ID de l'utilisateur est dans les params
     const userId = params.userId;
 
@@ -102,7 +37,7 @@ export async function GET(
           { username: userId }, // Permet de chercher par nom d'utilisateur aussi
         ],
       },
-      select: getUserDataSelect(currentUser.id),
+      select: getUserDataSelect(loggedUser.id),
     })) as UserData | undefined;
 
     if (!user) {
@@ -113,12 +48,12 @@ export async function GET(
       } as ApiResponse<null>);
     }
 
-    const userIsCurrentUser = currentUser.id === user.id;
+    const userIsCurrentUser = loggedUser.id === user.id;
     if (userIsCurrentUser) {
       return NextResponse.json({
         success: true,
         message: "You can't follow yourself",
-        data: currentUser,
+        data: user,
       } as ApiResponse<UserData>);
     }
 
@@ -138,7 +73,7 @@ export async function GET(
     };
 
     let isFollowing = user.followers.some(
-      (follower) => follower.followerId === currentUser.id,
+      (follower) => follower.followerId === loggedUser.id,
     );
 
     if (isFollowing) {
@@ -146,13 +81,13 @@ export async function GET(
       await prisma.$transaction([
         prisma.follow.deleteMany({
           where: {
-            followerId: currentUser.id,
+            followerId: loggedUser.id,
             followingId: user.id,
           },
         }),
         prisma.notification.deleteMany({
           where: {
-            issuerId: currentUser.id,
+            issuerId: loggedUser.id,
             recipientId: user.id,
             type: "FOLLOW",
           },
@@ -163,13 +98,13 @@ export async function GET(
       await prisma.$transaction([
         prisma.follow.create({
           data: {
-            followerId: currentUser.id,
+            followerId: loggedUser.id,
             followingId: user.id,
           },
         }),
         prisma.notification.create({
           data: {
-            issuerId: currentUser.id,
+            issuerId: loggedUser.id,
             recipientId: user.id,
             type: "FOLLOW",
           },
@@ -179,7 +114,7 @@ export async function GET(
     // Recalculer le nombre de followers et posts
     const updatedUser = (await prisma.user.findUnique({
       where: { id: user.id },
-      select: getUserDataSelect(currentUser.id),
+      select: getUserDataSelect(loggedUser.id),
     })) as UserData | null;
     if (!updatedUser) {
       return NextResponse.json({
@@ -189,7 +124,7 @@ export async function GET(
       } as ApiResponse<null>);
     }
     isFollowing = updatedUser.followers.some(
-      (follower) => follower.followerId === currentUser.id,
+      (follower) => follower.followerId === loggedUser.id,
     );
 
     const finalUser: User = {

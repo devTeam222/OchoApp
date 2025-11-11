@@ -8,68 +8,24 @@ import {
   User,
   VerifiedUser,
 } from "../../../utils/dTypes";
+import { getCurrentUser } from "../../../auth/utils";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { userId: string } },
 ) {
   try {
-    const authHeader = req.headers.get("Authorization");
-    const session_token = authHeader?.split(" ")[1];
-    const { userId } = params;
-
-    // Récupérer l'ID de l'utilisateur actuel via le token de session
-    const session = await prisma.session.findFirst({
-      where: {
-        id: session_token,
-      },
-      select: {
-        user: {
-          select: {
-            id: true,
-          },
-        },
-      },
-    });
-
-    const currentUserId = session?.user?.id;
-    if (!currentUserId) {
+     const { user, message } = await getCurrentUser();
+    if (!user) {
       return NextResponse.json({
         success: false,
-        message: "Action non autorisée",
-        name: "authorization",
-        data: null,
+        message: message || "Utilisateur non authentifié.",
+        name: "unauthorized",
       } as ApiResponse<null>);
     }
 
-    // 1. Récupérer les informations de l'appareil à partir des en-têtes
-    const deviceId = req.headers.get("X-Device-ID");
-    const deviceTypeHeader = req.headers.get("X-Device-Type");
-
-    // 2. Vérifier la présence des en-têtes essentiels pour l'appareil
-    if (!deviceId || !deviceTypeHeader) {
-      return NextResponse.json({
-        success: false,
-        message: "En-têtes d'appareil manquants (X-Device-ID, X-Device-Type).",
-        name: "missing_device_headers",
-      });
-    }
-    const device = await prisma.device.findFirst({
-      where: {
-        deviceId,
-      },
-    });
-    const isDeviceLoggedIn = device?.logged;
-    console.log(deviceId, deviceTypeHeader, isDeviceLoggedIn);
-
-    if (!isDeviceLoggedIn) {
-      return NextResponse.json({
-        success: false,
-        message: "Appareil non autorisé. Veuillez vous reconnecter.",
-        name: "authorization",
-        data: null,
-      } as ApiResponse<null>);
-    }
+    const currentUserId = user?.id;
+    const userId = params.userId;
 
     const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
     const pageSize = 5;

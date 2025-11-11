@@ -3,64 +3,19 @@ import { getPostDataIncludes } from "@/lib/types";
 import { createPostSchema } from "@/lib/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse } from "../../utils/dTypes";
+import { getCurrentUser } from "../../auth/utils";
 
 export async function POST(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("Authorization");
-    const sessionToken = authHeader?.split(" ")[1];
+    const {user, message} = await getCurrentUser();
 
-    if (!sessionToken) {
+    if (!user) {
       return NextResponse.json({
         success: false,
-        message: "Action non autorisée",
-      });
-    }
-
-    const session = await prisma.session.findUnique({
-      where: {
-        id: sessionToken,
-      },
-      include: {
-        user: true,
-      },
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({
-        success: false,
-        message: "Action non autorisée",
-      });
-    }
-
-     // 1. Récupérer les informations de l'appareil à partir des en-têtes
-    const deviceId = req.headers.get("X-Device-ID");
-    const deviceTypeHeader = req.headers.get("X-Device-Type");
-
-    // 2. Vérifier la présence des en-têtes essentiels pour l'appareil
-    if (!deviceId || !deviceTypeHeader) {
-      return NextResponse.json({
-        success: false,
-        message: "En-têtes d'appareil manquants (X-Device-ID, X-Device-Type).",
-        name: "missing_device_headers",
-      });
-    }
-    const device = await prisma.device.findFirst({
-      where: {
-        deviceId
-      },
-    });
-    const isDeviceLoggedIn = device?.logged;
-    console.log(deviceId, deviceTypeHeader, isDeviceLoggedIn);
-
-    if (!isDeviceLoggedIn) {
-      return NextResponse.json({
-        success: false,
-        message: "Appareil non autorisé. Veuillez vous reconnecter.",
-        name: "authorization",
-        data: null,
+        message: message || "Utilisateur non authentifié.",
+        name: "unauthorized",
       } as ApiResponse<null>);
     }
-
     const input = await req.json();
 
     const { content, mediaIds, gradient } = createPostSchema.parse(input);
@@ -68,13 +23,13 @@ export async function POST(req: NextRequest) {
     const newPost = await prisma.post.create({
       data: {
         content,
-        userId: session.user.id,
+        userId: user.id,
         gradient,
         attachments: {
           connect: mediaIds.map((id: string) => ({ id })),
         },
       },
-      include: getPostDataIncludes(session.user.id),
+      include: getPostDataIncludes(user.id),
     });
 
     return NextResponse.json({

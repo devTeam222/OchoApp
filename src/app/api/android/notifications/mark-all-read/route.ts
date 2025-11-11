@@ -4,68 +4,19 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   ApiResponse,
 } from "../../utils/dTypes";
+import { getCurrentUser } from "../../auth/utils";
 
 export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("Authorization");
-    const sessionToken = authHeader?.split(" ")[1];
-
-    if (!sessionToken) {
+    const { user, message } = await getCurrentUser();
+    if (!user) {
       return NextResponse.json({
         success: false,
-        message: "Action non autorisée",
-        name: "authorization",
+        message: message || "Utilisateur non authentifié.",
+        name: "unauthorized",
       } as ApiResponse<null>);
     }
-
-    const session = await prisma.session.findUnique({
-      where: {
-        id: sessionToken,
-      },
-      include: {
-        user: true,
-      },
-    });
-
-    const currentUserId = session?.user?.id;
-
-    if (!currentUserId) {
-      return NextResponse.json({
-        success: false,
-        message: "Action non autorisée",
-        name: "authorization",
-      } as ApiResponse<null>);
-    }
-
-    const deviceId = req.headers.get("X-Device-ID");
-    const deviceTypeHeader = req.headers.get("X-Device-Type");
-
-    if (!deviceId || !deviceTypeHeader) {
-      return NextResponse.json({
-        success: false,
-        message: "En-têtes d'appareil manquants (X-Device-ID, X-Device-Type).",
-        name: "missing_device_headers",
-      } as ApiResponse<null>);
-    }
-
-    const device = await prisma.device.findFirst({
-      where: {
-        deviceId,
-      },
-    });
-
-    const isDeviceLoggedIn = device?.logged;
-    console.log(deviceId, deviceTypeHeader, isDeviceLoggedIn);
-
-    if (!isDeviceLoggedIn) {
-      return NextResponse.json({
-        success: false,
-        message: "Appareil non autorisé. Veuillez vous reconnecter.",
-        name: "authorization",
-        data: null,
-      } as ApiResponse<null>);
-    }
-
+    const currentUserId = user.id;
 
     await prisma.notification.updateMany({
       where: {

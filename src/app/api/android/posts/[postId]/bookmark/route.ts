@@ -3,64 +3,22 @@ import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { ApiResponse } from "../../../utils/dTypes";
+import { getCurrentUser } from "../../../auth/utils";
 
 export async function POST(
   req: NextRequest,
   { params: { postId } }: { params: { postId: string } },
 ) {
   try {
-    const headersList = headers();
-    const authorization = headersList.get("authorization");
-
-    if (!authorization) {
+    const { user, message } = await getCurrentUser();
+    if (!user) {
       return NextResponse.json({
         success: false,
-        message: "Unauthorized: Missing Authorization header.",
+        message: message || "Utilisateur non authentifié.",
+        name: "unauthorized",
       } as ApiResponse<null>);
     }
-
-    const sessionToken = authorization.replace("Bearer ", "");
-    const session = await prisma.session.findUnique({
-      where: { id: sessionToken },
-      include: { user: true },
-    });
-
-    if (!session || !session.user) {
-      return NextResponse.json({
-        success: false,
-        message: "Unauthorized: Invalid session.",
-      } as ApiResponse<null>);
-    }
-
-    const userId = session.user.id;
-     // 1. Récupérer les informations de l'appareil à partir des en-têtes
-    const deviceId = req.headers.get("X-Device-ID");
-    const deviceTypeHeader = req.headers.get("X-Device-Type");
-
-    // 2. Vérifier la présence des en-têtes essentiels pour l'appareil
-    if (!deviceId || !deviceTypeHeader) {
-      return NextResponse.json({
-        success: false,
-        message: "En-têtes d'appareil manquants (X-Device-ID, X-Device-Type).",
-        name: "missing_device_headers",
-      });
-    }
-    const device = await prisma.device.findFirst({
-      where: {
-        deviceId
-      },
-    });
-    const isDeviceLoggedIn = device?.logged;
-    console.log(deviceId, deviceTypeHeader, isDeviceLoggedIn);
-
-    if (!isDeviceLoggedIn) {
-      return NextResponse.json({
-        success: false,
-        message: "Appareil non autorisé. Veuillez vous reconnecter.",
-        name: "authorization",
-        data: null,
-      } as ApiResponse<null>);
-    }
+    const userId = user.id;
     let isBookmarked = false;
 
     // Utilise une transaction pour garantir que les opérations sont atomiques

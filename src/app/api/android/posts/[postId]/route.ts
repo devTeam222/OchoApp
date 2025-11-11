@@ -3,69 +3,29 @@ import prisma from "@/lib/prisma";
 import {
   ApiResponse,
   Attachment,
+  calculateRelevanceScore,
   Post,
   User,
   VerifiedUser,
 } from "../../utils/dTypes";
 import { getPostDataIncludes, UserData } from "@/lib/types";
-import { calculateRelevanceScore } from "@/lib/postScore";
-import { get } from "http";
+import { getCurrentUser } from "../../auth/utils";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { postId: string } },
 ) {
   try {
-    const { postId } = params;
-    const authHeader = req.headers.get("Authorization");
-    const sessionToken = authHeader?.split(" ")[1];
-
-    if (!sessionToken) {
-      return Response.json({ success: false, message: "Action non autorisée" });
-    }
-
-    const session = await prisma.session.findUnique({
-      where: {
-        id: sessionToken,
-      },
-      include: {
-        user: true,
-      },
-    });
-
-    if (!session?.user) {
-      return Response.json({ success: false, message: "Action non autorisée" });
-    }
-    const user = { ...session.user } as unknown as UserData;
-
-    // 1. Récupérer les informations de l'appareil à partir des en-têtes
-    const deviceId = req.headers.get("X-Device-ID");
-    const deviceTypeHeader = req.headers.get("X-Device-Type");
-
-    // 2. Vérifier la présence des en-têtes essentiels pour l'appareil
-    if (!deviceId || !deviceTypeHeader) {
+    const { user, message } = await getCurrentUser();
+    if (!user) {
       return Response.json({
         success: false,
-        message: "En-têtes d'appareil manquants (X-Device-ID, X-Device-Type).",
-        name: "missing_device_headers",
-      });
-    }
-    const device = await prisma.device.findFirst({
-      where: {
-        deviceId,
-      },
-    });
-    const isDeviceLoggedIn = device?.logged;
-    console.log(deviceId, deviceTypeHeader, isDeviceLoggedIn);
-
-    if (!isDeviceLoggedIn) {
-      return Response.json({
-        success: false,
-        message: "Appareil non autorisé. Veuillez vous reconnecter.",
-        name: "authorization",
-        data: null,
+        message: message || "Utilisateur non authentifié.",
+        name: "unauthorized",
       } as ApiResponse<null>);
     }
+    const { postId } = params;
+    
 
     const [allScores, post] = await prisma.$transaction([
       prisma.postUserScore.findMany({
@@ -188,52 +148,12 @@ export async function DELETE(
   { params }: { params: { postId: string } },
 ) {
   try {
-    const authHeader = req.headers.get("Authorization");
-    const sessionToken = authHeader?.split(" ")[1];
-
-    if (!sessionToken) {
-      return Response.json({ success: false, message: "Action non autorisée" });
-    }
-
-    const session = await prisma.session.findUnique({
-      where: {
-        id: sessionToken,
-      },
-      include: {
-        user: true,
-      },
-    });
-
-    if (!session?.user) {
-      return Response.json({ success: false, message: "Action non autorisée" });
-    }
-
-    // 1. Récupérer les informations de l'appareil à partir des en-têtes
-    const deviceId = req.headers.get("X-Device-ID");
-    const deviceTypeHeader = req.headers.get("X-Device-Type");
-
-    // 2. Vérifier la présence des en-têtes essentiels pour l'appareil
-    if (!deviceId || !deviceTypeHeader) {
+    const { user, message } = await getCurrentUser();
+    if (!user) {
       return Response.json({
         success: false,
-        message: "En-têtes d'appareil manquants (X-Device-ID, X-Device-Type).",
-        name: "missing_device_headers",
-      });
-    }
-    const device = await prisma.device.findFirst({
-      where: {
-        deviceId,
-      },
-    });
-    const isDeviceLoggedIn = device?.logged;
-    console.log(deviceId, deviceTypeHeader, isDeviceLoggedIn);
-
-    if (!isDeviceLoggedIn) {
-      return Response.json({
-        success: false,
-        message: "Appareil non autorisé. Veuillez vous reconnecter.",
-        name: "authorization",
-        data: null,
+        message: message || "Utilisateur non authentifié.",
+        name: "unauthorized",
       } as ApiResponse<null>);
     }
 
@@ -257,7 +177,7 @@ export async function DELETE(
       );
     }
 
-    if (postToDelete.userId !== session.user.id) {
+    if (postToDelete.userId !== user.id) {
       return Response.json({
         success: false,
         message: "Vous n'avez pas la permission de supprimer ce post",

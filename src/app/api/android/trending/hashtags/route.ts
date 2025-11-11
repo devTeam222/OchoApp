@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse, User, VerifiedUser } from "../../utils/dTypes";
 import { getUserDataSelect, UserData } from "@/lib/types";
+import { getCurrentUser } from "../../auth/utils";
 
 // Définir la structure de retour de la requête SQL
 // Note : Le type 'bigint' de la base de données est mappé en 'string' en JavaScript
@@ -14,76 +15,12 @@ type TrendingHashtagsResult = {
 // Endpoint pour récupérer les hashtags tendances
 export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("Authorization");
-    const session_token = authHeader?.split(" ")[1];
-    const session = await prisma.session.findFirst({
-      where: {
-        id: session_token,
-      },
-      select: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            displayName: true,
-            avatarUrl: true,
-            bio: true,
-            lastSeen: true,
-            createdAt: true,
-            following: {
-              select: {
-                followerId: true,
-              },
-              take: 0,
-            },
-            followers: {
-              select: {
-                followerId: true,
-              },
-              take: 0,
-            },
-            verified: true,
-            _count: true,
-          },
-        },
-      },
-    });
-    const currentUser: UserData | undefined = session?.user;
-
-    if (!currentUser) {
+     const { user, message } = await getCurrentUser();
+    if (!user) {
       return NextResponse.json({
         success: false,
-        message: "Action non autorisée",
-        name: "authorization",
-        data: null,
-      } as ApiResponse<null>);
-    }
-
-    // 1. Récupérer les informations de l'appareil à partir des en-têtes
-    const deviceId = req.headers.get("X-Device-ID");
-    const deviceTypeHeader = req.headers.get("X-Device-Type");
-
-    // 2. Vérifier la présence des en-têtes essentiels pour l'appareil
-    if (!deviceId || !deviceTypeHeader) {
-      return NextResponse.json({
-        success: false,
-        message: "En-têtes d'appareil manquants (X-Device-ID, X-Device-Type).",
-        name: "missing_device_headers",
-      });
-    }
-    const device = await prisma.device.findFirst({
-      where: {
-        deviceId,
-      },
-    });
-    const isDeviceLoggedIn = device?.logged;
-
-    if (!isDeviceLoggedIn) {
-      return NextResponse.json({
-        success: false,
-        message: "Appareil non autorisé. Veuillez vous reconnecter.",
-        name: "authorization",
-        data: null,
+        message: message || "Utilisateur non authentifié.",
+        name: "unauthorized",
       } as ApiResponse<null>);
     }
 

@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse, User, VerifiedUser } from "../../utils/dTypes";
 import { getUserDataSelect, UserData } from "@/lib/types";
+import { getCurrentUser } from "../../auth/utils";
 
 // Endpoint pour récupérer un profil utilisateur par ID
 export async function GET(
@@ -9,77 +10,12 @@ export async function GET(
   { params }: { params: { userId: string } },
 ) {
   try {
-    const authHeader = req.headers.get("Authorization");
-    const session_token = authHeader?.split(" ")[1];
-    const session = await prisma.session.findFirst({
-      where: {
-        id: session_token,
-      },
-      select: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            displayName: true,
-            avatarUrl: true,
-            bio: true,
-            lastSeen: true,
-            createdAt: true,
-            following: {
-              select: {
-                followerId: true,
-              },
-              take: 0,
-            },
-            followers: {
-              select: {
-                followerId: true,
-              },
-              take: 0,
-            },
-            verified: true,
-            _count: true,
-          },
-        },
-      },
-    });
-    const currentUser: UserData | undefined = session?.user;
-
-    if (!currentUser) {
+     const { user: loggedUser, message } = await getCurrentUser();
+    if (!loggedUser) {
       return NextResponse.json({
         success: false,
-        message: "Action non autorisée",
-        name: "authorization",
-        data: null,
-      } as ApiResponse<null>);
-    }
-
-     // 1. Récupérer les informations de l'appareil à partir des en-têtes
-    const deviceId = req.headers.get("X-Device-ID");
-    const deviceTypeHeader = req.headers.get("X-Device-Type");
-
-    // 2. Vérifier la présence des en-têtes essentiels pour l'appareil
-    if (!deviceId || !deviceTypeHeader) {
-      return NextResponse.json({
-        success: false,
-        message: "En-têtes d'appareil manquants (X-Device-ID, X-Device-Type).",
-        name: "missing_device_headers",
-      });
-    }
-    const device = await prisma.device.findFirst({
-      where: {
-        deviceId
-      },
-    });
-    const isDeviceLoggedIn = device?.logged;
-    console.log(deviceId, deviceTypeHeader, isDeviceLoggedIn);
-
-    if (!isDeviceLoggedIn) {
-      return NextResponse.json({
-        success: false,
-        message: "Appareil non autorisé. Veuillez vous reconnecter.",
-        name: "authorization",
-        data: null,
+        message: message || "Utilisateur non authentifié.",
+        name: "unauthorized",
       } as ApiResponse<null>);
     }
 
@@ -101,7 +37,7 @@ export async function GET(
           { username: userId }, // Permet de chercher par nom d'utilisateur aussi
         ],
       },
-      select: getUserDataSelect(currentUser.id),
+      select: getUserDataSelect(loggedUser.id),
     })) as UserData | undefined;
 
     if (!user) {
@@ -127,7 +63,7 @@ export async function GET(
       type: userVerifiedData?.type,
       expiresAt,
     };
-    const isFollowing = user.followers.some(follower=>follower.followerId === currentUser.id)
+    const isFollowing = user.followers.some(follower=>follower.followerId === loggedUser.id)
 
     const finalUser: User = {
       id: user.id,
@@ -164,82 +100,18 @@ export async function PATCH(
   { params }: { params: { userId: string } },
 ) {
   try {
-    const authHeader = req.headers.get("Authorization");
-    const session_token = authHeader?.split(" ")[1];
-    const session = await prisma.session.findFirst({
-      where: {
-        id: session_token,
-      },
-      select: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            displayName: true,
-            avatarUrl: true,
-            bio: true,
-            lastSeen: true,
-            createdAt: true,
-            following: {
-              select: {
-                followerId: true,
-              },
-              take: 0,
-            },
-            followers: {
-              select: {
-                followerId: true,
-              },
-              take: 0,
-            },
-            verified: true,
-            _count: true,
-          },
-        },
-      },
-    });
-    const currentUser: UserData | undefined = session?.user;
-
-    if (!currentUser) {
+     const { user: loggedUser, message } = await getCurrentUser();
+    if (!loggedUser) {
       return NextResponse.json({
         success: false,
-        message: "Action non autorisée",
-        name: "authorization",
-        data: null,
+        message: message || "Utilisateur non authentifié.",
+        name: "unauthorized",
       } as ApiResponse<null>);
     }
 
-    const deviceId = req.headers.get("X-Device-ID");
-    const deviceTypeHeader = req.headers.get("X-Device-Type");
+    const userId = loggedUser.id;
 
-    if (!deviceId || !deviceTypeHeader) {
-      return NextResponse.json({
-        success: false,
-        message: "En-têtes d'appareil manquants (X-Device-ID, X-Device-Type).",
-        name: "missing_device_headers",
-      });
-    }
-
-    const device = await prisma.device.findFirst({
-      where: {
-        deviceId,
-      },
-    });
-
-    const isDeviceLoggedIn = device?.logged;
-
-    if (!isDeviceLoggedIn) {
-      return NextResponse.json({
-        success: false,
-        message: "Appareil non autorisé. Veuillez vous reconnecter.",
-        name: "authorization",
-        data: null,
-      } as ApiResponse<null>);
-    }
-
-    const userId = session?.user.id;
-
-    if (currentUser.id !== userId) {
+    if (loggedUser.id !== userId) {
       return NextResponse.json({
         success: false,
         message: "You can only update your own profile.",
@@ -253,11 +125,11 @@ export async function PATCH(
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
-        displayName: displayName ?? currentUser.displayName,
-        bio: bio ?? currentUser.bio,
-        // avatarUrl: avatarUrl ?? currentUser.avatarUrl,
+        displayName: displayName ?? loggedUser.displayName,
+        bio: bio ?? loggedUser.bio,
+        // avatarUrl: avatarUrl ?? loggedUser.avatarUrl,
       },
-      select: getUserDataSelect(currentUser.id),
+      select: getUserDataSelect(loggedUser.id),
     }) as UserData;
 
     const userVerifiedData = updatedUser.verified?.[0];
@@ -274,7 +146,7 @@ export async function PATCH(
       type: userVerifiedData?.type,
       expiresAt,
     };
-    const isFollowing = updatedUser.followers.some(follower=>follower.followerId === currentUser.id)
+    const isFollowing = updatedUser.followers.some(follower=>follower.followerId === loggedUser.id)
 
     const finalUser: User = {
       id: updatedUser.id,
