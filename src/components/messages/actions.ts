@@ -86,6 +86,49 @@ export async function submitMessage(input: {
   ]);
 
   const messageId = newMessage.id;
+
+  const channelMembers = await prisma.channelMember.findMany({
+    where: {
+      channelId,
+    },
+    select: {
+      userId: true,
+      leftAt: true,
+    },
+  });
+  for (const member of channelMembers) {
+    const memberId = member.userId;
+    if (member.leftAt) {
+      continue
+    }
+    const lastMessage = await prisma.lastMessage.findFirst({
+      where: {
+        userId,
+        channelId,
+      }
+    })
+    if (lastMessage) {
+      await prisma.lastMessage.update({
+        where: {
+          id: lastMessage.id
+        },
+        data: {
+          messageId,
+          createdAt: new Date()
+        }
+      })
+      continue
+    }
+    await prisma.lastMessage.create({
+      data: {
+        userId,
+        channelId,
+        messageId
+      }
+    })
+
+  }
+
   await prisma.read.upsert({
     where: {
       userId_messageId: {
@@ -215,6 +258,13 @@ export async function createChatChannel(input: {
         return;
       }
       if(!newChannel.isGroup){
+        await prisma.lastMessage.create({
+        data: {
+          userId: member.user.id,
+          messageId: createMessage.id,
+          channelId: newChannel.id
+        }
+      })
         return createMessage;
       } 
       const message = await prisma.message.create({
@@ -227,6 +277,13 @@ export async function createChatChannel(input: {
         },
         include: getMessageDataInclude(user.id),
       });
+      await prisma.lastMessage.create({
+        data: {
+          userId: member.user.id,
+          messageId: message.id,
+          channelId: newChannel.id
+        }
+      })
       return message;
     });
   }

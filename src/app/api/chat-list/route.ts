@@ -14,7 +14,7 @@ import { getUserDataSelect } from "@/lib/types";
 export async function GET(req: NextRequest) {
   try {
     const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
-    const pageSize = 20;
+    const pageSize = 10;
 
     const { user: loggedInUser } = await validateRequest();
 
@@ -33,60 +33,59 @@ export async function GET(req: NextRequest) {
       return Response.json({ error: "Action non autorisée" }, { status: 401 });
     }
 
-    // Récupérer les canaux dans lesquels l'utilisateur est membre avec leur dernier message
-    const channels = await prisma.channel.findMany({
+    const lastMessages = await prisma.lastMessage.findMany({
       where: {
-        members: {
-          some: {
-            userId: user.id,
-          },
+        userId: user.id,
+      },
+      select: {
+        channelId: true,
+        messageId: true,
+        message: {
+          include: getMessageDataInclude(loggedInUser.id),
+        },
+        channel: {
+          include: getChatChannelDataInclude(),
         },
       },
-      include: getChatChannelDataInclude(),
       take: pageSize + 1, // Récupérer une page supplémentaire pour déterminer s'il y a une page suivante
       cursor: cursor ? {id: cursor} : undefined
     });
+    
 
-    // Récupérer le membre actuel dans la base de données
-    const updatedChannels = await Promise.all(
-      channels.map(async (channel) => {
-        const loggedMember = await prisma.channelMember.findUnique({
-          where: {
-            channelId_userId: {
-              channelId: channel.id,
-              userId: user.id,
-            },
+    // Récupérer les canaux dans lesquels l'utilisateur est membre avec leur dernier message
+    const channels = lastMessages.map((lastMessage) => {
+      const lastMsg: MessageData | null = lastMessage.message;
+        const channel: ChannelData | null = lastMessage.channel;
+        if (!channel) return {
+          id: "",
+          name: null,
+          description: null,
+          groupAvatarUrl: null,
+          privilege: "DEFAULT",
+          members: [
+            {
+            user,
+            userId: user.id,
+            type: "MEMBER",
+            joinedAt: user.createdAt,
+            leftAt: null,
           },
-        });
+          ],
+          maxMembers: 1,
+          messages: lastMsg ? [lastMsg] : [],
+          isGroup: false,
+          createdAt: new Date(0),
 
-        const leftDate = loggedMember?.leftAt;
+        } as ChannelData;
 
-        // Filtrer les messages en fonction de la date de départ et du type REACTION
-        channel.messages = channel.messages.filter((message) => {
-          if (message.type === "REACTION") {
-            // Exclure les messages de type REACTION si le recipientId ne correspond pas à l'utilisateur connecté
-            return (
-              message.recipient?.id === loggedInUser.id ||
-              message.sender?.id === loggedInUser.id
-            );
-          }
+        return {
+          ...channel,
+          messages: lastMsg ? [lastMsg] : [],
+        } as ChannelData;
+    })
+    const updatedChannels: ChannelData[] = channels
 
-          // Exclure les messages créés après que l'utilisateur a quitté le canal
-          return leftDate ? message.createdAt < leftDate : true;
-        });
 
-        return channel;
-      }),
-    );
-
-    // Trie les canaux par la date du dernier message (ou la date de création du canal s'il n'y a pas de message)
-    updatedChannels.sort((a, b) => {
-      const lastMessageA = a.messages[0]?.createdAt || a.createdAt;
-      const lastMessageB = b.messages[0]?.createdAt || b.createdAt;
-      return (
-        new Date(lastMessageB).getTime() - new Date(lastMessageA).getTime()
-      );
-    });
 
     // Récupérer également les messages envoyés à soi-même sans canal
     const selfMessage: MessageData | null = await prisma.message.findFirst({

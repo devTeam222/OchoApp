@@ -211,8 +211,8 @@ model LastMessage {
   id String @id @default(cuid())
   userId String
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messageId String
-  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  messageId String?
+  message Message? @relation(fields: [messageId], references: [id], onDelete: Cascade)
   channelId String?
   channel Channel? @relation(fields: [channelId], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now())
