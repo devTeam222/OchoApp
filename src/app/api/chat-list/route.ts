@@ -47,8 +47,11 @@ export async function GET(req: NextRequest) {
           include: getChatChannelDataInclude(),
         },
       },
+      orderBy: {
+        createdAt: "desc"
+      },
       take: pageSize + 1, // Récupérer une page supplémentaire pour déterminer s'il y a une page suivante
-      cursor: cursor ? {id: cursor} : undefined
+      cursor: cursor ? {id: cursor} : undefined,
     });
     
 
