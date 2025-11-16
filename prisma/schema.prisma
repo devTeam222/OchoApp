@@ -33,6 +33,7 @@ model User {
   channels             ChannelMember[]
   sentMessages         Message[]       @relation("Sender")
   receivedMessages     Message[]       @relation("Recipient")
+  lastMessages LastMessage[]
   reads                Read[]
   posts                Post[]
   likes                Like[]
@@ -140,6 +141,7 @@ model Channel {
   members        ChannelMember[]
   maxMembers     Int             @default(300)
   messages       Message[]
+  lastMessages    LastMessage[]
   privilege      Privilege       @default(DEFAULT)
   createdAt      DateTime        @default(now())
 
@@ -187,6 +189,7 @@ model Message {
   type        MessageType
   reads       Read[]
   reactions   Reaction[]
+  lastMessages LastMessage[]
 
   createdAt DateTime @default(now())
 
@@ -203,6 +206,18 @@ enum MessageType {
   CLEAR
   SAVED
   REACTION
+}
+model LastMessage {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messageId String
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  channelId String?
+  channel Channel? @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+
+  @@map("last_messages")
 }
 
 model Read {
