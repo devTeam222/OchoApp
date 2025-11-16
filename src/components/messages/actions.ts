@@ -1,6 +1,5 @@
 "use server";
 
-import Message from "@/app/(main)/messages/Message";
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
 import {
@@ -53,12 +52,12 @@ export async function submitMessage(input: {
           userId,
           messageId,
         },
-      }, 
-     create: {
-      userId,
-      messageId,
-     },
-     update: {}
+      },
+      create: {
+        userId,
+        messageId,
+      },
+      update: {},
     });
 
     newMessage.type = "CONTENT";
@@ -99,34 +98,33 @@ export async function submitMessage(input: {
   for (const member of channelMembers) {
     const memberId = member.userId;
     if (member.leftAt) {
-      continue
+      continue;
     }
     const lastMessage = await prisma.lastMessage.findFirst({
       where: {
         userId,
         channelId,
-      }
-    })
+      },
+    });
     if (lastMessage) {
       await prisma.lastMessage.update({
         where: {
-          id: lastMessage.id
+          id: lastMessage.id,
         },
         data: {
           messageId,
-          createdAt: new Date()
-        }
-      })
-      continue
+          createdAt: new Date(),
+        },
+      });
+      continue;
     }
     await prisma.lastMessage.create({
       data: {
         userId,
         channelId,
-        messageId
-      }
-    })
-
+        messageId,
+      },
+    });
   }
 
   await prisma.read.upsert({
@@ -135,12 +133,12 @@ export async function submitMessage(input: {
         userId,
         messageId,
       },
-    }, 
-   create: {
-    userId,
-    messageId,
-   },
-   update: {}
+    },
+    create: {
+      userId,
+      messageId,
+    },
+    update: {},
   });
 
   return { newMessage, channelId, userId, newChannel };
@@ -150,25 +148,25 @@ export async function deleteMessage(id: string) {
   const { user } = await validateRequest();
 
   if (!user) {
-      throw new Error("Action non autorisée");
+    throw new Error("Action non autorisée");
   }
 
   const message = await prisma.message.findUnique({
-      where: { id }
-  })
+    where: { id },
+  });
   if (!message) {
-      throw new Error("Commentaire non trouve");
+    throw new Error("Commentaire non trouve");
   }
   if (message.senderId !== user.id) {
-      throw new Error("Action non autorisée");
+    throw new Error("Action non autorisée");
   }
 
   const deletedMessage = await prisma.message.delete({
-      where: { id },
-      include: getMessageDataInclude(user.id)
+    where: { id },
+    include: getMessageDataInclude(user.id),
   });
 
-  return deletedMessage
+  return deletedMessage;
 }
 
 export async function createChatChannel(input: {
@@ -257,16 +255,35 @@ export async function createChatChannel(input: {
       if (!member?.user) {
         return;
       }
-      if(!newChannel.isGroup){
-        await prisma.lastMessage.create({
-        data: {
-          userId: member.user.id,
-          messageId: createMessage.id,
-          channelId: newChannel.id
+      if (!newChannel.isGroup) {
+        const lastMessage = await prisma.lastMessage.findFirst({
+          where: {
+            userId,
+            channelId: newChannel.id,
+          },
+        });
+        if (lastMessage) {
+          await prisma.lastMessage.update({
+            where: {
+              id: lastMessage.id,
+            },
+            data: {
+              messageId: createMessage.id,
+              createdAt: new Date(),
+            },
+          });
+        } else {
+          await prisma.lastMessage.create({
+            data: {
+              userId,
+              channelId: newChannel.id,
+              messageId: createMessage.id,
+            },
+          });
         }
-      })
+
         return createMessage;
-      } 
+      }
       const message = await prisma.message.create({
         data: {
           content: "add-" + member.user.id,
@@ -277,13 +294,31 @@ export async function createChatChannel(input: {
         },
         include: getMessageDataInclude(user.id),
       });
-      await prisma.lastMessage.create({
-        data: {
-          userId: member.user.id,
-          messageId: message.id,
-          channelId: newChannel.id
-        }
-      })
+      const lastMessage = await prisma.lastMessage.findFirst({
+        where: {
+          userId,
+          channelId: newChannel.id,
+        },
+      });
+      if (lastMessage) {
+        await prisma.lastMessage.update({
+          where: {
+            id: lastMessage.id,
+          },
+          data: {
+            messageId: message.id,
+            createdAt: new Date(),
+          },
+        });
+      } else {
+        await prisma.lastMessage.create({
+          data: {
+            userId,
+            channelId: newChannel.id,
+            messageId: message.id,
+          },
+        });
+      }
       return message;
     });
   }
@@ -384,6 +419,13 @@ export async function addMembers(input: {
         channelId,
       },
       include: getMessageDataInclude(user.id),
+    });
+    await prisma.lastMessage.create({
+      data: {
+        userId: member.user.id,
+        messageId: message.id,
+        channelId,
+      },
     });
     return message;
   });
@@ -587,8 +629,34 @@ export async function removeMember(input: {
       recipientId: memberId,
     },
   });
+
   if (!removeMsg) {
     throw new Error("Erreur lors de la suppression du membre");
+  }
+  const lastMessage = await prisma.lastMessage.findFirst({
+    where: {
+      userId,
+      channelId,
+    },
+  });
+  if (lastMessage) {
+    await prisma.lastMessage.update({
+      where: {
+        id: lastMessage.id,
+      },
+      data: {
+        messageId: removeMsg.id,
+        createdAt: new Date(),
+      },
+    });
+  } else {
+    await prisma.lastMessage.create({
+      data: {
+        userId,
+        channelId,
+        messageId: removeMsg.id,
+      },
+    });
   }
 }
 export async function banMember(input: {
@@ -983,9 +1051,9 @@ export async function saveMessage(input: {}) {
     channelId: userId,
     createdAt: createInfo.createdAt,
     _count: {
-      reactions: 0
+      reactions: 0,
     },
-    reactions:[]
+    reactions: [],
   };
 
   const newChannel: ChannelData = {
