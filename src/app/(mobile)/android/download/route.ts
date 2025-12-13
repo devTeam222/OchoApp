@@ -1,40 +1,48 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 
-// Répertoire de base pour les fichiers téléchargés
-const downloadBaseDir = path.resolve("data/downloads");
+// IMPORTANT: UploadThing est un service de stockage Cloud.
+// Le téléchargement est généralement géré en redirigeant l'utilisateur vers l'URL sécurisée du fichier.
 
 export async function GET(request: NextRequest) {
-  const fileName = "OchoApp.apk"
-  try {
-    // Construire le chemin complet du fichier
-    const filePath = path.join(downloadBaseDir, fileName);
+  // 1. Définir le nom de fichier souhaité
+  const fileName = "OchoApp.apk";
+  
+  // 2. Récupérer l'URL sécurisée d'UploadThing pour ce fichier.
+  //    Cette URL doit être stockée dans votre base de données après le téléversement initial.
+  //    Pour cet exemple, je vais utiliser une URL factice. REMPLACEZ CELA PAR LA VRAIE LOGIQUE.
+  const uploadThingFileUrl = "https://github.com/devTeam222/OchoApp/releases/download/app/app-release.apk"; 
+  
+  // Dans un scénario réel, vous feriez :
+  // const fileId = request.nextUrl.searchParams.get("id"); // Récupérer l'ID à partir de la requête
+  // const fileRecord = await db.files.findUnique({ where: { id: fileId } }); // Rechercher dans la DB
+  // if (!fileRecord || !fileRecord.url) {
+  //   return NextResponse.json({ error: "File record not found" }, { status: 404 });
+  // }
+  // const uploadThingFileUrl = fileRecord.url;
 
-    // Vérifier si le fichier existe
-    if (!fs.existsSync(filePath)) {
-      return NextResponse.json({ error: "File not found" }, { status: 404 });
+  try {
+    // 3. Vérifier si l'URL est valide
+    if (!uploadThingFileUrl) {
+        return NextResponse.json({ error: "File URL is missing" }, { status: 404 });
     }
 
-    // Lire le fichier dans un buffer
-    const fileBuffer = await fs.promises.readFile(filePath);
+    // 4. Redirection vers l'URL d'UploadThing
+    // C'est la méthode la plus courante et la plus efficace.
+    // UploadThing fournit déjà les en-têtes nécessaires (Content-Type, Content-Disposition: attachment)
+    // pour forcer le téléchargement et nommer le fichier.
+    // L'URL peut être paramétrée pour forcer le téléchargement si ce n'est pas le comportement par défaut d'UploadThing.
 
-    // Détecter le type de contenu en fonction de l'extension du fichier
-    const ext = path.extname(filePath).toLowerCase();
-    let contentType = "application/octet-stream"; // Type par défaut
-    if (ext === ".apk") contentType = "application/vnd.android.package-archive";
-    let size = fileBuffer.length;
+    // Note: Pour s'assurer que le nom de fichier soit celui que vous voulez (OchoApp.apk),
+    // vous pouvez ajouter un paramètre de requête à l'URL de redirection, 
+    // ou vous assurer que l'URL UploadThing elle-même inclut le nom de fichier.
 
-    // Retourner le fichier avec le type de contenu approprié
-    return new NextResponse(new Uint8Array(fileBuffer), {
-      headers: {
-        "Content-Type": contentType,
-        "Content-Disposition": `attachment; filename="${path.basename(filePath)}"`, // Pour forcer le téléchargement
-        "Content-Length": size.toString(),
-      },
-    });
+    console.log(`Redirecting to UploadThing URL: ${uploadThingFileUrl}`);
+    
+    // Le code 302 (Found) ou 307 (Temporary Redirect) est utilisé pour rediriger le navigateur.
+    return NextResponse.redirect(uploadThingFileUrl, 307); 
+
   } catch (error) {
-    console.error("Error serving file:", error);
-    return NextResponse.json({ error: "Error retrieving file" }, { status: 500 });
+    console.error("Error during download process (UploadThing redirection):", error);
+    return NextResponse.json({ error: "Error processing download request" }, { status: 500 });
   }
 }
