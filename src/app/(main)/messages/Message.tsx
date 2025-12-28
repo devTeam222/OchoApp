@@ -490,3 +490,76 @@ export default function Message({
     </div>
   );
 }
+
+type TypingIndicatorProps = {
+  typingUsers: {
+    id: string;
+    displayName: string;
+    avatarUrl: string;
+  }[];
+};
+
+export function TypingIndicator({ typingUsers = [] } : TypingIndicatorProps) {
+  if (typingUsers.length === 0) return null;
+
+  const MAX_AVATARS = 4;
+  const hasMore = typingUsers.length > MAX_AVATARS;
+  const visibleUsers = typingUsers.slice(0, hasMore ? MAX_AVATARS - 1 : MAX_AVATARS);
+  const remainingCount = typingUsers.length - visibleUsers.length;
+
+  return (
+    <div className="relative flex w-full flex-col gap-2 mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="flex w-full gap-2 items-end">
+        {/* Container des Avatars (Stack avec limite) */}
+        <div className="flex -space-x-2 overflow-hidden py-1 h-8 items-center">
+          {visibleUsers.map((user, index) => (
+            <div
+              key={user.id || index}
+              className="inline-block h-6 w-6 rounded-full ring-2 ring-white dark:ring-slate-900 overflow-hidden bg-slate-200 transition-all duration-300 transform hover:scale-110"
+              title={user.displayName}
+            >
+              <UserAvatar
+                avatarUrl={user.avatarUrl} 
+                />
+            </div>
+          ))}
+
+          {/* Badge pour le reste des personnes */}
+          {hasMore && (
+            <div className="z-10 flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 ring-2 ring-white dark:ring-slate-900 text-[9px] font-bold text-slate-600 dark:text-slate-300">
+              +{remainingCount}
+            </div>
+          )}
+        </div>
+
+        {/* Bulle animée */}
+        <div className="group/message relative w-fit max-w-[75%] select-none">
+          {/* Label textuel dynamique */}
+          <div className="ps-2 text-[10px] font-medium text-slate-500 dark:text-slate-400 mb-1 transition-opacity">
+            {typingUsers.length === 1 
+              ? `${typingUsers[0].displayName.split(" ")[0]} est en train d'écrire...`
+              : typingUsers.length === 2 
+                ? `${typingUsers[0].displayName.split(" ")[0]} et ${typingUsers[1].displayName.split(" ")[0]} écrivent...`
+                : `${typingUsers.length} personnes écrivent...`
+            }
+          </div>
+
+          <div className="relative h-fit w-fit">
+            <div
+              className={cn(
+                "w-fit select-none rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1 shadow-sm",
+                "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200/50 dark:border-slate-700/50"
+              )}
+            >
+              <div className="flex gap-1.5">
+                <div className="h-1.5 w-1.5 rounded-full bg-slate-400 dark:bg-slate-500 animate-bounce [animation-delay:-0.3s]"></div>
+                <div className="h-1.5 w-1.5 rounded-full bg-slate-400 dark:bg-slate-500 animate-bounce [animation-delay:-0.15s]"></div>
+                <div className="h-1.5 w-1.5 rounded-full bg-slate-400 dark:bg-slate-500 animate-bounce"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

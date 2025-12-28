@@ -3,7 +3,7 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import kyInstance from "@/lib/ky";
 import { RoomData, MessagesSection } from "@/lib/types";
-import Message from "./Message";
+import Message, { TypingIndicator } from "./Message";
 import InfiniteScrollContainer from "@/components/InfiniteScrollContainer";
 import { ArrowLeft, Frown, Loader2, Search, X } from "lucide-react";
 import { useSession } from "../SessionProvider";
@@ -236,6 +236,7 @@ export default function Chat({ roomId, initialData, onClose }: ChatProps) {
                 />
               );
             })}
+            {/* <TypingIndicator typingUsers={[{id: otherUser?.id || "", displayName: otherUser?.displayName || "", avatarUrl: otherUser?.avatarUrl || ""}]} /> */}
         </InfiniteScrollContainer>
         {isFetchingNextPage && (
           <div className="flex w-full justify-center">
