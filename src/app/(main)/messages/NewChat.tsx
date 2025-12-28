@@ -8,10 +8,10 @@ import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  useCreateChatChannelMutation,
+  useCreateChatRoomMutation,
   useSaveMessageMutation,
 } from "@/components/messages/mutations";
-import { useActiveChannel } from "@/context/ChatContext";
+import { useActiveRoom } from "@/context/ChatContext";
 import { useToast } from "@/components/ui/use-toast";
 import LoadingButton from "@/components/LoadingButton";
 import UsersList from "@/components/messages/UsersList";
@@ -26,7 +26,7 @@ const fetchUsers =
 
 interface NewChatProps {
   onClose: () => void;
-  onChatStart: (channelId: string) => void;
+  onChatStart: (roomId: string) => void;
   className?: string;
 }
 
@@ -63,9 +63,9 @@ export default function NewChat({
     dataError
   } = t();
 
-  const mutation = useCreateChatChannelMutation();
+  const mutation = useCreateChatRoomMutation();
   const saveMsgMutation = useSaveMessageMutation();
-  const { activeChannelId } = useActiveChannel();
+  const { activeRoomId } = useActiveRoom();
   const inputRef = useRef<HTMLInputElement>(null);
 
   function handleNameChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -136,8 +136,8 @@ export default function NewChat({
         saveMsgMutation.mutate(
           {},
           {
-            onSuccess: ({ newChannel }) => {
-              onChatStart(newChannel.id);
+            onSuccess: ({ newRoom }) => {
+              onChatStart(newRoom.id);
               setName("");
               setSelectedUsers([]);
               setIsgroup(false);
@@ -161,8 +161,8 @@ export default function NewChat({
           members: [userId],
         },
         {
-          onSuccess: ({ newChannel }) => {
-            onChatStart(newChannel.id);
+          onSuccess: ({ newRoom }) => {
+            onChatStart(newRoom.id);
             setName("");
             onClose();
             setSelectedUsers([]);
@@ -185,8 +185,8 @@ export default function NewChat({
           members: selectedUsers.map((user) => user.id),
         },
         {
-          onSuccess: ({ newChannel }) => {
-            onChatStart(newChannel.id);
+          onSuccess: ({ newRoom }) => {
+            onChatStart(newRoom.id);
             setName("");
             onClose();
             setSelectedUsers([]);

@@ -251,7 +251,7 @@ export const english = {
   showMore: "Show more",
   groupNameOptional: "Group name (optional)",
   hide: "Hide",
-  // Channel
+  // Room
   you: "You",
   newMember: "New member: [name]",
   youAddedMember: "You added [name] to the group.",
@@ -552,7 +552,7 @@ export const french: Vocabulary = {
   showMore: "Afficher plus",
   hide: "Masquer",
   groupNameOptional: "Nom du groupe (facultatif)",
-  // Channel
+  // Room
   you: "Vous",
   newMember: "Nouveau membre : [name]",
   youAddedMember: "Vous avez ajouté [name] au groupe.",

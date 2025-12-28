@@ -3,7 +3,7 @@
 import { useState } from "react";
 import kyInstance from "@/lib/ky";
 import { Frown, Loader2, Meh, SearchIcon, XIcon } from "lucide-react";
-import { ChannelData, UserData, UsersPage } from "@/lib/types";
+import { RoomData, UserData, UsersPage } from "@/lib/types";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { Input } from "../ui/input";
 import UserAvatar from "../UserAvatar";
@@ -16,10 +16,10 @@ import { t } from "@/context/LanguageContext";
 
 interface AddMemberFormProps {
   onAdd: () => void;
-  channel: ChannelData;
+  room: RoomData;
 }
 
-export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
+export default function AddMemberForm({ onAdd, room }: AddMemberFormProps) {
   const [query, setQuery] = useState<string>("");
   const [inputValue, setInputValue] = useState<string>("");
   const [selectedUsers, setSelectedUsers] = useState<UserData[]>([]);
@@ -57,7 +57,7 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
         .get("/api/users/search", {
           searchParams: {
             q: query || "",
-            channelId: channel.id,
+            roomId: room.id,
             ...(pageParam ? { cursor: pageParam } : {}),
           },
         })
@@ -90,7 +90,7 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
   const handleSubmit = () => {
     mutation.mutate(
       {
-        channelId: channel.id,
+        roomId: room.id,
         members: selectedUsers.map((member) => member.id),
       },
       {
@@ -120,7 +120,7 @@ export default function AddMemberForm({ onAdd, channel }: AddMemberFormProps) {
 
           setSelectedUsers([]);
           setQuery("");
-          const queryKey = ["chat", channel.id];
+          const queryKey = ["chat", room.id];
 
           queryClient.invalidateQueries({ queryKey });
           onAdd();

@@ -1,4 +1,4 @@
-import { ChannelData } from "@/lib/types";
+import { RoomData } from "@/lib/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useToast } from "../ui/use-toast";
@@ -17,10 +17,10 @@ import { t } from "@/context/LanguageContext";
 
 interface BanDialogProps {
   memberId: string;
-  channel: ChannelData;
+  room: RoomData;
 }
 
-export default function BanDialog({ memberId, channel }: BanDialogProps) {
+export default function BanDialog({ memberId, room }: BanDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -40,26 +40,26 @@ export default function BanDialog({ memberId, channel }: BanDialogProps) {
   }
 
   const mutation = useBanMemberMutation();
-  const channelId = channel.id;
+  const roomId = room.id;
 
-  const member = channel.members.find((member) => member.userId === memberId);
+  const member = room.members.find((member) => member.userId === memberId);
 
   function handleSubmit() {
     mutation.mutate(
       {
-        channelId,
+        roomId,
         memberId,
       },
       {
         onSuccess: () => {
-          const queryKey = ["chat", channelId];
+          const queryKey = ["chat", roomId];
 
           queryClient.invalidateQueries({ queryKey });
 
           toast({
             description: groupBanSuccess
               .replace("[name]", member?.user?.displayName || "un utilisateur")
-              .replace("[group]", channel.name || "ce groupe"),
+              .replace("[group]", room.name || "ce groupe"),
           });
           onClose();
         },
@@ -85,7 +85,7 @@ export default function BanDialog({ memberId, channel }: BanDialogProps) {
         <p>
           {groupBanPrompt
             .replace("[name]", member?.user?.displayName || appUser)
-            .replace("[group]", channel.name || thisGroup)}
+            .replace("[group]", room.name || thisGroup)}
         </p>
         <p>{groupBanInfo}</p>
         <DialogFooter>

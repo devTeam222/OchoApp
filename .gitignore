@@ -39,3 +39,6 @@ yarn-error.log*
 next-env.d.ts
 
 /src/app/api/send-channels/route.ts
+
+verceldb_backup.sql
+verceldb_final.sql

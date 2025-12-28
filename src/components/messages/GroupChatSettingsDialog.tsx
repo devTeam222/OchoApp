@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import { ChannelData } from "@/lib/types";
+import { RoomData } from "@/lib/types";
 import { Label } from "../ui/label";
 import {
   Form,
@@ -40,7 +40,7 @@ import { useToast } from "../ui/use-toast";
 import { t } from "@/context/LanguageContext";
 
 interface GroupChatSettingsDialogProps {
-  channel: ChannelData;
+  room: RoomData;
   className?: string;
   children: React.ReactNode;
   focus?: "name" | "description" | null;
@@ -49,7 +49,7 @@ interface GroupChatSettingsDialogProps {
 }
 
 export default function GroupChatSettingsDialog({
-  channel,
+  room,
   className,
   children,
   open = false,
@@ -69,21 +69,21 @@ export default function GroupChatSettingsDialog({
     dataError,
   } = t();
 
-  const mutation = useUpdateGroupChatMutation({ channelId: channel.id });
+  const mutation = useUpdateGroupChatMutation({ roomId: room.id });
 
   const form = useForm<UpdateGroupChatProfileValues>({
     resolver: zodResolver(updateGroupChatProfileSchema),
     defaultValues: {
-      id: channel.id,
-      name: channel?.name || undefined,
-      description: channel.description || "",
+      id: room.id,
+      name: room?.name || undefined,
+      description: room.description || "",
     },
   });
 
   async function onSubmit(values: UpdateGroupChatProfileValues) {
 
     const newAvatarFile = croppedAvatar
-      ? new File([croppedAvatar], `avatar_${channel.id}.webp`)
+      ? new File([croppedAvatar], `avatar_${room.id}.webp`)
       : undefined;
 
     mutation.mutate(
@@ -121,11 +121,11 @@ export default function GroupChatSettingsDialog({
         <div className="flex flex-col items-center gap-1.5">
           <Label>{groupIcon}</Label>
           <AvatarInput
-            channelId={channel.id}
+            roomId={room.id}
             src={
               croppedAvatar
                 ? URL.createObjectURL(croppedAvatar)
-                : channel.groupAvatarUrl
+                : room.groupAvatarUrl
             }
             onImageCropped={setCroppedAvatar}
           />
@@ -181,12 +181,12 @@ export default function GroupChatSettingsDialog({
 }
 
 interface AvatarInputProps {
-  channelId: string;
+  roomId: string;
   src: string | StaticImageData | null;
   onImageCropped: (blob: Blob | null) => void;
 }
 
-function AvatarInput({ channelId, src, onImageCropped }: AvatarInputProps) {
+function AvatarInput({ roomId, src, onImageCropped }: AvatarInputProps) {
   const [imageToCrop, setImageToCrop] = useState<File>();
 
   const mutation = useDeleteGroupChatAvatarMutation();
@@ -211,7 +211,7 @@ function AvatarInput({ channelId, src, onImageCropped }: AvatarInputProps) {
   }
 
   function deleteAvatar() {
-    mutation.mutate({ channelId });
+    mutation.mutate({ roomId });
   }
 
   return (

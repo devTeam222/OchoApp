@@ -5,9 +5,9 @@ import { NotificationCountInfo } from "@/lib/types";
 export async function GET(
   req: Request,
   {
-    params: { channelId },
+    params: { roomId },
   }: {
-    params: { channelId: string };
+    params: { roomId: string };
   },
 ) {
   try {
@@ -17,7 +17,7 @@ export async function GET(
       return Response.json({ error: "Action non autorisée" }, { status: 401 });
     }
 
-    if (channelId === `saved-${user.id}`) {
+    if (roomId === `saved-${user.id}`) {
       return Response.json({
         unreadCount: 0
       });
@@ -27,8 +27,8 @@ export async function GET(
       where: {
         AND: [
           {
-            channelId: {
-              equals: channelId,
+            roomId: {
+              equals: roomId,
             },
           },
           {

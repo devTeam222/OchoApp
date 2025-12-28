@@ -2,10 +2,10 @@
 
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import kyInstance from "@/lib/ky";
-import { ChannelData, MessagesSection } from "@/lib/types";
+import { RoomData, MessagesSection } from "@/lib/types";
 import Message from "./Message";
 import InfiniteScrollContainer from "@/components/InfiniteScrollContainer";
-import { ArrowLeft, Frown, Loader2, X } from "lucide-react";
+import { ArrowLeft, Frown, Loader2, Search, X } from "lucide-react";
 import { useSession } from "../SessionProvider";
 import MessageForm from "./MessageForm";
 import MessagesLoadingSkeleton from "./MessagesLoadingSkeleton";
@@ -13,32 +13,37 @@ import { toast } from "@/components/ui/use-toast";
 import ChatHeader from "./ChatHeader";
 import { useMenuBar } from "@/context/MenuBarContext";
 import { useEffect, useState } from "react";
-import { useActiveChannel } from "@/context/ChatContext";
+import { useActiveRoom } from "@/context/ChatContext";
 import { usePathname, useRouter } from "next/navigation";
 import { t } from "@/context/LanguageContext";
 import ChatLoadingSkeleton from "./ChatLoadingSkeleton";
 import { useProgress } from "@/context/ProgressContext";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 interface ChatProps {
-  channelId: string | null;
-  initialData: ChannelData | undefined;
+  roomId: string | null;
+  initialData: RoomData | undefined;
   onClose: () => void;
 }
 
-export default function Chat({ channelId, initialData, onClose }: ChatProps) {
-  const { setActiveChannelId } = useActiveChannel();
+export default function Chat({ roomId, initialData, onClose }: ChatProps) {
+  const { setActiveRoomId } = useActiveRoom();
   const isProduction = process.env.NODE_ENV === "production";
   const { isVisible, setIsVisible } = useMenuBar();
   const pathname = usePathname();
   const router = useRouter();
   const { startNavigation: navigate } = useProgress();
   const [prevPathname, setPrevPathname] = useState(pathname);
+  const [messageInputExpanded, setMessageInputExpanded] = useState(true);
 
-  const { unableToLoadChat, noMessage, dataError } = t();
+  const { unableToLoadChat, noMessage, dataError, search } = t();
 
   useEffect(() => {
-    setIsVisible(!channelId);
-    if (channelId && window.location.pathname !== "/messages/chat") {
+    setIsVisible(!roomId);
+    if (roomId && window.location.pathname !== "/messages/chat") {
       history.pushState(null, "", "/messages/chat");
       navigate("/messages/chat");
     }
@@ -46,7 +51,7 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
     return () => {
       setIsVisible(true);
     };
-  }, [isVisible, setIsVisible, router, pathname, channelId, navigate]);
+  }, [isVisible, setIsVisible, router, pathname, roomId, navigate]);
 
   const handlePopState = () => {
     const currentPathname = window.location.pathname;
@@ -77,31 +82,31 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fetching ChannelData using useQuery with initialData for caching
+  // Fetching RoomData using useQuery with initialData for caching
   const {
-    data: channel,
-    isError: isChannelError,
+    data: room,
+    isError: isRoomError,
     isLoading,
   } = useQuery({
-    queryKey: ["chat", channelId],
+    queryKey: ["chat", roomId],
     queryFn: () =>
       kyInstance
-        .get(`/api/messages/${channelId}/chat-data`)
-        .json<ChannelData>(),
+        .get(`/api/messages/${roomId}/chat-data`)
+        .json<RoomData>(),
     initialData, // Using initialData as the first cache data
     staleTime: 600_000, // Cache data for 10 minutes
     throwOnError: false,
     refetchOnWindowFocus: false,
-    enabled: !!channelId,
+    enabled: !!roomId,
   });
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
-      queryKey: ["messages", channelId],
+      queryKey: ["messages", roomId],
       queryFn: ({ pageParam }) =>
         kyInstance
           .get(
-            `/api/messages/${channelId}/msgs`,
+            `/api/messages/${roomId}/msgs`,
             pageParam ? { searchParams: { cursor: pageParam } } : {},
           )
           .json<MessagesSection>(),
@@ -110,41 +115,41 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
       refetchInterval: 2000,
       staleTime: Infinity,
       throwOnError: false,
-      enabled: !!channelId,
+      enabled: !!roomId,
     });
   const { user: loggedUser } = useSession();
 
   useQuery({
-    queryKey: ["mark-as-read", channelId],
+    queryKey: ["mark-as-read", roomId],
     queryFn: () =>
-      kyInstance.post(`/api/messages/${channelId}/mark-all-as-read/`, {
+      kyInstance.post(`/api/messages/${roomId}/mark-all-as-read/`, {
         throwHttpErrors: false,
       }),
     staleTime: Infinity,
     throwOnError: false,
   });
 
-  if (!channelId) {
+  if (!roomId) {
     return null;
   }
 
   if (isLoading) {
     return <ChatLoadingSkeleton onChatClose={onClose} />;
   }
-  const channelName = channel?.name || channelId || "Chat";
-  if (!channel) {
+  const roomName = room?.name || roomId || "Chat";
+  if (!room) {
     toast({
       variant: "destructive",
-      description: unableToLoadChat.replace("[name]", channelName),
+      description: unableToLoadChat.replace("[name]", roomName),
     });
     onClose();
     return null;
   }
 
-  if (isChannelError) {
+  if (isRoomError) {
     toast({
       variant: "destructive",
-      description: unableToLoadChat.replace("[name]", channelName),
+      description: unableToLoadChat.replace("[name]", roomName),
     });
     onClose();
     return null;
@@ -153,27 +158,27 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
   if (!loggedUser) {
     toast({
       variant: "destructive",
-      description: unableToLoadChat.replace("[name]", channelName),
+      description: unableToLoadChat.replace("[name]", roomName),
     });
-    setActiveChannelId(null);
+    setActiveRoomId(null);
     onClose();
     return null;
   }
 
-  const loggedMember = channel.members.find(
+  const loggedMember = room.members.find(
     (member) => member.userId === loggedUser.id,
   );
-  const isSaved = channel.id === `saved-${loggedMember?.userId}`;
+  const isSaved = room.id === `saved-${loggedMember?.userId}`;
   const isMember = !(
     loggedMember?.type === "OLD" || loggedMember?.type === "BANNED"
   );
-  let message = "Vous ne pouvez pas envoyer de message";
+  let message = "Envoi de messages non autorisés";
 
   const messages = data?.pages.flatMap((page) => page?.messages) || [];
 
-  const otherUser = !channel.isGroup
-    ? channel.members.find((user) => user?.userId !== loggedMember?.userId)
-        ?.user || null
+  const otherUser = !room.isGroup
+    ? room.members.find((user) => user?.userId !== loggedMember?.userId)
+      ?.user || null
     : null;
 
   return (
@@ -186,7 +191,7 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
         >
           <ArrowLeft size={35} className="sm:hidden" />
         </div>
-        <ChatHeader channel={channel} onDelete={onClose} />
+        <ChatHeader room={room} onDelete={onClose} />
         <div
           className="flex cursor-pointer hover:text-red-500"
           onClick={onClose}
@@ -196,7 +201,7 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
         </div>
       </div>
 
-      <div className="relative flex flex-1 flex-col-reverse overflow-y-auto overflow-x-hidden shadow-inner scrollbar-track-primary scrollbar-track-rounded-full has-[.reaction-open]:z-50 sm:bg-background/50">
+      <div className="relative flex flex-1 flex-col-reverse overflow-y-auto overflow-x-hidden shadow-inner scrollbar-track-primary scrollbar-track-rounded-full has-[.reaction-open]:z-50 sm:bg-background/50 pb-[74px]">
         <InfiniteScrollContainer
           className="flex w-full flex-col-reverse gap-4 p-4 px-2"
           onBottomReached={() => {
@@ -226,7 +231,7 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
                 <Message
                   key={index}
                   message={message}
-                  channel={channel}
+                  room={room}
                   showTime={showTime}
                 />
               );
@@ -239,27 +244,41 @@ export default function Chat({ channelId, initialData, onClose }: ChatProps) {
         )}
       </div>
 
-      <div className="max-sm:bg-card/50">
-        {!isSaved
-          ? !channel.isGroup &&
+      <div className="bg-gradient-to-t from-card/80 to-transparent absolute w-full bottom-0">
+        <div className={cn("flex p-2", !messageInputExpanded && "gap-2")}>
+          <div className={cn("flex gap-0 items-end transition-all duration-75 w-fit", !messageInputExpanded && "w-full gap-3")}>
+            <Button  variant="outline" onClick={()=>setMessageInputExpanded(!messageInputExpanded)} title={search} className="aspect-square size-12 cursor-pointer outline-input p-2">
+              <Search className="size-5"/>
+            </Button>
+            {(
+              <div className={cn("relative flex w-full items-end gap-1 rounded-3xl border border-input bg-background p-1 ring-primary ring-offset-background transition-[width] duration-75 has-[input:focus-visible]:outline-none has-[input:focus-visible]:ring-2 has-[input:focus-visible]:ring-ring has-[input:focus-visible]:ring-offset-2", messageInputExpanded ? "w-0 invisible overflow-hidden" : "w-full")}>
+                        <Input
+                          placeholder={search + "..."}
+                          className={cn("outline-none max-h-[10rem] min-h-10 w-full overflow-y-auto rounded-none border-none bg-transparent px-4 py-2 pr-0.5 ring-offset-transparent focus-visible:ring-transparent transition-all duration-75")}
+                        />
+                      </div>
+            )}
+
+          </div>
+          {!isSaved
+            ? !room.isGroup &&
             !otherUser?.id && (
-              <div className="select-none px-5 py-1.5 text-center text-sm">
+              <div className="select-none px-5 py-1.5 text-center font-semibold relative flex w-full gap-1 rounded-3xl border border-input bg-background p-1 ring-primary ring-offset-background transition-[width] duration-75 justify-center items-center">
                 <p>{message}</p>
-                <p>L&apos;utilisateur n&apos;est plus disponible</p>
               </div>
             )
-          : !!channelId && <MessageForm channelId={channelId} />}
-        {!isMember ? (
-          <div className="select-none px-5 py-1.5 text-center text-sm">
-            <p>{message}</p>
-            <p>Vous n&apos;êtes plus membre de cette discussion</p>
-          </div>
-        ) : (
-          !!channelId &&
-          ((!channel.isGroup && otherUser?.id) || channel.isGroup) && (
-            <MessageForm channelId={channelId} />
-          )
-        )}
+            : !!roomId && <MessageForm expanded={messageInputExpanded} onExpanded={()=>setMessageInputExpanded(true)} roomId={roomId} />}
+          {!isMember ? (
+            <div className="select-none px-5 py-1.5 text-center font-semibold relative flex w-full gap-1 rounded-3xl border border-input bg-background p-1 ring-primary ring-offset-background transition-[width] duration-75 justify-center items-center">
+              <p>{message}</p>
+            </div>
+          ) : (
+            !!roomId &&
+            ((!room.isGroup && otherUser?.id) || room.isGroup) && (
+              <MessageForm expanded={messageInputExpanded} onExpanded={()=>setMessageInputExpanded(true)} roomId={roomId} />
+            )
+          )}
+        </div>
       </div>
     </div>
   );

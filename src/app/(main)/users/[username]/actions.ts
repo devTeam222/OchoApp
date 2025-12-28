@@ -6,7 +6,7 @@ import fs from "fs";
 import path from "path";
 import { UTApi, UTFile } from "uploadthing/server";
 import {
-  getChatChannelDataInclude,
+  getChatRoomDataInclude,
   getUserDataSelect,
   LocalUpload,
 } from "@/lib/types";
@@ -96,20 +96,20 @@ export async function updateGroupChatProfile(
     throw new Error("Action non autorisée");
   }
 
-  const channel = await prisma.channel.findUnique({
+  const room = await prisma.room.findUnique({
     where: { id: values.id },
-    include: getChatChannelDataInclude(),
+    include: getChatRoomDataInclude(),
   });
 
-  if (!channel) {
+  if (!room) {
     throw new Error("Groupe introuvable");
   }
 
-  if (!channel.isGroup) {
+  if (!room.isGroup) {
     throw new Error("Groupe introuvable");
   }
 
-  const loggedMember = channel.members.find(
+  const loggedMember = room.members.find(
     (member) => member.userId === user.id,
   );
 
@@ -125,7 +125,7 @@ export async function updateGroupChatProfile(
     );
   }
 
-  const updatedGroup = await prisma.channel.update({
+  const updatedGroup = await prisma.room.update({
     where: { id: values.id },
     data: {
       ...validatedValues,
@@ -145,10 +145,10 @@ export async function updateGroupChatProfile(
 
 export async function uploadGroupAvatarFile({
   file,
-  channelId,
+  roomId,
 }: {
   file: File | null;
-  channelId: string;
+  roomId: string;
 }) {
   const { user } = await validateRequest();
 
@@ -162,24 +162,24 @@ export async function uploadGroupAvatarFile({
       throw new Error("No file uploaded");
     }
 
-    if (!channelId) {
+    if (!roomId) {
       throw new Error("Données invalides");
     }
 
-    const channel = await prisma.channel.findUnique({
-      where: { id: channelId },
-      include: getChatChannelDataInclude(),
+    const room = await prisma.room.findUnique({
+      where: { id: roomId },
+      include: getChatRoomDataInclude(),
     });
 
-    if (!channel) {
+    if (!room) {
       throw new Error("Groupe introuvable");
     }
 
-    if (!channel.isGroup) {
+    if (!room.isGroup) {
       throw new Error("Ce canal de discussion n'est pas un groupe");
     }
 
-    const loggedMember = channel.members.find(
+    const loggedMember = room.members.find(
       (member) => member.userId === user.id,
     );
 
@@ -231,7 +231,7 @@ export async function uploadGroupAvatarFile({
     const type = "image/webp";
 
     // Suppression de l'ancien avatar
-    const oldAvatarUrl = channel.groupAvatarUrl;
+    const oldAvatarUrl = room.groupAvatarUrl;
     if (oldAvatarUrl) {
       const isOnLocalServer = oldAvatarUrl.startsWith("/api/uploads/avatars/");
       if (isOnLocalServer) {
@@ -264,9 +264,9 @@ export async function uploadGroupAvatarFile({
     }
 
     // Mettre à jour l'URL de l'avatar dans la base de données
-    await prisma.channel
+    await prisma.room
       .update({
-        where: { id: channelId },
+        where: { id: roomId },
         data: { groupAvatarUrl: url },
       })
       .catch((err) => {
@@ -298,9 +298,9 @@ export async function uploadGroupAvatarFile({
 }
 
 export async function deleteGroupChatAvatar({
-  channelId,
+  roomId,
 }: {
-  channelId: string;
+  roomId: string;
 }) {
   const { user } = await validateRequest();
 
@@ -308,20 +308,20 @@ export async function deleteGroupChatAvatar({
     throw new Error("Action non autorisée");
   }
 
-  const channel = await prisma.channel.findUnique({
-    where: { id: channelId },
-    include: getChatChannelDataInclude(),
+  const room = await prisma.room.findUnique({
+    where: { id: roomId },
+    include: getChatRoomDataInclude(),
   });
 
-  if (!channel) {
+  if (!room) {
     throw new Error("Groupe introuvable");
   }
 
-  if (!channel.isGroup) {
+  if (!room.isGroup) {
     throw new Error("Groupe introuvable");
   }
 
-  const loggedMember = channel.members.find(
+  const loggedMember = room.members.find(
     (member) => member.userId === user.id,
   );
 
@@ -339,14 +339,14 @@ export async function deleteGroupChatAvatar({
   let filePath: string;
   const avatarDir = path.resolve("data/uploads/avatars");
 
-  if (channel.groupAvatarUrl?.includes("/uploads/avatars/")) {
+  if (room.groupAvatarUrl?.includes("/uploads/avatars/")) {
     // If it's an attachment
     filePath = path.join(
       avatarDir,
-      channel.groupAvatarUrl.split("/uploads/avatars/")[1],
+      room.groupAvatarUrl.split("/uploads/avatars/")[1],
     );
   } else {
-    const key = channel.groupAvatarUrl?.split(
+    const key = room.groupAvatarUrl?.split(
       `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
     )[1];
     if (!key) {
@@ -365,8 +365,8 @@ export async function deleteGroupChatAvatar({
     fs.unlinkSync(filePath);
   }
 
-  const updatedGroup = await prisma.channel.update({
-    where: { id: channelId },
+  const updatedGroup = await prisma.room.update({
+    where: { id: roomId },
     data: {
       groupAvatarUrl: null,
     },

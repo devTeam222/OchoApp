@@ -1,7 +1,7 @@
 "use client";
 
 import UserAvatar from "@/components/UserAvatar";
-import { ChannelData, NotificationCountInfo, UserData } from "@/lib/types";
+import { RoomData, NotificationCountInfo, UserData } from "@/lib/types";
 import { useSession } from "../SessionProvider";
 import GroupAvatar from "@/components/GroupAvatar";
 import { MessageType, VerifiedType } from "@prisma/client";
@@ -15,13 +15,13 @@ import { t } from "@/context/LanguageContext";
 import Verified from "@/components/Verified";
 import { useProgress } from "@/context/ProgressContext";
 
-interface ChannelProps {
-  channel: ChannelData;
+interface RoomProps {
+  room: RoomData;
   active: boolean;
   onSelect: () => void;
 }
 
-export default function Channel({ channel, active, onSelect }: ChannelProps) {
+export default function Room({ room, active, onSelect }: RoomProps) {
   const { user: loggedinUser } = useSession();
   const {
     appUser,
@@ -55,14 +55,14 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
   const {startNavigation: navigate} = useProgress();
   const router = useRouter();
 
-  const queryKey: QueryKey = ["unread-chat-messages", channel.id];
+  const queryKey: QueryKey = ["unread-chat-messages", room.id];
   const queryClient = useQueryClient();
 
   const { data } = useQuery({
     queryKey,
     queryFn: () =>
       kyInstance
-        .get(`/api/messages/${channel.id}/unread-count`)
+        .get(`/api/messages/${room.id}/unread-count`)
         .json<NotificationCountInfo>(),
     refetchInterval: active ? 2_000 : 50_000,
     initialData: { unreadCount: 0 },
@@ -70,12 +70,12 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
   });
 
   const { unreadCount } = data;
-  const isSaved = channel.id === `saved-${loggedinUser.id}`;
+  const isSaved = room.id === `saved-${loggedinUser.id}`;
 
   const otherUser: UserData | null = isSaved
-    ? channel.members.find((member) => member.userId === loggedinUser.id)
+    ? room.members.find((member) => member.userId === loggedinUser.id)
         ?.user || null
-    : channel?.members.filter((member) => member.userId !== loggedinUser.id)[0]
+    : room?.members.filter((member) => member.userId !== loggedinUser.id)[0]
         .user;
 
   const expiresAt = otherUser?.verified?.[0]?.expiresAt;
@@ -86,26 +86,26 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
   const isVerified =
     (isSaved ? !!otherUser?.verified[0] : !!otherUser?.verified[0]) &&
     !expired &&
-    !channel.isGroup;
+    !room.isGroup;
   const verifiedType: VerifiedType | undefined = isVerified
     ? otherUser?.verified[0].type || "STANDARD"
     : undefined;
 
   const verifiedCheck = isVerified ? <Verified type={verifiedType} prompt={false}/> : null;
 
-  const messagePreview = channel?.messages[0] || {
+  const messagePreview = room?.messages[0] || {
     id: "",
     content: "",
     senderId: null,
     sender: null,
-    channelId: channel.id,
+    roomId: room.id,
     type: "CLEAR",
     createdAt: Date.now(),
   };
 
   let messageType: MessageType = messagePreview?.type;
   const isSender = messagePreview.sender?.id === loggedinUser.id;
-  const currentMember = channel.members.find(
+  const currentMember = room.members.find(
     (member) => member.userId === loggedinUser.id,
   );
 
@@ -117,19 +117,19 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
 
   const sender = isSender
     ? you
-    : channel.isGroup
+    : room.isGroup
       ? senderFirstName
       : otherUserFirstName;
-  const recipient = channel?.messages[0]?.recipient || null;
+  const recipient = room?.messages[0]?.recipient || null;
   let newMemberMsg, oldMemberMsg;
   const memberName = recipient?.displayName.split(" ")[0] || appUser;
 
-  if (recipient && channel.isGroup) {
+  if (recipient && room.isGroup) {
     // Check if message type is info of added member
     if (messageType === "NEWMEMBER") {
       newMemberMsg = newMember.replace("[name]", memberName);
-      if (channel?.messages[0].sender) {
-        channel?.messages[0].sender.id === loggedinUser.id
+      if (room?.messages[0].sender) {
+        room?.messages[0].sender.id === loggedinUser.id
           ? (newMemberMsg = youAddedMember.replace("[name]", memberName))
           : (newMemberMsg =
               recipient.id === loggedinUser.id
@@ -141,8 +141,8 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
     }
     if (messageType === "LEAVE") {
       oldMemberMsg = memberLeft.replace("[name]", memberName);
-      if (channel?.messages[0].sender) {
-        channel?.messages[0].sender.id === loggedinUser.id
+      if (room?.messages[0].sender) {
+        room?.messages[0].sender.id === loggedinUser.id
           ? (oldMemberMsg = youRemovedMember.replace("[name]", memberName))
           : (oldMemberMsg =
               recipient.id === loggedinUser.id
@@ -154,8 +154,8 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
     }
     if (messageType === "BAN") {
       oldMemberMsg = memberBanned.replace("[name]", memberName);
-      if (channel?.messages[0].sender) {
-        channel?.messages[0].sender.id === loggedinUser.id
+      if (room?.messages[0].sender) {
+        room?.messages[0].sender.id === loggedinUser.id
           ? (oldMemberMsg = youBannedMember.replace("[name]", memberName))
           : (oldMemberMsg =
               recipient.id === loggedinUser.id
@@ -166,9 +166,9 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
       }
     }
   }
-  const showUserPreview = channel.isGroup || isSender;
+  const showUserPreview = room.isGroup || isSender;
   const contentsTypes = {
-    CREATE: channel.isGroup
+    CREATE: room.isGroup
       ? messagePreview.sender?.id === loggedinUser.id
         ? youCreatedGroup.replace("[name]", sender || appUser)
         : createdGroup.replace("[name]", sender || appUser)
@@ -215,27 +215,27 @@ export default function Channel({ channel, active, onSelect }: ChannelProps) {
 
   const select = async () => {
     onSelect();
-    queryClient.setQueryData(["unread-chat-messages", channel.id], {
+    queryClient.setQueryData(["unread-chat-messages", room.id], {
       unreadCount: 0,
     });
     navigate("/messages/chat");
   };
 
   const chatName =
-    channel.name ||
+    room.name ||
     `${otherUser?.displayName || appUser} ${isSaved ? `(${you})` : ""}` ||
-    (channel.isGroup ? groupChat : appUser);
+    (room.isGroup ? groupChat : appUser);
 
   return (
     <li
-      key={channel.id}
+      key={room.id}
       className={`cursor-pointer p-2 ${active && "bg-accent/50"}`}
       onClick={select}
       title={messagePreviewContent || noMessage}
     >
       <div className="flex items-center space-x-2">
-        {channel.isGroup ? (
-          <GroupAvatar size={45} avatarUrl={channel.groupAvatarUrl} />
+        {room.isGroup ? (
+          <GroupAvatar size={45} avatarUrl={room.groupAvatarUrl} />
         ) : (
           <UserAvatar
             avatarUrl={otherUser?.avatarUrl}

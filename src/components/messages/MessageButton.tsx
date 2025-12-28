@@ -1,12 +1,12 @@
 import { useSession } from "@/app/(main)/SessionProvider";
 import {
-  useCreateChatChannelMutation,
+  useCreateChatRoomMutation,
   useSaveMessageMutation,
 } from "./mutations";
 import LoadingButton from "../LoadingButton";
 import { Send } from "lucide-react";
 import { useToast } from "../ui/use-toast";
-import { useActiveChannel } from "@/context/ChatContext";
+import { useActiveRoom } from "@/context/ChatContext";
 import { useRouter } from "next/navigation"; // Importation de useRouter
 import { ButtonProps } from "../ui/button";
 import { cn } from "@/lib/utils";
@@ -22,9 +22,9 @@ export default function MessageButton({
   className,
   ...props
 }: MessageButtonProps) {
-  const mutation = useCreateChatChannelMutation();
+  const mutation = useCreateChatRoomMutation();
   const saveMsgMutation = useSaveMessageMutation();
-  const { setActiveChannelId } = useActiveChannel();
+  const { setActiveRoomId } = useActiveRoom();
   const { user: loggedinUser } = useSession();
   const { toast } = useToast();
   const { unableToSendMessage, message } = t();
@@ -35,8 +35,8 @@ export default function MessageButton({
       saveMsgMutation.mutate(
         {},
         {
-          onSuccess: ({ newChannel }) => {
-            setActiveChannelId(newChannel.id);
+          onSuccess: ({ newRoom }) => {
+            setActiveRoomId(newRoom.id);
             navigate("/messages"); // Utilisation de router.push au lieu de redirect
           },
           onError(error) {
@@ -57,8 +57,8 @@ export default function MessageButton({
         members: [userId],
       },
       {
-        onSuccess: ({ newChannel }) => {
-          setActiveChannelId(newChannel.id);
+        onSuccess: ({ newRoom }) => {
+          setActiveRoomId(newRoom.id);
           navigate("/messages");
         },
         onError(error) {

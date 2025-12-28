@@ -64,7 +64,7 @@ export async function POST(
       where: { id: messageId },
       select: {
         senderId: true,
-        channelId: true,
+        roomId: true,
       },
     });
 
@@ -107,7 +107,7 @@ export async function POST(
           recipientId: message.senderId,
           type: "REACTION",
           content: emoji,
-          channelId: message.channelId,
+          roomId: message.roomId,
           reactionId: reaction.id,
         },
       }));
@@ -133,7 +133,7 @@ export async function DELETE(
       where: { id: messageId },
       select: {
         senderId: true,
-        channelId: true,
+        roomId: true,
         reactions: {
           select: {
             id: true,
@@ -167,7 +167,7 @@ export async function DELETE(
         where: {
           senderId: loggedInUser.id,
           recipientId: message.senderId,
-          channelId: message.channelId,
+          roomId: message.roomId,
           reactionId: message.reactions[0].id,
           type: "REACTION",
         },

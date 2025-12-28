@@ -3,8 +3,8 @@
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
 import {
-  ChannelData,
-  getChatChannelDataInclude,
+  RoomData,
+  getChatRoomDataInclude,
   getMessageDataInclude,
   getUserDataSelect,
   MessageData,
@@ -13,14 +13,14 @@ import {
 import {
   addAdminSchema,
   addMemberSchema,
-  createChannelSchema,
+  createRoomSchema,
   createMessageSchema,
   memberActionSchema,
 } from "@/lib/validation";
 
 export async function submitMessage(input: {
   content: string;
-  channelId: string;
+  roomId: string;
 }) {
   const { user } = await validateRequest();
 
@@ -29,10 +29,10 @@ export async function submitMessage(input: {
   }
 
   const userId = user.id;
-  const { content, channelId } = createMessageSchema.parse(input);
+  const { content, roomId } = createMessageSchema.parse(input);
 
   // Vérifier si le message est envoyé à soi-même (message sauvegardé)
-  const isSavedMessage = channelId === `saved-${userId}`;
+  const isSavedMessage = roomId === `saved-${userId}`;
 
   if (isSavedMessage) {
     // Créer uniquement le message sans canal
@@ -62,48 +62,51 @@ export async function submitMessage(input: {
 
     newMessage.type = "CONTENT";
 
-    return { newMessage, channelId, userId, newChannel: null }; // Pas de nouveau canal
+    return { newMessage, roomId, userId, newRoom: null }; // Pas de nouveau canal
   }
 
   // Si ce n'est pas un message sauvegardé, créer un message et vérifier le canal
-  const [newMessage, newChannel] = await prisma.$transaction([
+  const [newMessage, newRoom] = await prisma.$transaction([
     prisma.message.create({
       data: {
         content,
-        channelId: channelId,
+        roomId: roomId,
         senderId: user.id,
         type: "CONTENT",
       },
       include: getMessageDataInclude(userId),
     }),
-    prisma.channel.findFirst({
+    prisma.room.findFirst({
       where: {
-        id: channelId,
+        id: roomId,
       },
-      include: getChatChannelDataInclude(),
+      include: getChatRoomDataInclude(),
     }),
   ]);
 
   const messageId = newMessage.id;
 
-  const channelMembers = await prisma.channelMember.findMany({
+  const roomMembers = await prisma.roomMember.findMany({
     where: {
-      channelId,
+      roomId,
     },
     select: {
       userId: true,
       leftAt: true,
     },
   });
-  for (const member of channelMembers) {
+  for (const member of roomMembers) {
     const memberId = member.userId;
     if (member.leftAt) {
       continue;
     }
+    if (!memberId) {
+      continue;
+    }
     const lastMessage = await prisma.lastMessage.findFirst({
       where: {
-        userId,
-        channelId,
+        userId: memberId,
+        roomId,
       },
     });
     if (lastMessage) {
@@ -121,7 +124,7 @@ export async function submitMessage(input: {
     await prisma.lastMessage.create({
       data: {
         userId,
-        channelId,
+        roomId,
         messageId,
       },
     });
@@ -141,7 +144,7 @@ export async function submitMessage(input: {
     update: {},
   });
 
-  return { newMessage, channelId, userId, newChannel };
+  return { newMessage, roomId, userId, newRoom };
 }
 
 export async function deleteMessage(id: string) {
@@ -169,7 +172,7 @@ export async function deleteMessage(id: string) {
   return deletedMessage;
 }
 
-export async function createChatChannel(input: {
+export async function createChatRoom(input: {
   name: string | null;
   isGroup: boolean;
   members: string[];
@@ -182,7 +185,7 @@ export async function createChatChannel(input: {
 
   const userId = user.id;
 
-  const { name, isGroup, members } = createChannelSchema.parse(input);
+  const { name, isGroup, members } = createRoomSchema.parse(input);
 
   (!members?.includes(userId) || members.length === 1) &&
     members?.unshift(userId);
@@ -194,7 +197,7 @@ export async function createChatChannel(input: {
     throw new Error("Un groupe doit avoir au moins deux membres");
   }
   if (!isGroup) {
-    const existingChannel: ChannelData | null = await prisma.channel.findFirst({
+    const existingRoom: RoomData | null = await prisma.room.findFirst({
       where: {
         isGroup: false,
         AND: [
@@ -202,14 +205,14 @@ export async function createChatChannel(input: {
           { members: { some: { userId: members[1] } } },
         ],
       },
-      include: getChatChannelDataInclude(),
+      include: getChatRoomDataInclude(),
     });
-    if (existingChannel) {
-      return { newChannel: existingChannel, userId };
+    if (existingRoom) {
+      return { newRoom: existingRoom, userId };
     }
   }
   // Si le canal n'existe pas, le créer
-  const newChannel: ChannelData = await prisma.channel.create({
+  const newRoom: RoomData = await prisma.room.create({
     data: {
       name: name?.trim() || null,
       isGroup: isGroup,
@@ -220,20 +223,20 @@ export async function createChatChannel(input: {
         })),
       },
     },
-    include: getChatChannelDataInclude(), // Inclure les données requises
+    include: getChatRoomDataInclude(), // Inclure les données requises
   });
 
   const createMessage = await prisma.message.create({
     data: {
       content: "created",
-      channelId: newChannel.id,
-      senderId: newChannel.isGroup ? user.id : null,
+      roomId: newRoom.id,
+      senderId: newRoom.isGroup ? user.id : null,
       type: "CREATE",
     },
     include: getMessageDataInclude(user.id),
   });
 
-  const newMembers: string[] = newChannel.members
+  const newMembers: string[] = newRoom.members
     .map((member) => {
       return member.userId;
     })
@@ -241,10 +244,10 @@ export async function createChatChannel(input: {
     .filter((member) => member !== null);
   if (newMembers && newMembers.length) {
     newMembers.map(async (memberId) => {
-      const member = await prisma.channelMember.findUnique({
+      const member = await prisma.roomMember.findUnique({
         where: {
-          channelId_userId: {
-            channelId: newChannel.id,
+          roomId_userId: {
+            roomId: newRoom.id,
             userId: memberId,
           },
         },
@@ -255,11 +258,11 @@ export async function createChatChannel(input: {
       if (!member?.user) {
         return;
       }
-      if (!newChannel.isGroup) {
+      if (!newRoom.isGroup) {
         const lastMessage = await prisma.lastMessage.findFirst({
           where: {
             userId,
-            channelId: newChannel.id,
+            roomId: newRoom.id,
           },
         });
         if (lastMessage) {
@@ -276,7 +279,7 @@ export async function createChatChannel(input: {
           await prisma.lastMessage.create({
             data: {
               userId,
-              channelId: newChannel.id,
+              roomId: newRoom.id,
               messageId: createMessage.id,
             },
           });
@@ -290,14 +293,14 @@ export async function createChatChannel(input: {
           senderId: userId,
           recipientId: member.user.id,
           type: "NEWMEMBER",
-          channelId: newChannel.id,
+          roomId: newRoom.id,
         },
         include: getMessageDataInclude(user.id),
       });
       const lastMessage = await prisma.lastMessage.findFirst({
         where: {
           userId,
-          channelId: newChannel.id,
+          roomId: newRoom.id,
         },
       });
       if (lastMessage) {
@@ -314,7 +317,7 @@ export async function createChatChannel(input: {
         await prisma.lastMessage.create({
           data: {
             userId,
-            channelId: newChannel.id,
+            roomId: newRoom.id,
             messageId: message.id,
           },
         });
@@ -325,7 +328,7 @@ export async function createChatChannel(input: {
 
   const createInfo: MessageData = (await prisma.message.findFirst({
     where: {
-      channelId: newChannel.id,
+      roomId: newRoom.id,
     },
     include: getMessageDataInclude(user.id),
     orderBy: {
@@ -334,10 +337,10 @@ export async function createChatChannel(input: {
     take: 1,
   })) as MessageData;
 
-  return { newChannel, userId, createInfo };
+  return { newRoom, userId, createInfo };
 }
 export async function addMembers(input: {
-  channelId: string;
+  roomId: string;
   members: string[];
 }) {
   const { user } = await validateRequest();
@@ -348,31 +351,31 @@ export async function addMembers(input: {
 
   const userId = user.id;
 
-  const { channelId, members } = addMemberSchema.parse(input);
+  const { roomId, members } = addMemberSchema.parse(input);
 
   if (!members?.length) {
     throw new Error("Selectionnez au moins un utilisateur");
   }
-  const channel = await prisma.channel.findUnique({
+  const room = await prisma.room.findUnique({
     where: {
-      id: channelId,
+      id: roomId,
     },
   });
-  if (!channel) {
+  if (!room) {
     throw new Error("La discussion n'existe pas");
   }
-  if (!channel.isGroup) {
+  if (!room.isGroup) {
     throw new Error("Cette discussion n'est pas un groupe");
   }
   if (members.includes(userId)) {
     throw new Error("Vous êtes déjà membre de ce groupe");
   }
-  const existingMembers = await prisma.channelMember.findMany({
+  const existingMembers = await prisma.roomMember.findMany({
     where: {
-      channelId,
+      roomId,
     },
   });
-  if (existingMembers.length >= channel.maxMembers) {
+  if (existingMembers.length >= room.maxMembers) {
     throw new Error("Ce groupe est plein");
   }
 
@@ -385,9 +388,9 @@ export async function addMembers(input: {
 
   const newMembersIds = newMembers.map((memberId) => ({
     userId: memberId,
-    channelId: channelId,
+    roomId: roomId,
   }));
-  const newMembersCreated = await prisma.channelMember.createMany({
+  const newMembersCreated = await prisma.roomMember.createMany({
     data: newMembersIds,
   });
 
@@ -396,10 +399,10 @@ export async function addMembers(input: {
   }
   // Send info message for each created new member
   const sentInfoMessages = newMembers.map(async (memberId) => {
-    const member = await prisma.channelMember.findUnique({
+    const member = await prisma.roomMember.findUnique({
       where: {
-        channelId_userId: {
-          channelId,
+        roomId_userId: {
+          roomId,
           userId: memberId,
         },
       },
@@ -416,7 +419,7 @@ export async function addMembers(input: {
         senderId: userId,
         recipientId: member.user.id,
         type: "NEWMEMBER",
-        channelId,
+        roomId,
       },
       include: getMessageDataInclude(user.id),
     });
@@ -424,7 +427,7 @@ export async function addMembers(input: {
       data: {
         userId: member.user.id,
         messageId: message.id,
-        channelId,
+        roomId,
       },
     });
     return message;
@@ -432,7 +435,7 @@ export async function addMembers(input: {
 
   const lastMessage: MessageData | null = await prisma.message.findFirst({
     where: {
-      channelId,
+      roomId,
     },
     orderBy: {
       createdAt: "desc",
@@ -445,11 +448,11 @@ export async function addMembers(input: {
   const newMembersList = (
     await Promise.all(
       newMembers.map(async (memberId) => {
-        const member = await prisma.channelMember.findUnique({
+        const member = await prisma.roomMember.findUnique({
           where: {
-            channelId_userId: {
+            roomId_userId: {
               userId: memberId,
-              channelId: channelId,
+              roomId: roomId,
             },
           },
           select: {
@@ -469,16 +472,16 @@ export async function addMembers(input: {
     )
   ).filter((member) => member !== undefined);
 
-  return { newMembersList, userId, channelId, sentInfoMessages, lastMessage };
+  return { newMembersList, userId, roomId, sentInfoMessages, lastMessage };
 }
-export async function addAdmin(input: { channelId: string; member: string }) {
+export async function addAdmin(input: { roomId: string; member: string }) {
   const { user } = await validateRequest();
 
   if (!user) {
     throw new Error("Action non autorisée");
   }
 
-  const { channelId, member } = addAdminSchema.parse(input);
+  const { roomId, member } = addAdminSchema.parse(input);
 
   const userId = member;
 
@@ -494,57 +497,57 @@ export async function addAdmin(input: { channelId: string; member: string }) {
     throw new Error("Utilisateur non trouvé");
   }
 
-  const channel = await prisma.channel.findUnique({
+  const room = await prisma.room.findUnique({
     where: {
-      id: channelId,
+      id: roomId,
     },
   });
 
-  if (!channel) {
+  if (!room) {
     throw new Error("La discussion n'existe pas");
   }
 
-  if (!channel.isGroup) {
+  if (!room.isGroup) {
     throw new Error("Cette discussion n'est pas un groupe");
   }
 
-  // check if the user is member of the channel
-  const channelMember = await prisma.channelMember.findUnique({
+  // check if the user is member of the room
+  const roomMember = await prisma.roomMember.findUnique({
     where: {
-      channelId_userId: {
-        channelId,
+      roomId_userId: {
+        roomId,
         userId,
       },
     },
   });
   // throw an error if user is not a member
-  if (!channelMember) {
+  if (!roomMember) {
     throw new Error("L'utilisateur n'est plus membre de cette discussion");
   }
 
   // check if member type is not OLD or BANNED
-  if (channelMember.type === "OLD" || channelMember.type === "BANNED") {
+  if (roomMember.type === "OLD" || roomMember.type === "BANNED") {
     throw new Error(
       "Cet utilisateur ne fais plus parti de cette discussion ou e été banni",
     );
   }
   // name admin by changing the type between ADMIN & MEMBER
-  const newChannelMember = await prisma.channelMember.update({
+  const newRoomMember = await prisma.roomMember.update({
     where: {
-      channelId_userId: {
-        channelId,
+      roomId_userId: {
+        roomId,
         userId,
       },
     },
     data: {
-      type: channelMember.type === "ADMIN" ? "MEMBER" : "ADMIN",
+      type: roomMember.type === "ADMIN" ? "MEMBER" : "ADMIN",
     },
   });
 
-  return { newChannelMember };
+  return { newRoomMember };
 }
 export async function removeMember(input: {
-  channelId: string;
+  roomId: string;
   memberId: string;
 }) {
   const { user } = await validateRequest();
@@ -553,7 +556,7 @@ export async function removeMember(input: {
     throw new Error("Action non autorisée");
   }
 
-  const { channelId, memberId } = memberActionSchema.parse(input);
+  const { roomId, memberId } = memberActionSchema.parse(input);
 
   const userId = memberId || "";
 
@@ -569,45 +572,45 @@ export async function removeMember(input: {
     throw new Error("Utilisateur non trouvé");
   }
 
-  const channel = await prisma.channel.findUnique({
+  const room = await prisma.room.findUnique({
     where: {
-      id: channelId,
+      id: roomId,
     },
   });
 
-  if (!channel) {
+  if (!room) {
     throw new Error("La discussion n'existe pas");
   }
 
-  if (!channel.isGroup) {
+  if (!room.isGroup) {
     throw new Error("Cette discussion n'est pas un groupe");
   }
 
-  // check if the user is member of the channel
-  const channelMember = await prisma.channelMember.findUnique({
+  // check if the user is member of the room
+  const roomMember = await prisma.roomMember.findUnique({
     where: {
-      channelId_userId: {
-        channelId,
+      roomId_userId: {
+        roomId,
         userId,
       },
     },
   });
   // throw an error if user is not a member
-  if (!channelMember) {
+  if (!roomMember) {
     throw new Error("L'utilisateur n'est plus membre de cette discussion");
   }
 
   // check if member type is not OLD or BANNED
-  if (channelMember.type === "OLD" || channelMember.type === "BANNED") {
+  if (roomMember.type === "OLD" || roomMember.type === "BANNED") {
     throw new Error(
       "Cet utilisateur ne fais plus parti de cette discussion ou e été banni",
     );
   }
   // name admin by changing the type between ADMIN & MEMBER
-  const oldMember = await prisma.channelMember.update({
+  const oldMember = await prisma.roomMember.update({
     where: {
-      channelId_userId: {
-        channelId,
+      roomId_userId: {
+        roomId,
         userId,
       },
     },
@@ -623,7 +626,7 @@ export async function removeMember(input: {
   const removeMsg = await prisma.message.create({
     data: {
       content: "leave",
-      channelId,
+      roomId,
       type: "LEAVE",
       senderId: user.id,
       recipientId: memberId,
@@ -636,7 +639,7 @@ export async function removeMember(input: {
   const lastMessage = await prisma.lastMessage.findFirst({
     where: {
       userId,
-      channelId,
+      roomId,
     },
   });
   if (lastMessage) {
@@ -653,14 +656,14 @@ export async function removeMember(input: {
     await prisma.lastMessage.create({
       data: {
         userId,
-        channelId,
+        roomId,
         messageId: removeMsg.id,
       },
     });
   }
 }
 export async function banMember(input: {
-  channelId: string;
+  roomId: string;
   memberId: string;
 }) {
   const { user } = await validateRequest();
@@ -669,7 +672,7 @@ export async function banMember(input: {
     throw new Error("Action non autorisée");
   }
 
-  const { channelId, memberId } = memberActionSchema.parse(input);
+  const { roomId, memberId } = memberActionSchema.parse(input);
 
   const userId = memberId || "";
 
@@ -685,45 +688,45 @@ export async function banMember(input: {
     throw new Error("Utilisateur non trouvé");
   }
 
-  const channel = await prisma.channel.findUnique({
+  const room = await prisma.room.findUnique({
     where: {
-      id: channelId,
+      id: roomId,
     },
   });
 
-  if (!channel) {
+  if (!room) {
     throw new Error("La discussion n'existe pas");
   }
 
-  if (!channel.isGroup) {
+  if (!room.isGroup) {
     throw new Error("Cette discussion n'est pas un groupe");
   }
 
-  // check if the user is member of the channel
-  const channelMember = await prisma.channelMember.findUnique({
+  // check if the user is member of the room
+  const roomMember = await prisma.roomMember.findUnique({
     where: {
-      channelId_userId: {
-        channelId,
+      roomId_userId: {
+        roomId,
         userId,
       },
     },
   });
   // throw an error if user is not a member
-  if (!channelMember) {
+  if (!roomMember) {
     throw new Error("L'utilisateur n'est plus membre de cette discussion");
   }
 
   // check if member type is not OLD or BANNED
-  if (channelMember.type === "OLD" || channelMember.type === "BANNED") {
+  if (roomMember.type === "OLD" || roomMember.type === "BANNED") {
     throw new Error(
       "Cet utilisateur ne fais plus parti de cette discussion ou e été banni",
     );
   }
   // ban the member
-  const bannedMember = await prisma.channelMember.update({
+  const bannedMember = await prisma.roomMember.update({
     where: {
-      channelId_userId: {
-        channelId,
+      roomId_userId: {
+        roomId,
         userId,
       },
     },
@@ -739,7 +742,7 @@ export async function banMember(input: {
   const banMsg = await prisma.message.create({
     data: {
       content: "ban",
-      channelId,
+      roomId,
       type: "BAN",
       senderId: user.id,
       recipientId: memberId,
@@ -752,7 +755,7 @@ export async function banMember(input: {
 }
 
 export async function leaveGroup(input: {
-  channelId: string;
+  roomId: string;
   deleteGroup: boolean;
 }) {
   const { user } = await validateRequest();
@@ -761,54 +764,54 @@ export async function leaveGroup(input: {
     throw new Error("Action non autorisée");
   }
 
-  const { channelId, deleteGroup } = memberActionSchema.parse(input);
+  const { roomId, deleteGroup } = memberActionSchema.parse(input);
   const userId = user.id;
 
   // Vérifier si le canal existe et que c'est bien un groupe
-  const channel = await prisma.channel.findUnique({
+  const room = await prisma.room.findUnique({
     where: {
-      id: channelId,
+      id: roomId,
     },
     include: {
       members: true, // Inclure les membres du canal pour vérifier le statut
     },
   });
 
-  if (!channel) {
+  if (!room) {
     throw new Error("Le groupe n'existe pas");
   }
 
-  if (!channel.isGroup) {
+  if (!room.isGroup) {
     throw new Error("Cette discussion n'est pas un groupe");
   }
 
   // Vérifier si l'utilisateur est membre du groupe
-  const channelMember = await prisma.channelMember.findUnique({
+  const roomMember = await prisma.roomMember.findUnique({
     where: {
-      channelId_userId: {
-        channelId,
+      roomId_userId: {
+        roomId,
         userId,
       },
     },
   });
 
-  if (!channelMember) {
+  if (!roomMember) {
     throw new Error("Vous n'êtes plus membre de ce groupe");
   }
 
   // Si l'utilisateur est le propriétaire du groupe
-  if (channelMember.type === "OWNER") {
+  if (roomMember.type === "OWNER") {
     // Vérifier combien de membres sont encore dans le groupe
-    const remainingMembers = channel.members.filter(
+    const remainingMembers = room.members.filter(
       (member) => member.type !== "OLD" && member.type !== "BANNED",
     );
 
     // Si l'utilisateur est le seul membre restant
     if (remainingMembers.length === 1) {
       // Supprimer le groupe automatiquement
-      await prisma.channel.delete({
+      await prisma.room.delete({
         where: {
-          id: channelId,
+          id: roomId,
         },
       });
       return {
@@ -819,9 +822,9 @@ export async function leaveGroup(input: {
 
     if (deleteGroup) {
       // Supprimer le groupe si l'utilisateur choisit cette option
-      await prisma.channel.delete({
+      await prisma.room.delete({
         where: {
-          id: channelId,
+          id: roomId,
         },
       });
       return { message: "Le groupe a été supprimé avec succès." };
@@ -836,10 +839,10 @@ export async function leaveGroup(input: {
       }
 
       // Mettre à jour le type du nouveau propriétaire
-      await prisma.channelMember.update({
+      await prisma.roomMember.update({
         where: {
-          channelId_userId: {
-            channelId,
+          roomId_userId: {
+            roomId,
             userId: nextOwner.userId as string,
           },
         },
@@ -851,10 +854,10 @@ export async function leaveGroup(input: {
   }
 
   // Mettre à jour l'utilisateur pour indiquer qu'il a quitté le groupe
-  await prisma.channelMember.update({
+  await prisma.roomMember.update({
     where: {
-      channelId_userId: {
-        channelId,
+      roomId_userId: {
+        roomId,
         userId,
       },
     },
@@ -868,7 +871,7 @@ export async function leaveGroup(input: {
   await prisma.message.create({
     data: {
       content: "leave",
-      channelId,
+      roomId,
       type: "LEAVE",
       recipientId: userId,
     },
@@ -878,7 +881,7 @@ export async function leaveGroup(input: {
 }
 
 export async function restoreMember(input: {
-  channelId: string;
+  roomId: string;
   memberId: string;
 }) {
   const { user } = await validateRequest();
@@ -887,7 +890,7 @@ export async function restoreMember(input: {
     throw new Error("Action non autorisée");
   }
 
-  const { channelId, memberId } = memberActionSchema.parse(input);
+  const { roomId, memberId } = memberActionSchema.parse(input);
 
   const userId = memberId || "";
 
@@ -903,39 +906,39 @@ export async function restoreMember(input: {
     throw new Error("Utilisateur non trouvé");
   }
 
-  const channel = await prisma.channel.findUnique({
+  const room = await prisma.room.findUnique({
     where: {
-      id: channelId,
+      id: roomId,
     },
   });
 
-  if (!channel) {
+  if (!room) {
     throw new Error("La discussion n'existe pas");
   }
 
-  if (!channel.isGroup) {
+  if (!room.isGroup) {
     throw new Error("Cette discussion n'est pas un groupe");
   }
 
-  // check if the user is member of the channel
-  const channelMember = await prisma.channelMember.findUnique({
+  // check if the user is member of the room
+  const roomMember = await prisma.roomMember.findUnique({
     where: {
-      channelId_userId: {
-        channelId,
+      roomId_userId: {
+        roomId,
         userId,
       },
     },
   });
   // throw an error if user is not a member
-  if (!channelMember) {
+  if (!roomMember) {
     throw new Error("L'utilisateur n'est plus membre de cette discussion");
   }
 
   // Restore member
-  const newChannelMember = await prisma.channelMember.update({
+  const newRoomMember = await prisma.roomMember.update({
     where: {
-      channelId_userId: {
-        channelId,
+      roomId_userId: {
+        roomId,
         userId,
       },
     },
@@ -944,7 +947,7 @@ export async function restoreMember(input: {
       leftAt: null,
     },
   });
-  if (!newChannelMember) {
+  if (!newRoomMember) {
     throw new Error("Erreur lors de la mise à jour du membre");
   }
   await prisma.message.create({
@@ -953,7 +956,7 @@ export async function restoreMember(input: {
       senderId: user.id,
       recipientId: userId,
       type: "NEWMEMBER",
-      channelId,
+      roomId,
     },
     include: getMessageDataInclude(user.id),
   });
@@ -1007,7 +1010,7 @@ export async function saveMessage(input: {}) {
       orderBy: { createdAt: "asc" },
     });
 
-    const newChannel: ChannelData = {
+    const newRoom: RoomData = {
       id: `saved-${userId}`,
       name: null,
       description: null,
@@ -1027,7 +1030,7 @@ export async function saveMessage(input: {}) {
       isGroup: false,
       createdAt: createInfo?.createdAt || new Date(),
     };
-    return { newChannel, userId };
+    return { newRoom, userId };
   }
 
   const createInfo: MessageData = await prisma.message.create({
@@ -1048,7 +1051,7 @@ export async function saveMessage(input: {}) {
     reactionId: null,
     recipient: user,
     type: "CREATE",
-    channelId: userId,
+    roomId: userId,
     createdAt: createInfo.createdAt,
     _count: {
       reactions: 0,
@@ -1056,7 +1059,7 @@ export async function saveMessage(input: {}) {
     reactions: [],
   };
 
-  const newChannel: ChannelData = {
+  const newRoom: RoomData = {
     id: `saved-${userId}`,
     name: null,
     description: null,
@@ -1080,5 +1083,5 @@ export async function saveMessage(input: {}) {
   if (!createInfo) {
     throw new Error("Impossible de créer le message de création du canal");
   }
-  return { newChannel, userId, createInfo: newMessage };
+  return { newRoom, userId, createInfo: newMessage };
 }

@@ -1,5 +1,5 @@
 import { useSession } from "@/app/(main)/SessionProvider";
-import { ChannelData } from "@/lib/types";
+import { RoomData } from "@/lib/types";
 import { useState } from "react";
 import { ShieldBan, ShieldPlus } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -13,13 +13,13 @@ import { t } from "@/context/LanguageContext";
 interface AdminButtonProps {
   member: string;
   type: MemberType;
-  channel: ChannelData;
+  room: RoomData;
 }
 
 export default function AdminButton({
   member,
   type,
-  channel,
+  room,
 }: AdminButtonProps) {
   const [currentType, setCurrentType] = useState<string>(type);
   const queryClient = useQueryClient();
@@ -27,11 +27,11 @@ export default function AdminButton({
   const { user: loggedInUser } = useSession();
   const { makeGroupAdmin, dismissAsAdmin } = t();
 
-  const channelId = channel.id;
+  const roomId = room.id;
 
   const mutation = useAddAdminMutation();
 
-  const members = channel.members;
+  const members = room.members;
 
   //  get the loggedin user values in members
   const loggedMember = members.find(
@@ -47,15 +47,15 @@ export default function AdminButton({
     const initialType = currentType;
     mutation.mutate(
       {
-        channelId,
+        roomId,
         member,
       },
       {
-        onSuccess: ({ newChannelMember }) => {
-          if (newChannelMember.type !== initialType) {
-            setCurrentType(newChannelMember.type);
+        onSuccess: ({ newRoomMember }) => {
+          if (newRoomMember.type !== initialType) {
+            setCurrentType(newRoomMember.type);
 
-            const queryKey = ["chat", channelId];
+            const queryKey = ["chat", roomId];
 
             queryClient.invalidateQueries({ queryKey });
           }

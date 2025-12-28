@@ -2,12 +2,12 @@
 
 import { SquarePen } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "../ui/dialog";
-import { ChannelData } from "@/lib/types";
+import { RoomData } from "@/lib/types";
 import StartChatForm from "./StartChatForm";
 import { useState } from "react";
 
 interface StartChatDialogProps {
-  onChatStart: (channel: ChannelData) => void;
+  onChatStart: (room: RoomData) => void;
   className?: string;
 }
 

@@ -1,35 +1,35 @@
-import { ChannelData, ChannelsSection } from "@/lib/types";
-import Channel from "./Channel";
+import { RoomData, RoomsSection } from "@/lib/types";
+import Room from "./Room";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import kyInstance from "@/lib/ky";
 import InfiniteScrollContainer from "@/components/InfiniteScrollContainer";
 import { useSession } from "../SessionProvider";
-import ChannelsLoadingSkeleton from "./ChanneLoadingSkeleton";
+import RoomsLoadingSkeleton from "./RoomLoadingSkeleton";
 import { useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
-import { useActiveChannel } from "@/context/ChatContext";
+import { useActiveRoom } from "@/context/ChatContext";
 import { Frown, Loader2, MessageSquare, SquarePen } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { t } from "@/context/LanguageContext";
 import { useProgress } from "@/context/ProgressContext";
 
 interface SidebarProps {
-  activeChannel: (channel: ChannelData) => void;
-  selectedChannelId: string | null;
-  onChannelSelect: (channelId: string) => void;
+  activeRoom: (room: RoomData) => void;
+  selectedRoomId: string | null;
+  onRoomSelect: (roomId: string) => void;
   onNewChat: () => void;
   onCloseChat: () => void;
 }
 
 export default function ChatList({
-  activeChannel,
-  selectedChannelId,
-  onChannelSelect,
+  activeRoom,
+  selectedRoomId,
+  onRoomSelect,
   onNewChat,
   onCloseChat,
 }: SidebarProps) {
   const { user: loggedinUser } = useSession();
-  const { activeChannelId, setActiveChannelId } = useActiveChannel();
+  const { activeRoomId, setActiveRoomId } = useActiveRoom();
   const pathname = usePathname();
   const {startNavigation: navigate} = useProgress();
 
@@ -46,48 +46,48 @@ export default function ChatList({
             "/api/chat-list",
             pageParam ? { searchParams: { cursor: pageParam } } : {},
           )
-          .json<ChannelsSection>(),
+          .json<RoomsSection>(),
       initialPageParam: null as string | null,
       getNextPageParam: (lastPage) => lastPage.nextCursor,
-      refetchInterval: !selectedChannelId ? 2000 : 45 * 1000,
+      refetchInterval: !selectedRoomId ? 2000 : 45 * 1000,
       staleTime: Infinity,
     });
-  const channels = data?.pages.flatMap((page) => page.channels) || [];
+  const rooms = data?.pages.flatMap((page) => page.rooms) || [];
 
-  const handleChatStart = (newChannel: ChannelData) => {
-    handleChannelSelect(newChannel);
+  const handleChatStart = (newRoom: RoomData) => {
+    handleRoomSelect(newRoom);
   };
 
   useEffect(() => {
     if (status === "success") {
-      const savedChannelId = activeChannelId; // Récupérez l'ID du canal actif du contexte
+      const savedRoomId = activeRoomId; // Récupérez l'ID du canal actif du contexte
 
-      if (savedChannelId && channels.length > 0) {
-        const activeChannel = channels.find(
-          (channel) => channel.id === savedChannelId,
+      if (savedRoomId && rooms.length > 0) {
+        const activeRoom = rooms.find(
+          (room) => room.id === savedRoomId,
         );
-        if (activeChannel) {
-          handleChannelSelect(activeChannel);
+        if (activeRoom) {
+          handleRoomSelect(activeRoom);
         } 
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [channels, status, activeChannelId]);
+  }, [rooms, status, activeRoomId]);
 
-  function handleChannelSelect(channel: ChannelData) {
+  function handleRoomSelect(room: RoomData) {
     onCloseChat();
-    onChannelSelect(channel.id);
-    activeChannel(channel);
-    setActiveChannelId(channel.id);
+    onRoomSelect(room.id);
+    activeRoom(room);
+    setActiveRoomId(room.id);
   }
 
-  if (status === "success" && !channels.length) {
+  if (status === "success" && !rooms.length) {
     onCloseChat();
   }
 
   if (
     status === "success" &&
-    !activeChannelId &&
+    !activeRoomId &&
     pathname === "/messages/chat"
   ) {
     history.pushState(null, "", "/messages")
@@ -114,7 +114,7 @@ export default function ChatList({
         }
         }
       >
-        {status === "success" && !channels.length && (
+        {status === "success" && !rooms.length && (
           <p className="flex w-full flex-1 select-none items-center px-3 py-8 text-center italic text-muted-foreground">
             <div className="my-8 flex w-full flex-col items-center gap-2 text-center text-muted-foreground">
               <MessageSquare size={150} />
@@ -126,7 +126,7 @@ export default function ChatList({
             </div>
           </p>
         )}
-        {status === "pending" && <ChannelsLoadingSkeleton />}
+        {status === "pending" && <RoomsLoadingSkeleton />}
         {status === "error" && (
           <p className="flex w-full flex-1 select-none items-center px-3 py-8 text-center italic text-muted-foreground">
             <div className="my-8 flex w-full select-none flex-col items-center gap-2 text-center text-muted-foreground">
@@ -137,13 +137,13 @@ export default function ChatList({
         )}
         {status === "success" && (
           <ul className="">
-            {channels.map((channel) => (
-              <Channel
-                key={channel.id}
-                channel={channel}
-                active={selectedChannelId === channel.id}
+            {rooms.map((room) => (
+              <Room
+                key={room.id}
+                room={room}
+                active={selectedRoomId === room.id}
                 onSelect={() => {
-                  handleChannelSelect(channel);
+                  handleRoomSelect(room);
                 }}
               />
             ))}

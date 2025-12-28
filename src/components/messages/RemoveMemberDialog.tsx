@@ -1,4 +1,4 @@
-import { ChannelData } from "@/lib/types";
+import { RoomData } from "@/lib/types";
 import { useState } from "react";
 import {
   Dialog,
@@ -17,12 +17,12 @@ import { t } from "@/context/LanguageContext";
 
 interface RemoveMemberDialogProps {
   memberId: string;
-  channel: ChannelData;
+  room: RoomData;
 }
 
 export default function RemoveMemberDialog({
   memberId,
-  channel,
+  room,
 }: RemoveMemberDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -43,26 +43,26 @@ export default function RemoveMemberDialog({
   }
 
   const mutation = useRemoveMemberMutation();
-  const channelId = channel.id;
+  const roomId = room.id;
 
-  const member = channel.members.find((member) => member.userId === memberId);
+  const member = room.members.find((member) => member.userId === memberId);
 
   function handleSubmit() {
     mutation.mutate(
       {
-        channelId,
+        roomId,
         memberId,
       },
       {
         onSuccess: () => {
-          const queryKey = ["chat", channelId];
+          const queryKey = ["chat", roomId];
 
           queryClient.invalidateQueries({ queryKey });
 
           toast({
             description: groupRemoveSuccess
               .replace("[name]", member?.user?.displayName || appUser)
-              .replace("[group]", channel.name || thisGroup),
+              .replace("[group]", room.name || thisGroup),
           });
           onClose();
         },
@@ -85,7 +85,7 @@ export default function RemoveMemberDialog({
         <DialogTitle>{removeFromGroup}</DialogTitle>
         <p>
           {groupRemovePrompt.replace("[name]", member?.user?.displayName || appUser)
-              .replace("[group]", channel.name || thisGroup)}
+              .replace("[group]", room.name || thisGroup)}
         </p>
         <DialogFooter>
           <Button variant="secondary" onClick={onClose}>

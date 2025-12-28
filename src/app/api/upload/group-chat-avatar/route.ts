@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
-import { getChatChannelDataInclude, LocalUpload } from "@/lib/types";
+import { getChatRoomDataInclude, LocalUpload } from "@/lib/types";
 import prisma from "@/lib/prisma";
 import { validateRequest } from "@/auth";
 import { UTApi } from "uploadthing/server";
@@ -26,36 +26,36 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     
     const file = formData.get("file") as File | null;
-    const channelId = formData.get("id") as string;
+    const roomId = formData.get("id") as string;
 
     if (!file) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
-    if (!channelId) {
+    if (!roomId) {
       return NextResponse.json({ error: "Données invalides" }, { status: 400 });
     }
 
-    const channel = await prisma.channel.findUnique({
-      where: { id: channelId },
-      include: getChatChannelDataInclude(),
+    const room = await prisma.room.findUnique({
+      where: { id: roomId },
+      include: getChatRoomDataInclude(),
     });
 
-    if (!channel) {
+    if (!room) {
       return NextResponse.json(
         { error: "Groupe introuvable" },
         { status: 400 },
       );
     }
 
-    if (!channel.isGroup) {
+    if (!room.isGroup) {
       return NextResponse.json(
         { error: "Ce canal de discussion n'est pas un groupe" },
         { status: 400 },
       );
     }
 
-    const loggedMember = channel.members.find(
+    const loggedMember = room.members.find(
       (member) => member.userId === user.id,
     );
 
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
     const type = "image/webp";
 
     // Suppression de l'ancien avatar
-    const oldAvatarUrl = channel.groupAvatarUrl;
+    const oldAvatarUrl = room.groupAvatarUrl;
     if (oldAvatarUrl) {
       const isOnLocalServer = oldAvatarUrl.startsWith("/api/uploads/avatars/");
       if (isOnLocalServer) {
@@ -128,9 +128,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Mettre à jour l'URL de l'avatar dans la base de données
-    await prisma.channel
+    await prisma.room
       .update({
-        where: { id: channelId },
+        where: { id: roomId },
         data: { groupAvatarUrl: url },
       })
       .catch((err) => {

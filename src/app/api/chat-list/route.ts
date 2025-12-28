@@ -1,13 +1,13 @@
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
 import {
-  ChannelsSection,
-  getChatChannelDataInclude,
-  ChannelData,
+  RoomsSection,
+  getChatRoomDataInclude,
+  RoomData,
   getMessageDataInclude,
   MessageData,
 } from "@/lib/types";
-import { createChannelSchema } from "@/lib/validation";
+import { createRoomSchema } from "@/lib/validation";
 import { NextRequest } from "next/server";
 import { getUserDataSelect } from "@/lib/types";
 
@@ -38,13 +38,13 @@ export async function GET(req: NextRequest) {
         userId: user.id,
       },
       select: {
-        channelId: true,
+        roomId: true,
         messageId: true,
         message: {
           include: getMessageDataInclude(loggedInUser.id),
         },
-        channel: {
-          include: getChatChannelDataInclude(),
+        room: {
+          include: getChatRoomDataInclude(),
         },
       },
       orderBy: {
@@ -56,10 +56,10 @@ export async function GET(req: NextRequest) {
     
 
     // Récupérer les canaux dans lesquels l'utilisateur est membre avec leur dernier message
-    const channels = lastMessages.map((lastMessage) => {
+    const rooms = lastMessages.map((lastMessage) => {
       const lastMsg: MessageData | null = lastMessage.message;
-        const channel: ChannelData | null = lastMessage.channel;
-        if (!channel) return {
+        const room: RoomData | null = lastMessage.room;
+        if (!room) return {
           id: "",
           name: null,
           description: null,
@@ -79,14 +79,14 @@ export async function GET(req: NextRequest) {
           isGroup: false,
           createdAt: new Date(0),
 
-        } as ChannelData;
+        } as RoomData;
 
         return {
-          ...channel,
+          ...room,
           messages: lastMsg ? [lastMsg] : [],
-        } as ChannelData;
+        } as RoomData;
     })
-    const updatedChannels: ChannelData[] = channels
+    const updatedRooms: RoomData[] = rooms
 
 
 
@@ -105,7 +105,7 @@ export async function GET(req: NextRequest) {
       if (selfMessage.content !== `create-${user.id}`) {
         selfMessage.type = "CONTENT";
       }
-      const selfChannel: ChannelData | null = {
+      const selfRoom: RoomData | null = {
         id: `saved-${user.id}`,
         name: null,
         description: null,
@@ -125,16 +125,16 @@ export async function GET(req: NextRequest) {
         isGroup: false,
         createdAt: selfMessage.createdAt,
       };
-      if (selfChannel) {
-        updatedChannels.unshift(selfChannel); // Ajouter ce canal fictif au début de la liste
+      if (selfRoom) {
+        updatedRooms.unshift(selfRoom); // Ajouter ce canal fictif au début de la liste
       }
     }
 
     const nextCursor =
-      channels.length > pageSize ? channels[pageSize].id : null;
+      rooms.length > pageSize ? rooms[pageSize].id : null;
 
-    const data: ChannelsSection = {
-      channels: updatedChannels.slice(0, pageSize),
+    const data: RoomsSection = {
+      rooms: updatedRooms.slice(0, pageSize),
       nextCursor,
     };
 
@@ -158,7 +158,7 @@ export async function POST(req: Request) {
 
     // Lecture et parsing du body de la requête
     const body = await req.json();
-    const parsed = createChannelSchema.parse(body);
+    const parsed = createRoomSchema.parse(body);
 
     // Assurer que l'utilisateur connecté est dans les membres du canal
     let members = parsed.members ? [...parsed.members, user.id] : [user.id];
@@ -176,7 +176,7 @@ export async function POST(req: Request) {
 
     // Vérifier si une discussion individuelle (non groupe) avec ces deux membres existe déjà
     if (!parsed.isGroup) {
-      const existingChannel = await prisma.channel.findFirst({
+      const existingRoom = await prisma.room.findFirst({
         where: {
           isGroup: false,
           AND: [
@@ -184,17 +184,17 @@ export async function POST(req: Request) {
             { members: { some: { userId: members[1] } } },
           ],
         },
-        include: getChatChannelDataInclude(),
+        include: getChatRoomDataInclude(),
       });
 
       // Si un canal existe déjà, le renvoyer directement
-      if (existingChannel) {
-        return Response.json(existingChannel);
+      if (existingRoom) {
+        return Response.json(existingRoom);
       }
     }
 
     // Si le canal n'existe pas, le créer
-    const channel = await prisma.channel.create({
+    const room = await prisma.room.create({
       data: {
         name: parsed.name,
         isGroup: parsed.isGroup,
@@ -204,19 +204,19 @@ export async function POST(req: Request) {
           })),
         },
       },
-      include: getChatChannelDataInclude(), // Inclure les données requises
+      include: getChatRoomDataInclude(), // Inclure les données requises
     });
 
     await prisma.message.create({
       data: {
         content: "created",
-        channelId: channel.id,
-        senderId: channel.isGroup ? user.id : null,
+        roomId: room.id,
+        senderId: room.isGroup ? user.id : null,
         type: "CREATE",
       },
     });
 
-    return Response.json(channel);
+    return Response.json(room);
   } catch (error) {
     console.error("Erreur lors de la création de la discussion:", error);
     return Response.json(

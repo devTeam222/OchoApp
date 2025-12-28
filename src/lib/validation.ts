@@ -1,4 +1,3 @@
-import { channel } from "diagnostics_channel";
 import { z } from "zod";
 
 const requiredString = z.string().trim().min(1, "Champ obligatoire");
@@ -44,11 +43,11 @@ export type SessionValues = z.infer<typeof sessionSchema>;
 
 export const MessageSchema = z.object({
   content: z.string(),
-  channelId: z.string(),
+  roomId: z.string(),
   senderId: z.string(),
 });
 
-export const createChannelSchema = z.object({
+export const createRoomSchema = z.object({
   name: z.string().optional(),
   isGroup: z.boolean(),
   recipientId: z.string().optional(),
@@ -56,15 +55,15 @@ export const createChannelSchema = z.object({
 });
 
 export const addMemberSchema = z.object({
-  channelId: z.string(),
+  roomId: z.string(),
   members: z.array(z.string()),
 });
 export const addAdminSchema = z.object({
-  channelId: z.string(),
+  roomId: z.string(),
   member: z.string(),
 });
 export const memberActionSchema = z.object({
-  channelId: z.string(),
+  roomId: z.string(),
   memberId: z.string().optional(),
   deleteGroup: z.boolean().optional(),
 });
@@ -82,7 +81,7 @@ export const createPostSchema = z.object({
 
 export const createMessageSchema = z.object({
   content: requiredString,
-  channelId: z.string(),
+  roomId: z.string(),
 });
 
 export const updateUserProfileSchema = z.object({

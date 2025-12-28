@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useSession } from "../SessionProvider";
 import ChatList from "./ChatList";
-import { ChannelData } from "@/lib/types";
+import { RoomData } from "@/lib/types";
 import Chat from "./Chat";
-import { useActiveChannel } from "@/context/ChatContext";
+import { useActiveRoom } from "@/context/ChatContext";
 import NewChat from "./NewChat";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
@@ -14,13 +14,13 @@ import { t } from "@/context/LanguageContext";
 import { useProgress } from "@/context/ProgressContext";
 
 export default function Messages() {
-  const [selectedChannelId, setSelectedChannelId] = useState<string | null>(
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(
     null,
   );
   const [newChat, setNewChat] = useState(false);
-  const [selectedChannel, setSelectedChannel] = useState<ChannelData>();
+  const [selectedRoom, setSelectedRoom] = useState<RoomData>();
   const { user } = useSession();
-  const { activeChannelId, setActiveChannelId } = useActiveChannel();
+  const { activeRoomId, setActiveRoomId } = useActiveRoom();
   const queryClient = useQueryClient();
   const { startNavigation: navigate } = useProgress();
   const { messagesOnApp, selectChatToStart } = t();
@@ -29,10 +29,10 @@ export default function Messages() {
     return null;
   }
 
-  const handleChannelSelect = (channelId: string) => {
+  const handleRoomSelect = (roomId: string) => {
     queryClient.invalidateQueries({ queryKey: ["unread-chat-messages"] });
     queryClient.invalidateQueries({ queryKey: ["unread-messages"] });
-    setSelectedChannelId(channelId);
+    setSelectedRoomId(roomId);
   };
   const closeNewChat = () => {
     setNewChat(false);
@@ -42,26 +42,26 @@ export default function Messages() {
     <div
       className={cn(
         "flex h-full rounded-2xl bg-card shadow-sm transition-all max-sm:relative max-sm:h-full max-sm:w-screen max-sm:bg-transparent",
-        (activeChannelId || newChat) && "max-sm:translate-x-[-100vw]",
+        (activeRoomId || newChat) && "max-sm:translate-x-[-100vw]",
       )}
     >
       <div className="h-full w-screen min-w-60 max-sm:min-w-[100vw] sm:w-1/3 sm:border-r-2">
         <ChatList
-          onChannelSelect={handleChannelSelect}
-          activeChannel={(channel) => setSelectedChannel(channel)}
-          selectedChannelId={selectedChannelId}
+          onRoomSelect={handleRoomSelect}
+          activeRoom={(room) => setSelectedRoom(room)}
+          selectedRoomId={selectedRoomId}
           onNewChat={() => setNewChat(true)}
           onCloseChat={() => {
-            setSelectedChannelId(null);
-            setSelectedChannel(undefined);
-            setActiveChannelId(null);
+            setSelectedRoomId(null);
+            setSelectedRoom(undefined);
+            setActiveRoomId(null);
           }}
         />
       </div>
       <div
         className={"relative flex h-full w-screen flex-col max-sm:min-w-[100vw] sm:w-3/4"}
       >
-        {!activeChannelId && (
+        {!activeRoomId && (
           <div className="flex h-full select-none flex-col items-center justify-center px-4 text-center">
             <div className="text-muted-foreground/50">
               <AppLogo
@@ -75,24 +75,24 @@ export default function Messages() {
           </div>
         )}
         <Chat
-          channelId={activeChannelId || selectedChannelId}
-          initialData={selectedChannel}
+          roomId={activeRoomId || selectedRoomId}
+          initialData={selectedRoom}
           onClose={() => {
             navigate(`/messages`);
-            setSelectedChannelId(null);
-            setSelectedChannel(undefined);
-            setActiveChannelId(null);
+            setSelectedRoomId(null);
+            setSelectedRoom(undefined);
+            setActiveRoomId(null);
           }}
         />
         <NewChat
           onClose={closeNewChat}
           onChatStart={(id)=>{
-            if (activeChannelId !== id) {
-              setSelectedChannelId(null);
-              setSelectedChannel(undefined);
-              setActiveChannelId(null);
+            if (activeRoomId !== id) {
+              setSelectedRoomId(null);
+              setSelectedRoom(undefined);
+              setActiveRoomId(null);
             }
-            setActiveChannelId(id);
+            setActiveRoomId(id);
           }}
           className={cn(
             !newChat && "pointer-events-none select-none opacity-0",

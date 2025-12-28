@@ -7,20 +7,20 @@ import {
   DialogTitle,
   DialogHeader,
 } from "../ui/dialog";
-import { ChannelData } from "@/lib/types";
+import { RoomData } from "@/lib/types";
 import { useState } from "react";
 import AddMemberForm from "./AddMemberForm";
 import { cn } from "@/lib/utils";
 import { t } from "@/context/LanguageContext";
 
 interface AddMemberDialogProps {
-  channel: ChannelData;
+  room: RoomData;
   className?: string;
   children: React.ReactNode;
 }
 
 export default function AddMemberDialog({
-  channel,
+  room,
   className,
   children,
 }: AddMemberDialogProps) {
@@ -40,7 +40,7 @@ export default function AddMemberDialog({
         <DialogHeader>
           <DialogTitle>{addMembers}</DialogTitle>
         </DialogHeader>
-        <AddMemberForm onAdd={() => setIsOpen(false)} channel={channel} />
+        <AddMemberForm onAdd={() => setIsOpen(false)} room={room} />
       </DialogContent>
     </Dialog>
   );

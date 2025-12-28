@@ -1,7 +1,7 @@
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
 import {
-  ChannelData,
+  RoomData,
   getMessageDataInclude,
   getUserDataSelect,
   MessageData,
@@ -9,7 +9,7 @@ import {
 
 export async function GET(
   req: Request,
-  { params: { channelId } }: { params: { channelId: string } },
+  { params: { roomId } }: { params: { roomId: string } },
 ) {
   try {
     const url = new URL(req.url);
@@ -22,7 +22,7 @@ export async function GET(
     const userId = user.id;
 
     // Vérifier si on récupère des messages d'un canal ou des messages sauvegardés
-    if (channelId === `saved-${user.id}`) {
+    if (roomId === `saved-${user.id}`) {
       const existingSavedMsgs = await prisma.message.findMany({
         where: {
           senderId: {
@@ -52,7 +52,7 @@ export async function GET(
           orderBy: { createdAt: "asc" },
         });
     
-        const newChannel: ChannelData = {
+        const newRoom: RoomData = {
           id: `saved-${userId}`,
           name: null,
           description: null,
@@ -72,7 +72,7 @@ export async function GET(
           isGroup: false,
           createdAt: createInfo?.createdAt || new Date(),
         };
-        return Response.json(newChannel);
+        return Response.json(newRoom);
       }
     
       const createInfo: MessageData = await prisma.message.create({
@@ -84,7 +84,7 @@ export async function GET(
         include: getMessageDataInclude(user.id),
       });
       const existingSavedMsg: MessageData = existingSavedMsgs[0];
-      const newChannel: ChannelData = {
+      const newRoom: RoomData = {
         id: `saved-${userId}`,
         name: null,
         description: null,
@@ -104,24 +104,24 @@ export async function GET(
         isGroup: false,
         createdAt: createInfo?.createdAt || new Date(),
       };
-      return Response.json(newChannel);
+      return Response.json(newRoom);
     } else {
-      const channelData = await prisma.channel.findFirst({
+      const roomData = await prisma.room.findFirst({
         where: {
-          id: channelId,
+          id: roomId,
         },
       });
 
-      if (!channelData) {
+      if (!roomData) {
         return Response.json(
           { error: "Le canal n'existe pas" },
           { status: 400 },
         );
       }
       // Récupérer les membres d'un canal spécifique
-      const membersData = await prisma.channelMember.findMany({
+      const membersData = await prisma.roomMember.findMany({
         where: {
-          channelId,
+          roomId,
         },
       });
       const membersToFilter = await Promise.all(
@@ -148,12 +148,12 @@ export async function GET(
       );
       const messages: MessageData[] = []
       const members = membersToFilter.filter((member) => member !== null);
-      const channel: ChannelData = {
-        ...channelData,
+      const room: RoomData = {
+        ...roomData,
         members,
         messages,
       };
-      return Response.json(channel);
+      return Response.json(room);
     }
 
   } catch (error) {

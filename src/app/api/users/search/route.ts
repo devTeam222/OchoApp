@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     const q = req.nextUrl.searchParams.get("q")?.trim() || "";
     const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
     const pageSize = 10;
-    const channelId = req.nextUrl.searchParams.get("channelId");
+    const roomId = req.nextUrl.searchParams.get("roomId");
 
     const { user } = await validateRequest();
     if (!user) {
@@ -18,14 +18,14 @@ export async function GET(req: NextRequest) {
     let users;
     let excludedUserIds: string[] = [];
 
-    // Si un channelId est fourni, exclure les utilisateurs déjà dans le canal
-    if (channelId) {
-      const channelMembers = await prisma.channelMember.findMany({
-        where: { channelId },
+    // Si un roomId est fourni, exclure les utilisateurs déjà dans le canal
+    if (roomId) {
+      const roomMembers = await prisma.roomMember.findMany({
+        where: { roomId },
         select: { userId: true },
       });
 
-      excludedUserIds = channelMembers.map((member) => member.userId) as string[];
+      excludedUserIds = roomMembers.map((member) => member.userId) as string[];
     }
 
     // Si une requête de recherche est fournie
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
             { displayName: { contains: q, mode: "insensitive" } },
             { username: { contains: q, mode: "insensitive" } },
           ],
-          ...(channelId
+          ...(roomId
             ? {
                 id: {
                   notIn: excludedUserIds,
@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
       // Si aucune requête de recherche n'est fournie
       users = await prisma.user.findMany({
         where: {
-          ...(channelId
+          ...(roomId
             ? {
                 id: {
                   notIn: excludedUserIds,

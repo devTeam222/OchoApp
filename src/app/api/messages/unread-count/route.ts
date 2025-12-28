@@ -10,7 +10,7 @@ export async function GET() {
       return Response.json({ error: "Action non autorisée" }, { status: 401 });
     }
 
-    const unreadCount = await prisma.channel.count({
+    const unreadCount = await prisma.room.count({
       where: {
         members: {
           some: {

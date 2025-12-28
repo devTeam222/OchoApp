@@ -1,21 +1,21 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function ChannelsLoadingSkeleton() {
+export default function RoomsLoadingSkeleton() {
   return (
     <ul className="relative w-full animate-pulse">
-      <ChannelSkeleton />
-      <ChannelSkeleton />
-      <ChannelSkeleton />
-      <ChannelSkeleton />
-      <ChannelSkeleton />
-      <ChannelSkeleton />
-      <ChannelSkeleton />
-      <ChannelSkeleton />
+      <RoomSkeleton />
+      <RoomSkeleton />
+      <RoomSkeleton />
+      <RoomSkeleton />
+      <RoomSkeleton />
+      <RoomSkeleton />
+      <RoomSkeleton />
+      <RoomSkeleton />
     </ul>
   );
 }
 
-function ChannelSkeleton() {
+function RoomSkeleton() {
   return (
     <li className="w-full p-2">
       <div className="flex w-full items-center space-x-2">

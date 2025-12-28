@@ -1,9 +1,9 @@
 import kyInstance from "./ky";
 
 // Créer un canal de discussion
-export async function createChatChannel(userId: string, recipientId: string) {
+export async function createChatRoom(userId: string, recipientId: string) {
   return kyInstance
-    .post("/api/chat-channels", {
+    .post("/api/chat-rooms", {
       json: {
         userId,
         recipientId,
@@ -14,13 +14,13 @@ export async function createChatChannel(userId: string, recipientId: string) {
 }
 
 // Créer un canal de discussion de groupe
-export async function createGroupChatChannel(
+export async function createGroupChatRoom(
   userId: string,
   name: string,
   members: string[],
 ) {
   return kyInstance
-    .post("/api/chat-channels", {
+    .post("/api/chat-rooms", {
       json: {
         userId,
         name,
@@ -34,14 +34,14 @@ export async function createGroupChatChannel(
 // Envoyer un message
 export async function sendMessage(
   content: string,
-  channelId: string,
+  roomId: string,
   senderId: string,
 ) {
   return kyInstance
     .post("/api/messages", {
       json: {
         content,
-        channelId,
+        roomId,
         senderId,
       },
     })
@@ -49,6 +49,6 @@ export async function sendMessage(
 }
 
 // Récupérer les messages d'un canal
-export async function getMessages(channelId: string) {
-  return kyInstance.get(`/api/messages?channelId=${channelId}`).json();
+export async function getMessages(roomId: string) {
+  return kyInstance.get(`/api/messages?roomId=${roomId}`).json();
 }

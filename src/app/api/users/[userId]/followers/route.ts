@@ -1,9 +1,9 @@
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
 import {
-  ChannelData,
+  RoomData,
   FollowerInfo,
-  getChatChannelDataInclude,
+  getChatRoomDataInclude,
   getUserDataSelect,
 } from "@/lib/types";
 
@@ -111,7 +111,7 @@ export async function POST(
       }),
     ]);
 
-    const existingChannel: ChannelData | null = await prisma.channel.findFirst({
+    const existingRoom: RoomData | null = await prisma.room.findFirst({
       where: {
         isGroup: false,
         AND: [
@@ -119,10 +119,10 @@ export async function POST(
           { members: { some: { userId: loggedInUser.id } } },
         ],
       },
-      include: getChatChannelDataInclude(),
+      include: getChatRoomDataInclude(),
     });
-    if (!existingChannel) {
-      await prisma.channel.create({
+    if (!existingRoom) {
+      await prisma.room.create({
         data: {
           name: null,
           isGroup: false,
@@ -133,7 +133,7 @@ export async function POST(
             ],
           },
         },
-        include: getChatChannelDataInclude(), // Inclure les données requises
+        include: getChatRoomDataInclude(), // Inclure les données requises
       });
     }
 

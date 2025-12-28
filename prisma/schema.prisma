@@ -30,7 +30,7 @@ model User {
   session              Session[]
   following            Follow[]        @relation("Following")
   followers            Follow[]        @relation("Followers")
-  channels             ChannelMember[]
+  rooms             RoomMember[]
   sentMessages         Message[]       @relation("Sender")
   receivedMessages     Message[]       @relation("Recipient")
   lastMessages LastMessage[]
@@ -132,20 +132,20 @@ model Follow {
   @@map("follows")
 }
 
-model Channel {
+model Room {
   id             String          @id @default(cuid())
   name           String?
   description    String?
   groupAvatarUrl String?
   isGroup        Boolean         @default(false)
-  members        ChannelMember[]
+  members        RoomMember[]
   maxMembers     Int             @default(300)
   messages       Message[]
   lastMessages    LastMessage[]
   privilege      Privilege       @default(DEFAULT)
   createdAt      DateTime        @default(now())
 
-  @@map("channels")
+  @@map("rooms")
 }
 
 enum Privilege {
@@ -153,17 +153,17 @@ enum Privilege {
   MANAGE
 }
 
-model ChannelMember {
+model RoomMember {
   id        String     @id @default(cuid())
-  channel   Channel    @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  channelId String
+  room   Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId String
   user      User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId    String?
   type      MemberType @default(MEMBER)
   joinedAt  DateTime   @default(now())
   leftAt    DateTime?
 
-  @@unique([channelId, userId])
+  @@unique([roomId, userId])
   @@map("chat_members")
 }
 
@@ -182,8 +182,8 @@ model Message {
   senderId    String?
   recipient   User?       @relation("Recipient", fields: [recipientId], references: [id], onDelete: SetNull)
   recipientId String?
-  channel     Channel?    @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  channelId   String?
+  room     Room?    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId   String?
   reaction    Reaction?   @relation("Sender", fields: [reactionId], references: [id], onDelete: Cascade)
   reactionId  String?
   type        MessageType
@@ -213,8 +213,8 @@ model LastMessage {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   messageId String?
   message Message? @relation(fields: [messageId], references: [id], onDelete: SetNull)
-  channelId String?
-  channel Channel? @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  roomId String?
+  room Room? @relation(fields: [roomId], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now())
 
   @@map("last_messages")

@@ -159,8 +159,8 @@ export function getMessageDataSelect() {
 
 export function getLastMsgInclude(){
   return {
-    channel: {
-      include: getChatChannelDataInclude(),
+    room: {
+      include: getChatRoomDataInclude(),
     }
   } satisfies Prisma.MessageInclude
 }
@@ -169,7 +169,7 @@ export type LastMsgData = Prisma.MessageGetPayload<{
   include: ReturnType<typeof getLastMsgInclude>;
 }>;
 
-export function getChatChannelDataInclude(
+export function getChatRoomDataInclude(
   userId: string | undefined = undefined,
 ) {
   return {
@@ -222,15 +222,15 @@ export function getChatChannelDataInclude(
       select: getMessageDataSelect(),
       orderBy: { createdAt: "desc" },
     },
-  } satisfies Prisma.ChannelInclude;
+  } satisfies Prisma.RoomInclude;
 }
 
-export type ChannelData = Prisma.ChannelGetPayload<{
-  include: ReturnType<typeof getChatChannelDataInclude>;
+export type RoomData = Prisma.RoomGetPayload<{
+  include: ReturnType<typeof getChatRoomDataInclude>;
 }>;
 
-export interface ChannelsSection {
-  channels: ChannelData[];
+export interface RoomsSection {
+  rooms: RoomData[];
   nextCursor: string | null;
 }
 
@@ -446,7 +446,7 @@ export interface NotificationCountInfo {
 }
 
 export type SaveMessageResponse = {
-  newChannel?: ChannelData;
+  newRoom?: RoomData;
   userId: string;
   createInfo?: MessageData;
 };

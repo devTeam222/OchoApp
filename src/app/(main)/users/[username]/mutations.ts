@@ -17,8 +17,8 @@ import {
   updateUserProfile,
 } from "./actions";
 import {
-  ChannelData,
-  ChannelsSection,
+  RoomData,
+  RoomsSection,
   LocalUpload,
   PostsPage,
 } from "@/lib/types";
@@ -48,15 +48,15 @@ async function uploadAvatar(file: File): Promise<LocalUpload[] | null> {
 }
 async function uploadGroupAvatar({
   file,
-  channelId,
+  roomId,
 }: {
   file: File;
-  channelId: string;
+  roomId: string;
 }): Promise<LocalUpload[] | null> {
   return new Promise<LocalUpload[] | null>(async (resolve) => {
     const formData: FormData = new FormData();
     formData.append("avatar", file);
-    formData.append("id", channelId);
+    formData.append("id", roomId);
 
     const response = await kyInstance
       .post("/api/upload/group-chat-avatar", {
@@ -217,9 +217,9 @@ export function useDeleteAvatarMutation() {
 }
 
 export function useUpdateGroupChatMutation({
-  channelId,
+  roomId,
 }: {
-  channelId: string;
+  roomId: string;
 }) {
   const { toast } = useToast();
 
@@ -234,10 +234,10 @@ export function useUpdateGroupChatMutation({
 
   async function upload(file: File) {
     // const uploadResult = null;
-    const uploadResult = await uploadGroupAvatar({ file, channelId });
+    const uploadResult = await uploadGroupAvatar({ file, roomId });
 
     if (!uploadResult?.[0]) {
-      const utUpload = startAvatarUpload([file], { channelId });
+      const utUpload = startAvatarUpload([file], { roomId });
       return utUpload;
     }
     return uploadResult;
@@ -264,11 +264,11 @@ export function useUpdateGroupChatMutation({
       };
 
       const chatListQueryFilter: QueryFilters = {
-        queryKey: ["chat-channels", user.id],
+        queryKey: ["chat-rooms", user.id],
       };
 
       await queryClient.cancelQueries(chatListQueryFilter);
-      queryClient.setQueriesData<InfiniteData<ChannelsSection, string | null>>(
+      queryClient.setQueriesData<InfiniteData<RoomsSection, string | null>>(
         chatListQueryFilter,
         (oldData) => {
           if (!oldData) return;
@@ -276,16 +276,16 @@ export function useUpdateGroupChatMutation({
             pageParams: oldData.pageParams,
             pages: oldData.pages.map((page) => ({
               nextCursor: page.nextCursor,
-              channels: page.channels.map((channel) => {
-                if (channel.id === updatedGroup?.id) {
+              rooms: page.rooms.map((room) => {
+                if (room.id === updatedGroup?.id) {
                   return {
-                    ...channel,
+                    ...room,
                     name: updatedGroup.name,
                     description: updatedGroup.description,
                     groupAvatarUrl: newAvatarUrl || null,
                   };
                 }
-                return channel;
+                return room;
               }),
             })),
           };
@@ -293,7 +293,7 @@ export function useUpdateGroupChatMutation({
       );
       await queryClient.cancelQueries(queryFilter);
 
-      queryClient.setQueriesData<ChannelData>(queryFilter, (oldData) => {
+      queryClient.setQueriesData<RoomData>(queryFilter, (oldData) => {
         if (!oldData) return;
         return {
           ...oldData,
@@ -335,11 +335,11 @@ export function useDeleteGroupChatAvatarMutation() {
       };
 
       const chatListQueryFilter: QueryFilters = {
-        queryKey: ["chat-channels", user.id],
+        queryKey: ["chat-rooms", user.id],
       };
 
       await queryClient.cancelQueries(chatListQueryFilter);
-      queryClient.setQueriesData<InfiniteData<ChannelsSection, string | null>>(
+      queryClient.setQueriesData<InfiniteData<RoomsSection, string | null>>(
         chatListQueryFilter,
         (oldData) => {
           if (!oldData) return;
@@ -347,14 +347,14 @@ export function useDeleteGroupChatAvatarMutation() {
             pageParams: oldData.pageParams,
             pages: oldData.pages.map((page) => ({
               nextCursor: page.nextCursor,
-              channels: page.channels.map((channel) => {
-                if (channel.id === updatedGroup?.id) {
+              rooms: page.rooms.map((room) => {
+                if (room.id === updatedGroup?.id) {
                   return {
-                    ...channel,
+                    ...room,
                     groupAvatarUrl: null,
                   };
                 }
-                return channel;
+                return room;
               }),
             })),
           };
@@ -362,7 +362,7 @@ export function useDeleteGroupChatAvatarMutation() {
       );
       await queryClient.cancelQueries(queryFilter);
 
-      queryClient.setQueriesData<ChannelData>(queryFilter, (oldData) => {
+      queryClient.setQueriesData<RoomData>(queryFilter, (oldData) => {
         if (!oldData) return;
         return {
           ...oldData,

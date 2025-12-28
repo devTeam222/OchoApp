@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 
 export async function POST(
   req: Request,
-  { params: { channelId } }: { params: { channelId: string } },
+  { params: { roomId } }: { params: { roomId: string } },
 ) {
   try {
     const { user: loggedInUser } = await validateRequest();
@@ -14,7 +14,7 @@ export async function POST(
 
     //   Get all messages
     const messages = await prisma.message.findMany({
-      where: { channelId },
+      where: { roomId },
     });
 
     if (!messages) {

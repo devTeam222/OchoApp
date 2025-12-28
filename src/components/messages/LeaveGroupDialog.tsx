@@ -1,4 +1,4 @@
-import { ChannelData } from "@/lib/types";
+import { RoomData } from "@/lib/types";
 import { useState } from "react";
 import {
   Dialog,
@@ -17,11 +17,11 @@ import { useSession } from "@/app/(main)/SessionProvider";
 import { t } from "@/context/LanguageContext";
 
 interface LeaveGroupDialogProps {
-  channel: ChannelData;
+  room: RoomData;
   onDelete: ()=>void;
 }
 
-export default function LeaveGroupDialog({ channel,onDelete }: LeaveGroupDialogProps) {
+export default function LeaveGroupDialog({ room,onDelete }: LeaveGroupDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [deleteGroup, setDeleteGroup] = useState(false);
   const { user: loggedUser } = useSession();
@@ -41,9 +41,9 @@ export default function LeaveGroupDialog({ channel,onDelete }: LeaveGroupDialogP
   const memberId = loggedUser.id;
 
   const mutation = useLeaveGroupMutation();
-  const channelId = channel.id;
+  const roomId = room.id;
 
-  const member = channel.members.find((member) => member.userId === memberId);
+  const member = room.members.find((member) => member.userId === memberId);
 
   function onClose() {
     setIsOpen(false);
@@ -51,17 +51,17 @@ export default function LeaveGroupDialog({ channel,onDelete }: LeaveGroupDialogP
   function leaveAndDeleteGroup() {
     setDeleteGroup(true);
     mutation.mutate(
-      { channelId, deleteGroup: true },
+      { roomId, deleteGroup: true },
       {
         onSuccess: () => {
-          const queryKey = ["chat", channelId];
+          const queryKey = ["chat", roomId];
 
           queryClient.invalidateQueries({ queryKey });
 
           toast({
             description: groupLeftSuccess.replace(
               "[name]",
-              channel.name || "ce groupe",
+              room.name || "ce groupe",
             ),
           });
           onClose();
@@ -77,17 +77,17 @@ export default function LeaveGroupDialog({ channel,onDelete }: LeaveGroupDialogP
   function handleSubmit() {
     setDeleteGroup(false)
     mutation.mutate(
-      { channelId, deleteGroup: false },
+      { roomId, deleteGroup: false },
       {
         onSuccess: () => {
-          const queryKey = ["chat", channelId];
+          const queryKey = ["chat", roomId];
 
           queryClient.invalidateQueries({ queryKey });
 
           toast({
             description: groupLeftSuccess.replace(
               "[name]",
-              channel.name || "ce groupe",
+              room.name || "ce groupe",
             ),
           });
           onClose();
@@ -119,7 +119,7 @@ export default function LeaveGroupDialog({ channel,onDelete }: LeaveGroupDialogP
         <p>
           {leaveGroupPrompt.replace(
             "[name]",
-            channel.name || thisGroup.toLowerCase(),
+            room.name || thisGroup.toLowerCase(),
           )}
         </p>
         {member?.type === "OWNER" && <p>{leaveGroupInfo}</p>}

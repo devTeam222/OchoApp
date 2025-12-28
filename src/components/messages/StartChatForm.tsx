@@ -3,18 +3,18 @@
 import { useState } from "react";
 import kyInstance from "@/lib/ky";
 import { Loader2, SearchIcon } from "lucide-react";
-import { ChannelData, UserData, UsersPage } from "@/lib/types";
+import { RoomData, UserData, UsersPage } from "@/lib/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useSession } from "@/app/(main)/SessionProvider";
 import { Label } from "../ui/label";
 import { Switch } from "../ui/switch";
 import { Input } from "../ui/input";
 import UserAvatar from "../UserAvatar";
-import { useCreateChatChannelMutation, useSaveMessageMutation } from "./mutations";
+import { useCreateChatRoomMutation, useSaveMessageMutation } from "./mutations";
 import LoadingButton from "../LoadingButton";
 
 interface StartChatFormProps {
-  onChatStart: (channel: ChannelData) => void;
+  onChatStart: (room: RoomData) => void;
 }
 
 export default function StartChatForm({ onChatStart }: StartChatFormProps) {
@@ -26,7 +26,7 @@ export default function StartChatForm({ onChatStart }: StartChatFormProps) {
   const [groupName, setGroupName] = useState("");
   const { user: loggedinUser } = useSession();
 
-  const mutation = useCreateChatChannelMutation();
+  const mutation = useCreateChatRoomMutation();
   const savedMsgsMutation = useSaveMessageMutation();
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
@@ -64,7 +64,7 @@ export default function StartChatForm({ onChatStart }: StartChatFormProps) {
         setSelectedUsers([]);
         setQuery("");
         setGroupName("");
-        onChatStart(data.newChannel);
+        onChatStart(data.newRoom);
       },});
       return;
     }
@@ -80,7 +80,7 @@ export default function StartChatForm({ onChatStart }: StartChatFormProps) {
           setSelectedUsers([]);
           setQuery("");
           setGroupName("");
-          onChatStart(data.newChannel);
+          onChatStart(data.newRoom);
         },
       },
     );

@@ -4,19 +4,19 @@ import { useSession } from "@/app/(main)/SessionProvider";
 import { createContext, useContext, useEffect, useState } from "react";
 
 interface ChatContextType {
-  activeChannelId: string | null;
-  setActiveChannelId: (id: string | null) => void;
+  activeRoomId: string | null;
+  setActiveRoomId: (id: string | null) => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(
   undefined,
 );
 
-export const useActiveChannel = () => {
+export const useActiveRoom = () => {
   const context = useContext(ChatContext);
   if (!context) {
     throw new Error(
-      "useActiveChannel must be used within an ChatProvider",
+      "useActiveRoom must be used within an ChatProvider",
     );
   }
   return context;
@@ -29,7 +29,7 @@ export const ChatProvider = ({
 }) => {
   const {user} = useSession();
   const userId = user.id
-  const [activeChannelId, setActiveChannelId] = useState<string | null>(() => {
+  const [activeRoomId, setActiveRoomId] = useState<string | null>(() => {
     if (typeof window !== "undefined") {
       return sessionStorage.getItem(userId) || null;
     }
@@ -37,14 +37,14 @@ export const ChatProvider = ({
   });
 
   useEffect(() => {
-    // Mettre à jour sessionStorage lorsque activeChannelId change
-    activeChannelId
-      ? sessionStorage.setItem(userId, activeChannelId)
+    // Mettre à jour sessionStorage lorsque activeRoomId change
+    activeRoomId
+      ? sessionStorage.setItem(userId, activeRoomId)
       : sessionStorage.removeItem(userId);
-  }, [activeChannelId, userId]);
+  }, [activeRoomId, userId]);
 
   return (
-    <ChatContext.Provider value={{ activeChannelId, setActiveChannelId }}>
+    <ChatContext.Provider value={{ activeRoomId, setActiveRoomId }}>
       {children}
     </ChatContext.Provider>
   );

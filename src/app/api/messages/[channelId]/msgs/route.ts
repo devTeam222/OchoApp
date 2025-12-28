@@ -8,7 +8,7 @@ import {
 
 export async function GET(
   req: Request,
-  { params: { channelId } }: { params: { channelId: string } },
+  { params: { roomId } }: { params: { roomId: string } },
 ) {
   try {
     const url = new URL(req.url);
@@ -24,7 +24,7 @@ export async function GET(
     let messages: MessageData[];
 
     // Vérifier si on récupère des messages d'un canal ou des messages sauvegardés
-    if (channelId === `saved-${user.id}`) {
+    if (roomId === `saved-${user.id}`) {
       // Récupérer les messages sauvegardés (envoyés à soi-même)
       messages = await prisma.message.findMany({
         where: {
@@ -47,12 +47,12 @@ export async function GET(
       }
     } else {
       // Récupérer les messages d'un canal spécifique
-      const channel = await prisma.channel.findFirst({
+      const room = await prisma.room.findFirst({
         where: {
-          id: channelId,
+          id: roomId,
         },
       });
-      if (!channel) {
+      if (!room) {
         return Response.json(
           { error: "Le canal n'existe pas" },
           { status: 400 },
@@ -60,7 +60,7 @@ export async function GET(
       }
 
       messages = await prisma.message.findMany({
-        where: { channelId },
+        where: { roomId },
         include: getMessageDataInclude(user.id),
         orderBy: { createdAt: "desc" },
         take: pageSize + 1, // Récupère une page supplémentaire pour vérifier s'il y a une page suivante
@@ -70,17 +70,17 @@ export async function GET(
 
     const nextCursor =
       messages.length > pageSize ? messages[pageSize].id : null;
-    const channelData = await prisma.channel.findUnique({
-      where: { id: channelId },
+    const roomData = await prisma.room.findUnique({
+      where: { id: roomId },
     });
 
-    const isGroup = channelData?.isGroup;
+    const isGroup = roomData?.isGroup;
 
     if (isGroup) {
-      const member = await prisma.channelMember.findUnique({
+      const member = await prisma.roomMember.findUnique({
         where: {
-          channelId_userId: {
-            channelId,
+          roomId_userId: {
+            roomId,
             userId: user.id,
           },
         },

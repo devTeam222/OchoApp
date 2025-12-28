@@ -5,7 +5,7 @@ import fs from "fs";
 import { createUploadthing, FileRouter } from "uploadthing/next";
 import { UploadThingError, UTApi } from "uploadthing/server";
 import { z } from "zod";
-import { getChatChannelDataInclude } from "@/lib/types";
+import { getChatRoomDataInclude } from "@/lib/types";
 import { MemberType } from "@prisma/client";
 
 const f = createUploadthing();
@@ -70,29 +70,29 @@ export const fileRouter = {
       };
     }),
   "group-chat-avatar": f(["image"])
-    .input(z.object({ channelId: z.string() }))
+    .input(z.object({ roomId: z.string() }))
     .middleware(async ({ input }) => {
       const { user } = await validateRequest();
 
       if (!user) throw new UploadThingError("Action non autorisée");
 
-      const channelId = input.channelId;
+      const roomId = input.roomId;
 
-      if (!channelId) throw new UploadThingError("Données invalides");
+      if (!roomId) throw new UploadThingError("Données invalides");
 
-      const channel = await prisma.channel.findUnique({
-        where: { id: channelId },
-        include: getChatChannelDataInclude(),
+      const room = await prisma.room.findUnique({
+        where: { id: roomId },
+        include: getChatRoomDataInclude(),
       });
 
-      if (!channel) throw new UploadThingError("Groupe introuvable");
+      if (!room) throw new UploadThingError("Groupe introuvable");
 
-      if (!channel.isGroup)
+      if (!room.isGroup)
         throw new UploadThingError(
           "Ce canal de discussion n'est pas un groupe",
         );
 
-      const loggedMember = channel.members.find(
+      const loggedMember = room.members.find(
         (member) => member.userId === user.id,
       );
 
@@ -106,10 +106,10 @@ export const fileRouter = {
           "Vous n'avez pas les droits pour effectuer cette action",
         );
 
-      return { user, channel };
+      return { user, room };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      const oldAvatarUrl = metadata.channel.groupAvatarUrl;
+      const oldAvatarUrl = metadata.room.groupAvatarUrl;
       if (oldAvatarUrl) {
         const isOnLocalServer = metadata.user.avatarUrl?.startsWith(
           "/api/uploads/avatars/",
@@ -146,9 +146,9 @@ export const fileRouter = {
         "/f/",
         `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
       ) : file.url;
-      await prisma.channel
+      await prisma.room
         .update({
-          where: { id: metadata.channel.id },
+          where: { id: metadata.room.id },
           data: { groupAvatarUrl: newAvatarUrl },
         })
         .catch((err) => {

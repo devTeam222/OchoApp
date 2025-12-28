@@ -1,4 +1,4 @@
-import { ChannelData } from "@/lib/types";
+import { RoomData } from "@/lib/types";
 import LoadingButton from "../LoadingButton";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../ui/use-toast";
@@ -7,13 +7,13 @@ import { t } from "@/context/LanguageContext";
 
 interface RestoreMemberButtonProps {
   memberId: string;
-  channel: ChannelData;
+  room: RoomData;
   children: React.ReactNode;
 }
 
 export default function RestoreMemberButton({
   memberId,
-  channel,
+  room,
   children,
 }: RestoreMemberButtonProps) {
   const queryClient = useQueryClient();
@@ -21,26 +21,26 @@ export default function RestoreMemberButton({
   const { groupRestoreSuccess } = t()
 
   const mutation = useRestoreMemberMutation();
-  const channelId = channel.id;
+  const roomId = room.id;
 
-  const member = channel.members.find((member) => member.userId === memberId);
+  const member = room.members.find((member) => member.userId === memberId);
 
   function handleSubmit() {
     mutation.mutate(
       {
-        channelId,
+        roomId,
         memberId,
       },
       {
         onSuccess: () => {
-          const queryKey = ["chat", channelId];
+          const queryKey = ["chat", roomId];
 
           queryClient.invalidateQueries({ queryKey });
 
           toast({
             description: groupRestoreSuccess
             .replace("[name]", member?.user?.displayName || "un utilisateur")
-            .replace("[group]", channel.name || "ce groupe"),
+            .replace("[group]", room.name || "ce groupe"),
           });
         },
         onError(error) {

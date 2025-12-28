@@ -1,7 +1,7 @@
 // "use client"
 
 import UserAvatar from "@/components/UserAvatar";
-import { ChannelData, MessageData, ReadInfo } from "@/lib/types";
+import { RoomData, MessageData, ReadInfo } from "@/lib/types";
 import { useSession } from "../SessionProvider";
 import Linkify from "@/components/Linkify";
 import { MessageType } from "@prisma/client";
@@ -17,19 +17,19 @@ import { t } from "@/context/LanguageContext";
 
 type MessageProps = {
   message: MessageData;
-  channel: ChannelData;
+  room: RoomData;
   showTime?: boolean;
 };
 
 export default function Message({
   message,
-  channel,
+  room,
   showTime = false,
 }: MessageProps) {
   const { user: loggedUser } = useSession();
   const queryClient = useQueryClient();
   const messageId = message.id;
-  const channelId = channel.id;
+  const roomId = room.id;
   const [isChecked, setIsChecked] = useState(showTime);
   const [isMessageMoreOpen, setIsMessageMoreOpen] = useState(false);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
@@ -145,12 +145,12 @@ export default function Message({
     staleTime: Infinity,
   });
   queryClient.setQueryData(["unread-chat-messages"], { unreadCount: 0 });
-  queryClient.setQueryData(["unread-chat-messages", channel.id], {
+  queryClient.setQueryData(["unread-chat-messages", room.id], {
     unreadCount: 0,
   });
 
   if (status === "success") {
-    queryClient.setQueryData(["unread-chat-messages", channel.id], {
+    queryClient.setQueryData(["unread-chat-messages", room.id], {
       unreadCount: 0,
     });
     queryClient.invalidateQueries({ queryKey: ["unread-messages"] });
@@ -182,9 +182,9 @@ export default function Message({
   const hasSeen = reads.find((read) => read.id === loggedUser.id);
 
   const otherUser =
-    channel.id === `saved-${loggedUser.id}`
+    room.id === `saved-${loggedUser.id}`
       ? { user: loggedUser, userId: loggedUser.id }
-      : channel?.members?.filter(
+      : room?.members?.filter(
           (member) => member.userId !== loggedUser.id,
         )[0];
   const messageType: MessageType = message.type;
@@ -192,13 +192,13 @@ export default function Message({
   const sender =
     message.sender?.id === loggedUser.id
       ? "Vous"
-      : channel.isGroup
+      : room.isGroup
         ? message.sender?.displayName.split(" ")[0] || ""
         : otherUser?.user?.displayName.split(" ")[0] || "";
   const recipient = message.recipient;
   let newMemberMsg, oldMemberMsg;
 
-  const senderMember = channel.members.find(
+  const senderMember = room.members.find(
     (member) => member.userId === message.sender?.id,
   );
 
@@ -210,7 +210,7 @@ export default function Message({
   const isSender = message.sender?.id === loggedUser.id;
   const isRecipient = message.recipient?.id === loggedUser.id;
 
-  if (recipient && channel.isGroup) {
+  if (recipient && room.isGroup) {
     const memberName = recipientFirstName;
 
     // Check if message type is info of added member
@@ -253,7 +253,7 @@ export default function Message({
   }
 
   const contentsTypes = {
-    CREATE: channel.isGroup
+    CREATE: room.isGroup
       ? isSender
         ? youCreatedGroup.replace("[name]", senderFirstName)
         : createdGroup.replace("[name]", senderFirstName)
@@ -288,7 +288,7 @@ export default function Message({
     (message.recipientId === loggedUser.id && message.type === "BAN") ||
     message.type === "LEAVE"
   ) {
-    const queryKey = ["chat", channelId];
+    const queryKey = ["chat", roomId];
 
     queryClient.invalidateQueries({ queryKey });
   }
@@ -301,11 +301,11 @@ export default function Message({
 
   const messageContent = contentsTypes[messageType];
 
-  const canReact = channel.isGroup
-    ? channel.members.some((member) => member.userId === loggedUser.id) &&
-      channel.members.find((member) => member.userId === loggedUser.id)
+  const canReact = room.isGroup
+    ? room.members.some((member) => member.userId === loggedUser.id) &&
+      room.members.find((member) => member.userId === loggedUser.id)
         ?.type !== "BANNED" &&
-      channel.members.find((member) => member.userId === loggedUser.id)
+      room.members.find((member) => member.userId === loggedUser.id)
         ?.type !== "OLD"
     : !!otherUser.user?.id;
 
@@ -462,7 +462,7 @@ export default function Message({
           )}
         >
           {!!views.length ? (
-            channel.isGroup ? (
+            room.isGroup ? (
               <span>
                 <span className="font-bold">{seen}</span>
                 {views.length > 1

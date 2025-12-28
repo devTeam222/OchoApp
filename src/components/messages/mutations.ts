@@ -9,7 +9,7 @@ import {
   addAdmin,
   addMembers,
   banMember,
-  createChatChannel,
+  createChatRoom,
   deleteMessage,
   leaveGroup,
   removeMember,
@@ -17,7 +17,7 @@ import {
   saveMessage,
   submitMessage,
 } from "./actions";
-import { ChannelsSection, MessagesSection } from "@/lib/types";
+import { RoomsSection, MessagesSection } from "@/lib/types";
 import { t } from "@/context/LanguageContext";
 
 export function useSubmitMessageMutation() {
@@ -27,13 +27,13 @@ export function useSubmitMessageMutation() {
 
   const mutation = useMutation({
     mutationFn: submitMessage,
-    onSuccess: async ({ newMessage, channelId, newChannel, userId }) => {
-      const isSavedMessage = channelId === `saved-${userId}`;
+    onSuccess: async ({ newMessage, roomId, newRoom, userId }) => {
+      const isSavedMessage = roomId === `saved-${userId}`;
       newMessage.type = "CONTENT";
       const messageQueryKey = isSavedMessage
         ? ["messages", `saved-${userId}`]
-        : ["messages", channelId];
-      const channelQueryKey = ["chat-channels", userId];
+        : ["messages", roomId];
+      const roomQueryKey = ["chat-rooms", userId];
 
       // 1. Update the message cache
       const cachedMessages =
@@ -61,32 +61,32 @@ export function useSubmitMessageMutation() {
         );
       }
 
-      // 2. Update the channel cache if not a saved message
+      // 2. Update the room cache if not a saved message
       if (!isSavedMessage) {
-        const cachedChannels =
+        const cachedRooms =
           queryClient.getQueryData<
-            InfiniteData<ChannelsSection, string | null>
-          >(channelQueryKey);
+            InfiniteData<RoomsSection, string | null>
+          >(roomQueryKey);
 
-        const channelIndex = cachedChannels?.pages
+        const roomIndex = cachedRooms?.pages
           .flatMap((page, pageIndex) =>
-            page.channels.map((channel, index) => ({
-              channel,
+            page.rooms.map((room, index) => ({
+              room,
               pageIndex,
               index,
             })),
           )
-          .find(({ channel }) => channel.id === channelId);
+          .find(({ room }) => room.id === roomId);
 
-        if (channelIndex) {
-          // Move the existing channel to the beginning
+        if (roomIndex) {
+          // Move the existing room to the beginning
           queryClient.setQueryData<
-            InfiniteData<ChannelsSection, string | null>
-          >(channelQueryKey, (oldData) => {
+            InfiniteData<RoomsSection, string | null>
+          >(roomQueryKey, (oldData) => {
             if (!oldData) return;
 
-            const { pageIndex, index } = channelIndex;
-            const channel = oldData.pages[pageIndex].channels[index];
+            const { pageIndex, index } = roomIndex;
+            const room = oldData.pages[pageIndex].rooms[index];
 
             return {
               ...oldData,
@@ -94,20 +94,20 @@ export function useSubmitMessageMutation() {
                 if (idx === 0) {
                   return {
                     ...page,
-                    channels: [
+                    rooms: [
                       {
-                        ...channel,
+                        ...room,
                         messages: [newMessage],
                       },
-                      ...page.channels.filter((ch) => ch.id !== channel.id),
+                      ...page.rooms.filter((ch) => ch.id !== room.id),
                     ],
                   };
                 }
                 if (idx === pageIndex) {
                   return {
                     ...page,
-                    channels: page.channels.filter(
-                      (ch) => ch.id !== channel.id,
+                    rooms: page.rooms.filter(
+                      (ch) => ch.id !== room.id,
                     ),
                   };
                 }
@@ -116,11 +116,11 @@ export function useSubmitMessageMutation() {
               pageParams: oldData.pageParams,
             };
           });
-        } else if (newChannel) {
-          // Add the new channel
+        } else if (newRoom) {
+          // Add the new room
           queryClient.setQueryData<
-            InfiniteData<ChannelsSection, string | null>
-          >(channelQueryKey, (oldData) => {
+            InfiniteData<RoomsSection, string | null>
+          >(roomQueryKey, (oldData) => {
             if (!oldData) return;
             return {
               ...oldData,
@@ -128,7 +128,7 @@ export function useSubmitMessageMutation() {
                 if (idx === 0) {
                   return {
                     ...page,
-                    channels: [newChannel, ...page.channels],
+                    rooms: [newRoom, ...page.rooms],
                   };
                 }
                 return page;
@@ -158,13 +158,13 @@ export function useSaveMessageMutation() {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: saveMessage,
-    onSuccess: async ({ newChannel, userId }) => {
-      const queryKey = ["chat-channels", userId];
+    onSuccess: async ({ newRoom, userId }) => {
+      const queryKey = ["chat-rooms", userId];
       await queryClient.invalidateQueries({ queryKey });
       toast({
         description: youCanChat,
       });
-      return newChannel;
+      return newRoom;
     },
     onError(error) {
       console.error(error);
@@ -186,7 +186,7 @@ export function useDeleteMessageMutation() {
   const mutation = useMutation({
     mutationFn: deleteMessage,
     onSuccess: async (deletedMessage) => {
-      const queryKey: QueryKey = ["messages", deletedMessage.channelId];
+      const queryKey: QueryKey = ["messages", deletedMessage.roomId];
 
       const readsKey: QueryKey = ["reads-info", deletedMessage.id];
 
@@ -205,21 +205,21 @@ export function useDeleteMessageMutation() {
   return mutation;
 }
 
-export function useCreateChatChannelMutation() {
+export function useCreateChatRoomMutation() {
   const { toast } = useToast();
   const {youCanChat, somethingWentWrong} = t()
 
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: createChatChannel,
-    onSuccess: async ({ newChannel, userId }) => {
-      const queryKey = ["chat-channels", userId];
+    mutationFn: createChatRoom,
+    onSuccess: async ({ newRoom, userId }) => {
+      const queryKey = ["chat-rooms", userId];
       await queryClient.invalidateQueries({ queryKey });
 
       toast({
         description: youCanChat,
       });
-      return newChannel;
+      return newRoom;
     },
     onError(error) {
       console.error(error);
@@ -239,7 +239,7 @@ export function useAddMemberMutation() {
   const mutation = useMutation({
     mutationFn: addMembers,
     onSuccess: async ({ newMembersList, userId }) => {
-      const queryKey = ["chat-channels", userId];
+      const queryKey = ["chat-rooms", userId];
       // Vérifier si createInfo est défini avant de l'assigner à newMessage
       if (!newMembersList.length) {
         toast({
@@ -272,8 +272,8 @@ export function useAddAdminMutation() {
 
   const mutation = useMutation({
     mutationFn: addAdmin,
-    onSuccess: ({ newChannelMember }) => {
-      return { newChannelMember };
+    onSuccess: ({ newRoomMember }) => {
+      return { newRoomMember };
     },
     onError(error) {
       console.error(error);

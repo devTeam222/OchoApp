@@ -1,7 +1,7 @@
 import OchoLink from "@/components/ui/OchoLink";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import UserAvatar from "../UserAvatar";
-import { ChannelData, UserData } from "@/lib/types";
+import { RoomData, UserData } from "@/lib/types";
 import Linkify from "../Linkify";
 import { useSession } from "@/app/(main)/SessionProvider";
 
@@ -22,25 +22,25 @@ import { cn } from "@/lib/utils";
 interface GroupUserPopover extends PropsWithChildren {
   user: UserData;
   type: MemberType;
-  channel: ChannelData;
+  room: RoomData;
 }
 
 export default function GroupUserPopover({
   user,
   type,
-  channel,
+  room,
   children,
 }: GroupUserPopover) {
   const { user: loggedInUser } = useSession();
   const isMember = type !== "OLD" && type !== "BANNED";
-  const member = channel.members.find((member) => member.userId === user.id);
+  const member = room.members.find((member) => member.userId === user.id);
 
   const { groupAdmin, groupOwner, joined, leftSince, profile, you } = t();
 
   const joinedAt: Date | null = member?.joinedAt ?? null;
   const leftAt: Date | null = member?.leftAt ?? null;
 
-  const members = channel.members;
+  const members = room.members;
 
   const expiresAt = member?.user?.verified?.[0]?.expiresAt;
   const canExpire = !!(expiresAt ? new Date(expiresAt).getTime() : null);
@@ -150,11 +150,11 @@ export default function GroupUserPopover({
                   <>
                     <AdminButton
                       type={type}
-                      channel={channel}
+                      room={room}
                       member={user.id}
                     />
-                    <RemoveMemberDialog memberId={user.id} channel={channel} />
-                    <BanDialog memberId={user.id} channel={channel} />
+                    <RemoveMemberDialog memberId={user.id} room={room} />
+                    <BanDialog memberId={user.id} room={room} />
                   </>
                 )}
               </>
@@ -162,12 +162,12 @@ export default function GroupUserPopover({
           {!isMember && isLoggedAdmin && (
             <>
               {isBanned && (
-                <RestoreMemberButton memberId={user.id} channel={channel}>
+                <RestoreMemberButton memberId={user.id} room={room}>
                   <PlusCircle size={24} /> Retirer la suspention
                 </RestoreMemberButton>
               )}
               {isOld && (
-                <RestoreMemberButton memberId={user.id} channel={channel}>
+                <RestoreMemberButton memberId={user.id} room={room}>
                   <PlusCircle size={24} /> Reintegrer
                 </RestoreMemberButton>
               )}

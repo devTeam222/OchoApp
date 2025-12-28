@@ -1,4 +1,4 @@
-import { ChannelData, UserData } from "@/lib/types";
+import { RoomData, UserData } from "@/lib/types";
 import { useSession } from "../SessionProvider";
 import GroupAvatar from "@/components/GroupAvatar";
 import UserAvatar from "@/components/UserAvatar";
@@ -16,7 +16,7 @@ import Time from "@/components/Time";
 import OchoLink from "@/components/ui/OchoLink";
 import AddMemberDialog from "@/components/messages/AddMemberDialog";
 import GroupUserPopover from "@/components/messages/GroupUserPopover";
-import { useActiveChannel } from "@/context/ChatContext";
+import { useActiveRoom } from "@/context/ChatContext";
 import LeaveGroupDialog from "@/components/messages/LeaveGroupDialog";
 import GroupChatSettingsDialog from "@/components/messages/GroupChatSettingsDialog";
 import { cn } from "@/lib/utils";
@@ -25,18 +25,18 @@ import Verified from "@/components/Verified";
 import { VerifiedType } from "@prisma/client";
 
 interface ChatHeaderProps {
-  channel: ChannelData;
+  room: RoomData;
   onDelete: () => void;
 }
 
-export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
+export default function ChatHeader({ room, onDelete }: ChatHeaderProps) {
   const [active, setActive] = useState(false);
   const [expandMembers, setExpandMembers] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [dialogFocus, setDialogFocus] = useState<"name" | "description" | null>(
     null,
   );
-  const { activeChannelId } = useActiveChannel();
+  const { activeRoomId } = useActiveRoom();
   const {
     group,
     groupChat,
@@ -68,15 +68,15 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
 
   useEffect(() => {
     setActive(false);
-  }, [activeChannelId]);
+  }, [activeRoomId]);
 
-  const isSaved = channel.id === `saved-${loggedUser.id}`;
+  const isSaved = room.id === `saved-${loggedUser.id}`;
 
   const otherUser =
-    channel.members.length === 1 && isSaved
-      ? channel?.members.filter((member) => member.userId === loggedUser.id)[0]
+    room.members.length === 1 && isSaved
+      ? room?.members.filter((member) => member.userId === loggedUser.id)[0]
           .user
-      : channel?.members.filter((member) => member.userId !== loggedUser.id)[0]
+      : room?.members.filter((member) => member.userId !== loggedUser.id)[0]
           .user;
 
   const expiresAt = isSaved
@@ -89,7 +89,7 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
   const isVerified =
     (isSaved ? !!otherUser?.verified[0] : !!otherUser?.verified[0]) &&
     !expired &&
-    !channel.isGroup;
+    !room.isGroup;
   const verifiedType: VerifiedType | undefined = isVerified
     ? otherUser?.verified[0].type || "STANDARD"
     : undefined;
@@ -98,36 +98,36 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
     <Verified type={verifiedType} prompt={active} />
   ) : null;
 
-  const chatName = !!channel?.name?.trim()
-    ? channel.name
+  const chatName = !!room?.name?.trim()
+    ? room.name
     : (isSaved
         ? loggedUser.displayName + ` (${you})`
-        : channel?.members.filter(
+        : room?.members.filter(
             (member) => member.userId !== loggedUser.id,
-          )[0].user?.displayName) || (channel.isGroup ? groupChat : appUser);
+          )[0].user?.displayName) || (room.isGroup ? groupChat : appUser);
 
   const weekAgo = new Date(
-    channel.createdAt.getTime() - 6 * 24 * 60 * 60 * 1000,
+    room.createdAt.getTime() - 6 * 24 * 60 * 60 * 1000,
   );
   const isWeekAgo = weekAgo.getTime() >= new Date().getTime();
 
   const size = active ? 120 : 40;
 
   // Get loggedinMember from members
-  const loggedinMember = channel.members.find(
+  const loggedinMember = room.members.find(
     (member) => member.userId === loggedUser.id,
   );
   // Get admins
-  const admins = channel.members.filter(
+  const admins = room.members.filter(
     (member) =>
       member.type === "ADMIN" && member.userId !== loggedinMember?.userId,
   );
   // Get owner
   const owner = [
-    channel.members.find((member) => member.type === "OWNER"),
+    room.members.find((member) => member.type === "OWNER"),
   ].filter((member) => member?.userId !== loggedinMember?.userId);
   // Get members
-  const members = channel.members.filter((member) => member.type !== "ADMIN");
+  const members = room.members.filter((member) => member.type !== "ADMIN");
 
   // Remove logged user from owner admins and members
   const filteredMembers = members.filter(
@@ -165,7 +165,7 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
 
   const isUserOnline =
     !active &&
-    (channel.id === `saved-${loggedUser.id}` ||
+    (room.id === `saved-${loggedUser.id}` ||
       (!!otherUser?.lastSeen &&
         new Date(otherUser.lastSeen).getTime() - 40_000 > now));
 
@@ -203,11 +203,11 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
           className={`group/head flex flex-1 items-center gap-2 transition-all ${active ? "cursor-default flex-col p-3" : "cursor-pointer"}`}
           onClick={() => !active && setActive(true)}
         >
-          {channel.isGroup ? (
+          {room.isGroup ? (
             <GroupAvatar
               size={size}
               className="transition-all *:transition-all"
-              avatarUrl={channel.groupAvatarUrl}
+              avatarUrl={room.groupAvatarUrl}
             />
           ) : (
             <UserAvatar
@@ -218,7 +218,7 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
             />
           )}
           <div className="">
-            {channel.isGroup &&
+            {room.isGroup &&
             active &&
             (loggedinMember?.type === "ADMIN" ||
               loggedinMember?.type === "OWNER") ? (
@@ -253,18 +253,18 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
             <div
               className={"text-muted-foreground " + (active ? "hidden" : "")}
             >
-              {channel.isGroup ? (
+              {room.isGroup ? (
                 <div>
                   <span className="max-sm:hidden sm:group-hover/head:hidden">{`${allMembers.length} ${allMembers.length > 1 ? membersText.toLowerCase() : member.toLowerCase()}`}</span>
                   <span className="text-ellipsis max-sm:line-clamp-1 sm:hidden sm:group-hover/head:inline">
-                    {channel.members.length === 1
-                      ? channel.members[0].user?.displayName.split(" ")[0]
-                      : channel.members.length > 2
-                        ? channel.members.length > 6
+                    {room.members.length === 1
+                      ? room.members[0].user?.displayName.split(" ")[0]
+                      : room.members.length > 2
+                        ? room.members.length > 6
                           ? namesAndOthers
                               .replace(
                                 "[names]",
-                                channel.members
+                                room.members
                                   .filter(
                                     (member) => member.userId !== loggedUser.id,
                                   )
@@ -275,15 +275,15 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
                                   )
                                   .join(", "),
                               )
-                              .replace("[len]", `${channel.members.length - 6}`)
+                              .replace("[len]", `${room.members.length - 6}`)
                           : namesAndName
                               .replace(
                                 "[names]",
-                                channel.members
+                                room.members
                                   .filter(
                                     (member) => member.userId !== loggedUser.id,
                                   )
-                                  .slice(0, channel.members.length - 2)
+                                  .slice(0, room.members.length - 2)
                                   .map(
                                     (member) =>
                                       member.user?.displayName.split(" ")[0],
@@ -292,12 +292,12 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
                               )
                               .replace(
                                 "[name]",
-                                channel.members[
-                                  channel.members.length - 1
+                                room.members[
+                                  room.members.length - 1
                                 ].user?.displayName.split(" ")[0] || appUser,
                               )
-                        : channel.members[
-                            channel.members.length - 1
+                        : room.members[
+                            room.members.length - 1
                           ].user?.displayName.split(" ")[0] || appUser}
                   </span>
                 </div>
@@ -323,7 +323,7 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
           </div>
           {active && (
             <div className="text-muted-foreground">
-              {channel.isGroup ? (
+              {room.isGroup ? (
                 <span className="">{`${group} • ${allMembers.length} ${allMembers.length > 1 ? membersText.toLowerCase() : member}`}</span>
               ) : (
                 <span>
@@ -350,11 +350,11 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
           {active && (
             <div className="flex w-full flex-col items-center gap-3">
               <div className="flex w-full justify-center">
-                {channel.isGroup ? (
+                {room.isGroup ? (
                   <div className="flex w-full justify-center gap-2">
                     {loggedinMember?.type !== "OLD" && (
                       <AddMemberDialog
-                        channel={channel}
+                        room={room}
                         className="max-w-44 flex-1"
                       >
                         <Button
@@ -372,7 +372,7 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
                     {(loggedinMember?.type === "ADMIN" ||
                       loggedinMember?.type === "OWNER") && (
                       <GroupChatSettingsDialog
-                        channel={channel}
+                        room={room}
                         open={showDialog}
                         onOpenChange={(open) => {
                           setShowDialog(open);
@@ -402,10 +402,10 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
               <hr className="w-full" />
               <div>
                 <Linkify>
-                  {channel.isGroup ? (
+                  {room.isGroup ? (
                     <>
-                      {channel.description ? (
-                        <p className="py-2 text-center whitespace-pre-line break-words">{channel.description}</p>
+                      {room.description ? (
+                        <p className="py-2 text-center whitespace-pre-line break-words">{room.description}</p>
                       ) : loggedinMember?.type === "ADMIN" ||
                         loggedinMember?.type === "OWNER" ? (
                         <Button
@@ -430,20 +430,20 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
                   )}
                 </Linkify>
               </div>
-              {(!!otherUser?.bio?.trim() || channel.isGroup) && (
+              {(!!otherUser?.bio?.trim() || room.isGroup) && (
                 <hr className="w-full" />
               )}
               <span className="text-muted-foreground">
-                {channel.isGroup ? (
+                {room.isGroup ? (
                   <span>
                     {created}{" "}
-                    <Time time={channel.createdAt} relative={!isWeekAgo} long />
+                    <Time time={room.createdAt} relative={!isWeekAgo} long />
                   </span>
                 ) : (
                   <span>
                     {otherUser?.id ? (
                       <>
-                        {channel.isGroup ? joined : memberSince}{" "}
+                        {room.isGroup ? joined : memberSince}{" "}
                         {!!otherUser?.createdAt && (
                           <Time time={otherUser.createdAt} long />
                         )}
@@ -454,17 +454,17 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
                   </span>
                 )}
               </span>
-              {channel.isGroup && <hr className="w-full" />}
+              {room.isGroup && <hr className="w-full" />}
             </div>
           )}
         </div>
         {active && (
           <div className="flex w-full flex-1 flex-col gap-3">
-            {channel.isGroup && loggedinMember?.type !== "BANNED" && (
+            {room.isGroup && loggedinMember?.type !== "BANNED" && (
               <ul className="flex w-full flex-col py-3">
                 <li className="select-none px-4 text-xs font-bold text-muted-foreground">{`${allMembers.length} ${membersText.toLowerCase()}`}</li>
                 {loggedinMember?.type !== "OLD" && (
-                  <AddMemberDialog channel={channel}>
+                  <AddMemberDialog room={room}>
                     <li className="cursor-pointer p-4 active:bg-muted/30">
                       <div className="flex items-center space-x-2">
                         <div
@@ -489,7 +489,7 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
                       key={key}
                       user={user}
                       type={member.type}
-                      channel={channel}
+                      room={room}
                     />
                   );
                 })}
@@ -505,7 +505,7 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
                           key={key}
                           user={user}
                           type={member.type}
-                          channel={channel}
+                          room={room}
                         />
                       );
                     })}
@@ -520,7 +520,7 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
                             key={key}
                             user={user}
                             type={member.type}
-                            channel={channel}
+                            room={room}
                           />
                         );
                       })}
@@ -539,7 +539,7 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
                               key={key}
                               user={user}
                               type={member.type}
-                              channel={channel}
+                              room={room}
                             />
                           );
                         })}
@@ -566,12 +566,12 @@ export default function ChatHeader({ channel, onDelete }: ChatHeaderProps) {
                 )}
               </ul>
             )}
-            {channel.isGroup &&
+            {room.isGroup &&
               loggedinMember?.type !== "OLD" &&
               loggedinMember?.type !== "BANNED" && (
                 <ul className="flex w-full select-none flex-col py-3">
                   <li className="cursor-pointer p-4 text-red-500 active:bg-muted/30">
-                    <LeaveGroupDialog channel={channel} onDelete={onDelete} />
+                    <LeaveGroupDialog room={room} onDelete={onDelete} />
                   </li>
                 </ul>
               )}
