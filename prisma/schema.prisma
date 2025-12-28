@@ -160,6 +160,8 @@ model RoomMember {
   user      User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId    String?
   type      MemberType @default(MEMBER)
+  isTyping  Boolean    @default(false)
+  isUploadingFile Boolean    @default(false)
   joinedAt  DateTime   @default(now())
   leftAt    DateTime?
 
