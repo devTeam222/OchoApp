@@ -106,6 +106,10 @@ const config = {
           "40%": { transform: "translateX(0) scaleX(0.4)" },
           "100%": { transform: "translateX(100%) scaleX(0.5)" },
         },
+        "bounce-half": {
+          "0%, 100%": { transform: "translateY(25%)", opacity: "0.7" },
+          "50%": { transform: "translateY(-25%)", opacity: "1" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -117,6 +121,7 @@ const config = {
         "appear-r": "appear-r 300ms forwards",
         "appear-b": "appear-b 300ms forwards",
         progress: "progress 1s infinite linear",
+        "bounce-half": "bounce-half 1s infinite",
       },
       transformOrigin: {
         'left-right': '0% 50%',

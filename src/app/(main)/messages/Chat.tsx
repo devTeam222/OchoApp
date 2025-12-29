@@ -221,6 +221,34 @@ export default function Chat({ roomId, initialData, onClose }: ChatProps) {
               <h2 className="text-xl">{dataError}</h2>
             </div>
           )}
+            {/* <TypingIndicator typingUsers={[
+              // Simulated typing users
+              {
+                id: "user1",
+                displayName: "Alice",
+                avatarUrl: "https://i.pravatar.cc/150?img=1",
+              },
+              {
+                id: "user2",
+                displayName: "Bob",
+                avatarUrl: "https://i.pravatar.cc/150?img=2",
+              },
+              {
+                id: "user3",
+                displayName: "Charlie",
+                avatarUrl: "https://i.pravatar.cc/150?img=3",
+              },
+              // {
+              //   id: "user4",
+              //   displayName: "Diana",
+              //   avatarUrl: "https://i.pravatar.cc/150?img=4",
+              // },
+              // {
+              //   id: "user5",
+              //   displayName: "Eve",
+              //   avatarUrl: "https://i.pravatar.cc/150?img=5",
+              // }
+            ]} /> */}
           {status === "success" &&
             messages.map((message, index) => {
               const showTime =
@@ -236,7 +264,6 @@ export default function Chat({ roomId, initialData, onClose }: ChatProps) {
                 />
               );
             })}
-            {/* <TypingIndicator typingUsers={[{id: otherUser?.id || "", displayName: otherUser?.displayName || "", avatarUrl: otherUser?.avatarUrl || ""}]} /> */}
         </InfiniteScrollContainer>
         {isFetchingNextPage && (
           <div className="flex w-full justify-center">
