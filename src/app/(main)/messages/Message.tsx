@@ -500,8 +500,6 @@ type TypingIndicatorProps = {
 };
 
 export function TypingIndicator({ typingUsers = [] } : TypingIndicatorProps) {
-  return null;
-  if (typingUsers.length === 0) return null;
   let randomUsers = typingUsers
         .sort(() => 0.5 - Math.random())
         .slice(0, Math.floor(Math.random() * typingUsers.length) + 1);
@@ -515,6 +513,8 @@ export function TypingIndicator({ typingUsers = [] } : TypingIndicatorProps) {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+  return null;
+  if (typingUsers.length === 0) return null;
 
   const MAX_AVATARS = 4;
   const hasMore = randomUsers.length > MAX_AVATARS;

@@ -51,7 +51,9 @@ export async function GET(req: NextRequest) {
         createdAt: "desc"
       },
       take: pageSize + 1, // Récupérer une page supplémentaire pour déterminer s'il y a une page suivante
-      cursor: cursor ? {id: cursor} : undefined,
+      cursor: cursor ? { 
+        userId_roomId: { userId: user.id, roomId: cursor }
+      } : undefined,
     });
     
 
