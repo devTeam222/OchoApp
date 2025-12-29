@@ -502,38 +502,51 @@ type TypingIndicatorProps = {
 export function TypingIndicator({ typingUsers = [] } : TypingIndicatorProps) {
   return null;
   if (typingUsers.length === 0) return null;
+  let randomUsers = typingUsers
+        .sort(() => 0.5 - Math.random())
+        .slice(0, Math.floor(Math.random() * typingUsers.length) + 1);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // select random users from typingUsers to simulate
+      randomUsers = typingUsers
+        .sort(() => 0.5 - Math.random())
+        .slice(0, Math.floor(Math.random() * typingUsers.length) + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const MAX_AVATARS = 4;
-  const hasMore = typingUsers.length > MAX_AVATARS;
-  const visibleUsers = typingUsers.slice(0, hasMore ? MAX_AVATARS - 1 : MAX_AVATARS);
-  const remainingCount = typingUsers.length - visibleUsers.length;
+  const hasMore = randomUsers.length > MAX_AVATARS;
+  const visibleUsers = randomUsers.slice(0, hasMore ? MAX_AVATARS - 1 : MAX_AVATARS);
+  const remainingCount = randomUsers.length - visibleUsers.length;
 
   return (
     <div className="relative flex w-full gap-2 mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
       
-        {typingUsers.length === 1 ?(<UserAvatar
-                avatarUrl={typingUsers[0].avatarUrl} 
+        {randomUsers.length === 1 ?(<UserAvatar
+                avatarUrl={randomUsers[0].avatarUrl} 
                 size={20}
-                key={typingUsers[0].id}
+                key={randomUsers[0].id}
                 className="border-2 border-background"
                 />) : (<div className="font-bold z-10 flex size-5 min-w-5 min-h-5 items-center justify-center rounded-full bg-muted text-xs text-muted-foreground">
-          {typingUsers.length || 0}
+          {randomUsers.length || 0}
         </div>)}
       <div className="relative flex w-full gap-2 items-start">
         {/* Container des Avatars (Stack avec limite) */}
-        {typingUsers.length > 1 && (<div className="absolute top-full left-2 -translate-y-[30%] flex -space-x-2 overflow-hidden py-1 h-8 items-center z-[2]">
+        {randomUsers.length > 1 && (<div className="absolute top-full left-0 -translate-y-[30%] flex -space-x-2 overflow-hidden py-1 h-8 items-center z-[2]">
           {visibleUsers.map((user, index) => (
               <UserAvatar
                 avatarUrl={user.avatarUrl} 
                 size={20}
                 key={user.id}
-                className="border-2 border-background"
+                className="border-2 border-background animate-appear-r"
                 />
           ))}
 
           {/* Badge pour le reste des personnes */}
           {hasMore && (
-            <div className="z-10 flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs text-muted-foreground border-2 border-background">
+            <div className="animate-appear-r z-10 flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs text-muted-foreground border-2 border-background">
               +{remainingCount}
             </div>
           )}
@@ -543,11 +556,11 @@ export function TypingIndicator({ typingUsers = [] } : TypingIndicatorProps) {
         <div className="group/message relative w-fit max-w-[75%] select-none">
           {/* Label textuel dynamique - Adapté pour "User 1, User 2 et X autres" */}
           <div className="ps-2 text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 transition-opacity">
-            {typingUsers.length === 1 
-              ? `${typingUsers[0].displayName.split(" ")[0]}`
-              : typingUsers.length === 2 
-                ? `${typingUsers[0].displayName.split(" ")[0]} et ${typingUsers[1].displayName.split(" ")[0]} écrivent...`
-                : `${typingUsers[0].displayName.split(" ")[0]}, ${typingUsers[1].displayName.split(" ")[0]} et ${((typingUsers.length - 2 == 1) ? typingUsers[2].displayName.split(" ")[0] : `${typingUsers.length - 2} autres` )} écrivent...`
+            {randomUsers.length === 1 
+              ? `${randomUsers[0].displayName.split(" ")[0]}`
+              : randomUsers.length === 2 
+                ? `${randomUsers[0].displayName.split(" ")[0]} et ${randomUsers[1].displayName.split(" ")[0]} écrivent...`
+                : `${randomUsers[0].displayName.split(" ")[0]}, ${randomUsers[1].displayName.split(" ")[0]} et ${((typingUsers.length - 2 == 1) ? typingUsers[2].displayName.split(" ")[0] : `${typingUsers.length - 2} autres` )} écrivent...`
             }
           </div>
 

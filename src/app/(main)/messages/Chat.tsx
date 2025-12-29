@@ -246,11 +246,11 @@ export default function Chat({ roomId, initialData, onClose }: ChatProps) {
                 displayName: "Diana",
                 avatarUrl: "https://i.pravatar.cc/150?img=4",
               },
-              // {
-              //   id: "user5",
-              //   displayName: "Eve",
-              //   avatarUrl: "https://i.pravatar.cc/150?img=5",
-              // }
+              {
+                id: "user5",
+                displayName: "Eve",
+                avatarUrl: "https://i.pravatar.cc/150?img=5",
+              }
             ]} />
               {
                 messages.map((message, index) => {
