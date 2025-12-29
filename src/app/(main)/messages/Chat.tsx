@@ -221,7 +221,10 @@ export default function Chat({ roomId, initialData, onClose }: ChatProps) {
               <h2 className="text-xl">{dataError}</h2>
             </div>
           )}
-            {/* <TypingIndicator typingUsers={[
+          {status === "success" &&
+            (
+              <>
+            <TypingIndicator typingUsers={[
               // Simulated typing users
               {
                 id: "user1",
@@ -238,32 +241,34 @@ export default function Chat({ roomId, initialData, onClose }: ChatProps) {
                 displayName: "Charlie",
                 avatarUrl: "https://i.pravatar.cc/150?img=3",
               },
-              // {
-              //   id: "user4",
-              //   displayName: "Diana",
-              //   avatarUrl: "https://i.pravatar.cc/150?img=4",
-              // },
+              {
+                id: "user4",
+                displayName: "Diana",
+                avatarUrl: "https://i.pravatar.cc/150?img=4",
+              },
               // {
               //   id: "user5",
               //   displayName: "Eve",
               //   avatarUrl: "https://i.pravatar.cc/150?img=5",
               // }
-            ]} /> */}
-          {status === "success" &&
-            messages.map((message, index) => {
-              const showTime =
-                index === messages.length - 1 ||
-                (index % 20 === 0 && index !== 0);
-
-              return (
-                <Message
-                  key={index}
-                  message={message}
-                  room={room}
-                  showTime={showTime}
-                />
-              );
-            })}
+            ]} />
+              {
+                messages.map((message, index) => {
+                const showTime =
+                  index === messages.length - 1 ||
+                  (index % 20 === 0 && index !== 0);
+  
+                return (
+                  <Message
+                    key={index}
+                    message={message}
+                    room={room}
+                    showTime={showTime}
+                  />
+                );
+              })
+              }</>
+            )}
         </InfiniteScrollContainer>
         {isFetchingNextPage && (
           <div className="flex w-full justify-center">

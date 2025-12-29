@@ -380,7 +380,7 @@ export default function Message({
         )}
         <div className={"group/message relative w-fit max-w-[75%] select-none"}>
           {message.senderId !== loggedUser.id && (
-            <div className="ps-2 text-sm text-muted-foreground">
+            <div className="ps-2 text-xs font-semibold text-muted-foreground">
               {message.sender?.displayName || "Utilisateur OchoApp"}
             </div>
           )}
@@ -500,6 +500,7 @@ type TypingIndicatorProps = {
 };
 
 export function TypingIndicator({ typingUsers = [] } : TypingIndicatorProps) {
+  return null;
   if (typingUsers.length === 0) return null;
 
   const MAX_AVATARS = 4;
@@ -515,7 +516,7 @@ export function TypingIndicator({ typingUsers = [] } : TypingIndicatorProps) {
                 size={20}
                 key={typingUsers[0].id}
                 className="border-2 border-background"
-                />) : (<div className="z-10 flex size-5 min-w-5 min-h-5 items-center justify-center rounded-full bg-muted text-xs text-muted-foreground">
+                />) : (<div className="font-bold z-10 flex size-5 min-w-5 min-h-5 items-center justify-center rounded-full bg-muted text-xs text-muted-foreground">
           {typingUsers.length || 0}
         </div>)}
       <div className="relative flex w-full gap-2 items-start">

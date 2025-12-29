@@ -210,13 +210,13 @@ enum MessageType {
   REACTION
 }
 model LastMessage {
-  id String @id @default(cuid())
+  @@unique([userId, roomId])
   userId String
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   messageId String?
   message Message? @relation(fields: [messageId], references: [id], onDelete: SetNull)
-  roomId String?
-  room Room? @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  roomId String
+  room Room @relation(fields: [roomId], references: [id])
   createdAt DateTime @default(now())
 
   @@map("last_messages")

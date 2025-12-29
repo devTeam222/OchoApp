@@ -95,6 +95,8 @@ export async function submitMessage(input: {
       leftAt: true,
     },
   });
+  console.log(roomMembers);
+  
   for (const member of roomMembers) {
     const memberId = member.userId;
     if (member.leftAt) {
@@ -112,7 +114,10 @@ export async function submitMessage(input: {
     if (lastMessage) {
       await prisma.lastMessage.update({
         where: {
-          id: lastMessage.id,
+          userId_roomId: {
+            userId: memberId,
+            roomId,
+          },
         },
         data: {
           messageId,
@@ -268,7 +273,10 @@ export async function createChatRoom(input: {
         if (lastMessage) {
           await prisma.lastMessage.update({
             where: {
-              id: lastMessage.id,
+              userId_roomId: {
+                userId,
+                roomId: newRoom.id,
+              },
             },
             data: {
               messageId: createMessage.id,
@@ -306,7 +314,10 @@ export async function createChatRoom(input: {
       if (lastMessage) {
         await prisma.lastMessage.update({
           where: {
-            id: lastMessage.id,
+            userId_roomId: {
+              userId,
+              roomId: newRoom.id,
+            }
           },
           data: {
             messageId: message.id,
@@ -645,7 +656,10 @@ export async function removeMember(input: {
   if (lastMessage) {
     await prisma.lastMessage.update({
       where: {
-        id: lastMessage.id,
+        userId_roomId: {
+          userId,
+          roomId,
+        }
       },
       data: {
         messageId: removeMsg.id,

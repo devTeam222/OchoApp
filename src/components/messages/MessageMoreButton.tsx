@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
-import { Copy, MoreHorizontal, Smile, Trash2 } from "lucide-react";
+import { Copy, MoreVertical, Smile, Trash2 } from "lucide-react";
 import DeleteMessageDialog from "./DeleteMessageDialog";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/app/(main)/SessionProvider";
@@ -68,13 +68,11 @@ export default function MessageMoreButton({
     <>
       <DropdownMenu open={open} onOpenChange={onOpenChange}>
         <DropdownMenuTrigger asChild>
-          <Button
-            size="icon"
-            variant="ghost"
-            className={cn("h-8 w-8 rounded-full", className)}
+          <div
+            className={cn("flex size-8 rounded-full cursor-pointer justify-center items-center hover:bg-muted/50", className)}
           >
-            <MoreHorizontal className="size-5 text-muted-foreground" />
-          </Button>
+            <MoreVertical className="size-5 text-muted-foreground" />
+          </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           {canReact && (
