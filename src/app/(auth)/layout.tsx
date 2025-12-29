@@ -14,7 +14,7 @@ export default async function Layout({
   return (
     <ProgressProvider>
       <EmptySession>
-        <main className="flex h-screen max-h-dvh items-center justify-center p-5">
+        <main className="flex h-screen max-h-vh items-center justify-center p-5">
           <div className="flex flex-col items-center justify-between gap-5 h-full">
             {children}
             <div className="privacy text-muted-foreground text-center px-1 text-sm">

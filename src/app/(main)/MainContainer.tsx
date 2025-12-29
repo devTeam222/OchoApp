@@ -8,7 +8,7 @@ import BottomMenuBar from "@/components/BottomMenuBar";
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <MenuBarProvider>
-      <div className="relative flex h-[100vh] max-h-[100dvh] min-h-[100vh] w-full flex-col">
+      <div className="relative flex h-[100vh] max-h-[100vh] min-h-[100vh] w-full flex-col">
         <Navbar />
         <div className="relative h-full max-h-full w-full overflow-hidden">
           <div className="mx-auto flex h-full max-h-full w-full max-w-7xl gap-5 overflow-auto sm:p-5">
