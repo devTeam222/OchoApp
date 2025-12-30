@@ -16,40 +16,41 @@ datasource db {
 }
 
 model User {
-  id                   String          @id
-  username             String          @unique
+  id                   String         @id @default(cuid())
+  username             String         @unique
   displayName          String
-  email                String?         @unique
+  email                String?        @unique
   passwordHash         String?
   birthday             DateTime?
-  googleId             String?         @unique
-  githubId             String?         @unique
-  facebookId           String?         @unique
+  googleId             String?        @unique
+  githubId             String?        @unique
+  facebookId           String?        @unique
   avatarUrl            String?
   bio                  String?
   session              Session[]
-  following            Follow[]        @relation("Following")
-  followers            Follow[]        @relation("Followers")
-  rooms             RoomMember[]
-  sentMessages         Message[]       @relation("Sender")
-  receivedMessages     Message[]       @relation("Recipient")
-  lastMessages LastMessage[]
+  following            Follow[]       @relation("Following")
+  followers            Follow[]       @relation("Followers")
+  rooms                RoomMember[]
+  sentMessages         Message[]      @relation("Sender")
+  receivedMessages     Message[]      @relation("Recipient")
+  lastMessages         LastMessage[]
   reads                Read[]
   posts                Post[]
   likes                Like[]
   comments             Comment[]
   commentLikes         CommentLike[]
   bookmarks            Bookmark[]
-  receivedNotification Notification[]  @relation("Recipient")
-  issuedNotification   Notification[]  @relation("Issuer")
+  receivedNotification Notification[] @relation("Recipient")
+  issuedNotification   Notification[] @relation("Issuer")
 
   lastSeen       DateTime        @default(now())
+  isOnline       Boolean         @default(false)
   createdAt      DateTime        @default(now())
   Reaction       Reaction[]
   verified       VerifiedUsers[]
   relevanceScore PostUserScore[]
   oldUserData    OldUserData[]
-  searches SearchHistory[]
+  searches       SearchHistory[]
 
   @@map("users")
 }
@@ -71,10 +72,11 @@ model Session {
   userId    String
   expiresAt DateTime
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  devices Device[]
+  devices   Device[]
 
   @@map("sessions")
 }
+
 enum DeviceType {
   ANDROID
   IOS
@@ -82,21 +84,21 @@ enum DeviceType {
   DESKTOP
   UNKNOWN
 }
-model Device{
-  id        String   @id @default(cuid())
+
+model Device {
+  id        String     @id @default(cuid())
   sessionId String
-  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  session   Session    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   deviceId  String
   type      DeviceType @default(UNKNOWN)
   model     String?
-  logged    Boolean @default(true)
+  logged    Boolean    @default(true)
   ip        String?
   location  String?
-  createdAt DateTime @default(now())
+  createdAt DateTime   @default(now())
+
   @@unique([sessionId, deviceId])
 }
-
-
 
 model AuthCode {
   id        String   @id
@@ -133,17 +135,17 @@ model Follow {
 }
 
 model Room {
-  id             String          @id @default(cuid())
+  id             String        @id @default(cuid())
   name           String?
   description    String?
   groupAvatarUrl String?
-  isGroup        Boolean         @default(false)
+  isGroup        Boolean       @default(false)
   members        RoomMember[]
-  maxMembers     Int             @default(300)
+  maxMembers     Int           @default(300)
   messages       Message[]
-  lastMessages    LastMessage[]
-  privilege      Privilege       @default(DEFAULT)
-  createdAt      DateTime        @default(now())
+  lastMessages   LastMessage[]
+  privilege      Privilege     @default(DEFAULT)
+  createdAt      DateTime      @default(now())
 
   @@map("rooms")
 }
@@ -154,16 +156,16 @@ enum Privilege {
 }
 
 model RoomMember {
-  id        String     @id @default(cuid())
-  room   Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  roomId String
-  user      User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
-  userId    String?
-  type      MemberType @default(MEMBER)
-  isTyping  Boolean    @default(false)
+  id              String     @id @default(cuid())
+  room            Room       @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId          String
+  user            User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId          String?
+  type            MemberType @default(MEMBER)
+  isTyping        Boolean    @default(false)
   isUploadingFile Boolean    @default(false)
-  joinedAt  DateTime   @default(now())
-  leftAt    DateTime?
+  joinedAt        DateTime   @default(now())
+  leftAt          DateTime?
 
   @@unique([roomId, userId])
   @@map("chat_members")
@@ -178,23 +180,23 @@ enum MemberType {
 }
 
 model Message {
-  id          String      @id @default(cuid())
-  content     String
-  sender      User?       @relation("Sender", fields: [senderId], references: [id], onDelete: SetNull)
-  senderId    String?
-  recipient   User?       @relation("Recipient", fields: [recipientId], references: [id], onDelete: SetNull)
-  recipientId String?
-  room     Room?    @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  roomId   String?
-  reaction    Reaction?   @relation("Sender", fields: [reactionId], references: [id], onDelete: Cascade)
-  reactionId  String?
-  type        MessageType
-  reads       Read[]
-  reactions   Reaction[]
+  id           String        @id @default(cuid())
+  content      String
+  sender       User?         @relation("Sender", fields: [senderId], references: [id], onDelete: SetNull)
+  senderId     String?
+  recipient    User?         @relation("Recipient", fields: [recipientId], references: [id], onDelete: SetNull)
+  recipientId  String?
+  room         Room?         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId       String?
+  reaction     Reaction?     @relation("Sender", fields: [reactionId], references: [id], onDelete: Cascade)
+  reactionId   String?
+  type         MessageType
+  reads        Read[]
+  reactions    Reaction[]
   lastMessages LastMessage[]
+  createdAt    DateTime      @default(now())
 
-  createdAt DateTime @default(now())
-
+  @@index([roomId, createdAt]) // Optimisation performance
   @@map("messages")
 }
 
@@ -209,16 +211,18 @@ enum MessageType {
   SAVED
   REACTION
 }
+
 model LastMessage {
-  @@unique([userId, roomId])
-  userId String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   messageId String?
-  message Message? @relation(fields: [messageId], references: [id], onDelete: SetNull)
-  roomId String
-  room Room @relation(fields: [roomId], references: [id])
+  message   Message? @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  roomId    String
+  room      Room     @relation(fields: [roomId], references: [id])
   createdAt DateTime @default(now())
 
+  @@unique([userId, roomId])
   @@map("last_messages")
 }
 

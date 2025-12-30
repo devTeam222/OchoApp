@@ -18,16 +18,8 @@ export default async function Layout({
 }) {
   const session = await validateRequest();
   
-  
-
-  console.log();
-  
 
   if (!session.user) redirect("/login");
-
-  await new Promise<void>((resolve) => {
-    setTimeout(resolve, 700);
-  });
 
   return (
     <SessionProvider value={session}>
